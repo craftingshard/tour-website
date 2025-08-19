@@ -3,66 +3,108 @@ import type { CrudColumn } from './components/CrudTable'
 
 export function CustomersPage(){
   const cols: CrudColumn[] = [
-    { key:'name', label:'Tên', type:'string', required:true },
+    { key:'displayName', label:'Tên', type:'string', required:true },
     { key:'email', label:'Email', type:'string', required:true },
-    { key:'phone', label:'Điện thoại', type:'string' },
-    { key:'vip', label:'VIP', type:'boolean' },
+    { key:'phoneNumber', label:'Điện thoại', type:'string' },
+    { key:'role', label:'Vai trò', type:'string' },
+    { key:'createdAt', label:'Ngày tạo', type:'date' },
   ]
-  return <CrudTable title="Quản lý khách hàng" collectionName="customers" columns={cols} />
+  return <CrudTable title="Quản lý khách hàng" collectionName="users" columns={cols} />
 }
+
 export function StaffPage(){
   const cols: CrudColumn[] = [
-    { key:'name', label:'Tên', type:'string', required:true },
+    { key:'displayName', label:'Tên', type:'string', required:true },
     { key:'email', label:'Email', type:'string', required:true },
     { key:'role', label:'Vai trò', type:'string' },
-    { key:'active', label:'Kích hoạt', type:'boolean' },
+    { key:'uid', label:'User ID', type:'string' },
+    { key:'createdAt', label:'Ngày tạo', type:'date' },
   ]
-  return <CrudTable title="Quản lý nhân viên" collectionName="staff" columns={cols} />
+  return <CrudTable title="Quản lý nhân viên" collectionName="admins" columns={cols} />
 }
+
 export function ToursAdminPage(){
   const cols: CrudColumn[] = [
-    { key:'title', label:'Tên tour', type:'string', required:true },
+    { key:'name', label:'Tên tour', type:'string', required:true },
     { key:'location', label:'Địa điểm', type:'string', required:true },
     { key:'price', label:'Giá', type:'number', required:true },
-    { key:'rating', label:'Đánh giá (1-10)', type:'number' },
-    { key:'hot', label:'HOT', type:'boolean' },
+    { key:'rating', label:'Đánh giá', type:'number' },
+    { key:'category', label:'Danh mục', type:'string' },
+    { key:'duration', label:'Thời gian', type:'string' },
+    { key:'difficulty', label:'Độ khó', type:'string' },
+    { key:'featured', label:'Nổi bật', type:'boolean' },
+    { key:'status', label:'Trạng thái', type:'string' },
     { key:'imageUrl', label:'Ảnh', type:'string' },
-    { key:'desc', label:'Mô tả', type:'text' },
   ]
-  return <CrudTable title="Quản lý tour" collectionName="admin_tours" columns={cols} />
+  return <CrudTable title="Quản lý tour" collectionName="TOURS" columns={cols} />
 }
+
 export function PostsPage(){
   const cols: CrudColumn[] = [
     { key:'title', label:'Tiêu đề', type:'string', required:true },
-    { key:'slug', label:'Slug', type:'string', required:true },
-    { key:'content', label:'Nội dung', type:'text', required:true },
-    { key:'published', label:'Xuất bản', type:'boolean' },
+    { key:'author', label:'Tác giả', type:'string', required:true },
+    { key:'category', label:'Danh mục', type:'string' },
+    { key:'tags', label:'Tags', type:'array' },
+    { key:'readTime', label:'Thời gian đọc', type:'string' },
+    { key:'views', label:'Lượt xem', type:'number' },
+    { key:'likes', label:'Lượt thích', type:'number' },
+    { key:'status', label:'Trạng thái', type:'string' },
+    { key:'featured', label:'Nổi bật', type:'boolean' },
+    { key:'publishedAt', label:'Ngày xuất bản', type:'date' },
   ]
-  return <CrudTable title="Quản lý bài viết" collectionName="posts" columns={cols} />
+  return <CrudTable title="Quản lý bài viết" collectionName="POSTS" columns={cols} />
 }
+
 export function ThemePage(){
   const cols: CrudColumn[] = [
-    { key:'primary', label:'Primary', type:'string' },
-    { key:'secondary', label:'Secondary', type:'string' },
+    { key:'name', label:'Tên theme', type:'string', required:true },
+    { key:'primaryColor', label:'Màu chính', type:'string' },
+    { key:'secondaryColor', label:'Màu phụ', type:'string' },
     { key:'darkMode', label:'Dark mode', type:'boolean' },
+    { key:'active', label:'Kích hoạt', type:'boolean' },
   ]
   return <CrudTable title="Quản lý theme" collectionName="themes" columns={cols} />
 }
+
 export function AboutAdminPage(){
   const cols: CrudColumn[] = [
-    { key:'headline', label:'Tiêu đề', type:'string', required:true },
+    { key:'title', label:'Tiêu đề', type:'string', required:true },
     { key:'content', label:'Nội dung', type:'text', required:true },
+    { key:'section', label:'Phần', type:'string' },
+    { key:'order', label:'Thứ tự', type:'number' },
+    { key:'active', label:'Kích hoạt', type:'boolean' },
   ]
   return <CrudTable title="Quản lý giới thiệu" collectionName="about" columns={cols} />
 }
+
 export function BookingsAdminPage(){
   const cols: CrudColumn[] = [
-    { key:'userId', label:'Khách', type:'string', required:true },
+    { key:'userId', label:'Khách hàng', type:'string', required:true },
     { key:'tourId', label:'Tour', type:'string', required:true },
+    { key:'tourName', label:'Tên tour', type:'string' },
+    { key:'customerName', label:'Tên khách', type:'string' },
+    { key:'customerEmail', label:'Email khách', type:'string' },
     { key:'status', label:'Trạng thái', type:'string' },
     { key:'paid', label:'Đã thanh toán', type:'boolean' },
+    { key:'amount', label:'Số tiền', type:'number' },
+    { key:'bookingDate', label:'Ngày đặt', type:'date' },
+    { key:'travelDate', label:'Ngày đi', type:'date' },
   ]
   return <CrudTable title="Danh sách đặt tour" collectionName="bookings" columns={cols} />
+}
+
+export function AffiliatePage(){
+  const cols: CrudColumn[] = [
+    { key:'name', label:'Tên đối tác', type:'string', required:true },
+    { key:'email', label:'Email', type:'string', required:true },
+    { key:'phone', label:'Điện thoại', type:'string' },
+    { key:'website', label:'Website', type:'string' },
+    { key:'commission', label:'Hoa hồng (%)', type:'number' },
+    { key:'status', label:'Trạng thái', type:'string' },
+    { key:'active', label:'Kích hoạt', type:'boolean' },
+    { key:'createdAt', label:'Ngày tạo', type:'date' },
+  ]
+  return <CrudTable title="Quản lý đối tác affiliate" collectionName="affiliates" columns={cols} />
 }
 
 
