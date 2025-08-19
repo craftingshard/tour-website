@@ -31,7 +31,6 @@ export function ToursAdminPage(){
     { key:'rating', label:'Đánh giá', type:'number' },
     { key:'category', label:'Danh mục', type:'string' },
     { key:'duration', label:'Thời gian', type:'string' },
-    { key:'difficulty', label:'Độ khó', type:'string' },
     { key:'featured', label:'Nổi bật', type:'boolean' },
     { key:'status', label:'Trạng thái', type:'string' },
     { key:'imageUrl', label:'Ảnh', type:'string' },
@@ -79,14 +78,14 @@ export function AboutAdminPage(){
 
 export function BookingsAdminPage(){
   const cols: CrudColumn[] = [
-    { key:'userId', label:'Khách hàng', type:'string', required:true },
-    { key:'tourId', label:'Tour', type:'string', required:true },
-    { key:'tourName', label:'Tên tour', type:'string' },
-    { key:'customerName', label:'Tên khách', type:'string' },
+    { key:'tourName', label:'Tên tour', type:'string', required:true },
+    { key:'customerName', label:'Tên khách', type:'string', required:true },
     { key:'customerEmail', label:'Email khách', type:'string' },
+    { key:'customerPhone', label:'Điện thoại', type:'string' },
     { key:'status', label:'Trạng thái', type:'string' },
     { key:'paid', label:'Đã thanh toán', type:'boolean' },
     { key:'amount', label:'Số tiền', type:'number' },
+    { key:'affiliateName', label:'Đối tác', type:'string' },
     { key:'bookingDate', label:'Ngày đặt', type:'date' },
     { key:'travelDate', label:'Ngày đi', type:'date' },
   ]
@@ -100,11 +99,16 @@ export function AffiliatePage(){
     { key:'phone', label:'Điện thoại', type:'string' },
     { key:'website', label:'Website', type:'string' },
     { key:'commission', label:'Hoa hồng (%)', type:'number' },
+    { key:'totalEarnings', label:'Tổng thu nhập', type:'number' },
+    { key:'paidAmount', label:'Đã thanh toán', type:'number' },
+    { key:'pendingAmount', label:'Chờ thanh toán', type:'number' },
     { key:'status', label:'Trạng thái', type:'string' },
     { key:'active', label:'Kích hoạt', type:'boolean' },
     { key:'createdAt', label:'Ngày tạo', type:'date' },
   ]
   return <CrudTable title="Quản lý đối tác affiliate" collectionName="affiliates" columns={cols} />
 }
+
+export { AffiliateReportPage } from './AffiliateReportPage'
 
 

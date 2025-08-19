@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore'
 import { db } from '../../firebase'
 
 export function Dashboard() {
@@ -7,13 +7,22 @@ export function Dashboard() {
     tours: 0,
     posts: 0,
     customers: 0,
-    staff: 0
+    staff: 0,
+    totalBookings: 0,
+    totalRevenue: 0,
+    affiliateRevenue: 0,
+    affiliatePayments: 0,
+    pendingAffiliatePayments: 0
   })
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState<string | null>(null)
+  const [recentBookings, setRecentBookings] = useState<any[]>([])
+  const [topAffiliates, setTopAffiliates] = useState<any[]>([])
 
   useEffect(() => {
     loadStats()
+    loadRecentBookings()
+    loadTopAffiliates()
   }, [])
 
   const loadStats = async () => {
@@ -35,12 +44,46 @@ export function Dashboard() {
       // Count staff (admins)
       const staffSnapshot = await getDocs(collection(db, 'admins'))
       const staffCount = staffSnapshot.size
+
+      // Count bookings and calculate revenue
+      const bookingsSnapshot = await getDocs(collection(db, 'bookings'))
+      const totalBookings = bookingsSnapshot.size
+      let totalRevenue = 0
+      let affiliateRevenue = 0
+      
+      bookingsSnapshot.forEach(doc => {
+        const booking = doc.data()
+        if (booking.amount && booking.paid) {
+          totalRevenue += booking.amount
+          if (booking.affiliateId) {
+            affiliateRevenue += booking.amount
+          }
+        }
+      })
+
+      // Calculate affiliate payments
+      const affiliatesSnapshot = await getDocs(collection(db, 'affiliates'))
+      let affiliatePayments = 0
+      let pendingAffiliatePayments = 0
+      
+      affiliatesSnapshot.forEach(doc => {
+        const affiliate = doc.data()
+        if (affiliate.totalEarnings) {
+          affiliatePayments += affiliate.paidAmount || 0
+          pendingAffiliatePayments += (affiliate.totalEarnings - (affiliate.paidAmount || 0))
+        }
+      })
       
       setStats({
         tours: toursCount,
         posts: postsCount,
         customers: customersCount,
-        staff: staffCount
+        staff: staffCount,
+        totalBookings,
+        totalRevenue,
+        affiliateRevenue,
+        affiliatePayments,
+        pendingAffiliatePayments
       })
     } catch (error) {
       console.error('Error loading stats:', error)
@@ -49,7 +92,37 @@ export function Dashboard() {
     }
   }
 
-  const handleSeedData = async (type: 'tours' | 'posts' | 'all') => {
+  const loadRecentBookings = async () => {
+    try {
+      const bookingsQuery = query(
+        collection(db, 'bookings'),
+        orderBy('bookingDate', 'desc'),
+        limit(5)
+      )
+      const snapshot = await getDocs(bookingsQuery)
+      const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      setRecentBookings(bookings)
+    } catch (error) {
+      console.error('Error loading recent bookings:', error)
+    }
+  }
+
+  const loadTopAffiliates = async () => {
+    try {
+      const affiliatesQuery = query(
+        collection(db, 'affiliates'),
+        orderBy('totalEarnings', 'desc'),
+        limit(5)
+      )
+      const snapshot = await getDocs(affiliatesQuery)
+      const affiliates = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      setTopAffiliates(affiliates)
+    } catch (error) {
+      console.error('Error loading top affiliates:', error)
+    }
+  }
+
+  const handleSeedData = async (type: 'tours' | 'posts' | 'customers' | 'staff' | 'affiliates' | 'bookings' | 'all') => {
     try {
       setMessage('Đang thêm dữ liệu...')
       
@@ -72,6 +145,46 @@ export function Dashboard() {
           setMessage('❌ Lỗi khi thêm posts')
         }
       }
+
+      if (type === 'customers' || type === 'all') {
+        const { seedCustomersData } = await import('../../utils/seedData')
+        const result = await seedCustomersData()
+        if (result.success) {
+          setMessage(`✅ Đã thêm ${result.count} khách hàng thành công!`)
+        } else {
+          setMessage('❌ Lỗi khi thêm khách hàng')
+        }
+      }
+
+      if (type === 'staff' || type === 'all') {
+        const { seedStaffData } = await import('../../utils/seedData')
+        const result = await seedStaffData()
+        if (result.success) {
+          setMessage(`✅ Đã thêm ${result.count} nhân viên thành công!`)
+        } else {
+          setMessage('❌ Lỗi khi thêm nhân viên')
+        }
+      }
+
+      if (type === 'affiliates' || type === 'all') {
+        const { seedAffiliatesData } = await import('../../utils/seedData')
+        const result = await seedAffiliatesData()
+        if (result.success) {
+          setMessage(`✅ Đã thêm ${result.count} đối tác affiliate thành công!`)
+        } else {
+          setMessage('❌ Lỗi khi thêm đối tác affiliate')
+        }
+      }
+
+      if (type === 'bookings' || type === 'all') {
+        const { seedBookingsData } = await import('../../utils/seedData')
+        const result = await seedBookingsData()
+        if (result.success) {
+          setMessage(`✅ Đã thêm ${result.count} đặt tour thành công!`)
+        } else {
+          setMessage('❌ Lỗi khi thêm đặt tour')
+        }
+      }
       
       if (type === 'all') {
         setMessage('🎉 Đã thêm tất cả dữ liệu mẫu!')
@@ -80,6 +193,8 @@ export function Dashboard() {
       // Reload stats after seeding
       setTimeout(() => {
         loadStats()
+        loadRecentBookings()
+        loadTopAffiliates()
         setMessage(null)
       }, 3000)
       
@@ -128,6 +243,38 @@ export function Dashboard() {
             <p>Nhân viên</p>
           </div>
         </div>
+
+        <div className="stat-card">
+          <div className="stat-icon">📅</div>
+          <div className="stat-content">
+            <h3>{loading ? '...' : stats.totalBookings}</h3>
+            <p>Đặt tour</p>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-icon">💰</div>
+          <div className="stat-content">
+            <h3>{loading ? '...' : stats.totalRevenue.toLocaleString('vi-VN')}đ</h3>
+            <p>Doanh thu</p>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-icon">🤝</div>
+          <div className="stat-content">
+            <h3>{loading ? '...' : stats.affiliateRevenue.toLocaleString('vi-VN')}đ</h3>
+            <p>Doanh thu affiliate</p>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-icon">💳</div>
+          <div className="stat-content">
+            <h3>{loading ? '...' : stats.pendingAffiliatePayments.toLocaleString('vi-VN')}đ</h3>
+            <p>Chưa thanh toán</p>
+          </div>
+        </div>
       </div>
 
       {/* Quick Actions */}
@@ -147,6 +294,34 @@ export function Dashboard() {
             className="action-btn posts-btn"
           >
             📝 Thêm 20 Posts Mẫu
+          </button>
+
+          <button 
+            onClick={() => handleSeedData('customers')}
+            className="action-btn customers-btn"
+          >
+            👥 Thêm 15 Khách Hàng Mẫu
+          </button>
+
+          <button 
+            onClick={() => handleSeedData('staff')}
+            className="action-btn staff-btn"
+          >
+            👨‍💼 Thêm 10 Nhân Viên Mẫu
+          </button>
+
+          <button 
+            onClick={() => handleSeedData('affiliates')}
+            className="action-btn affiliates-btn"
+          >
+            🤝 Thêm 8 Đối Tác Affiliate Mẫu
+          </button>
+
+          <button 
+            onClick={() => handleSeedData('bookings')}
+            className="action-btn bookings-btn"
+          >
+            📅 Thêm 25 Đặt Tour Mẫu
           </button>
           
           <button 
@@ -171,6 +346,66 @@ export function Dashboard() {
         )}
       </div>
 
+      {/* Recent Activity & Reports */}
+      <div className="reports-section">
+        <div className="reports-grid">
+          {/* Recent Bookings */}
+          <div className="report-card">
+            <h3>📅 Đặt Tour Gần Đây</h3>
+            <div className="report-content">
+              {recentBookings.length === 0 ? (
+                <p className="no-data">Chưa có đặt tour nào</p>
+              ) : (
+                <div className="recent-list">
+                  {recentBookings.map(booking => (
+                    <div key={booking.id} className="recent-item">
+                      <div className="item-main">
+                        <strong>{booking.tourName || 'Tour không xác định'}</strong>
+                        <span className="item-customer">{booking.customerName || 'Khách không xác định'}</span>
+                      </div>
+                      <div className="item-details">
+                        <span className="amount">{booking.amount?.toLocaleString('vi-VN')}đ</span>
+                        <span className={`status ${booking.status || 'pending'}`}>
+                          {booking.status === 'confirmed' ? '✅ Xác nhận' : 
+                           booking.status === 'cancelled' ? '❌ Hủy' : '⏳ Chờ xác nhận'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Top Affiliates */}
+          <div className="report-card">
+            <h3>🏆 Đối Tác Affiliate Hàng Đầu</h3>
+            <div className="report-content">
+              {topAffiliates.length === 0 ? (
+                <p className="no-data">Chưa có đối tác affiliate nào</p>
+              ) : (
+                <div className="affiliates-list">
+                  {topAffiliates.map(affiliate => (
+                    <div key={affiliate.id} className="affiliate-item">
+                      <div className="item-main">
+                        <strong>{affiliate.name}</strong>
+                        <span className="item-commission">{affiliate.commission}% hoa hồng</span>
+                      </div>
+                      <div className="item-details">
+                        <span className="earnings">{affiliate.totalEarnings?.toLocaleString('vi-VN')}đ</span>
+                        <span className={`status ${affiliate.status || 'active'}`}>
+                          {affiliate.status === 'active' ? '✅ Hoạt động' : '❌ Không hoạt động'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Recent Activity */}
       <div className="recent-activity">
         <h2>Hoạt Động Gần Đây</h2>
@@ -183,13 +418,17 @@ export function Dashboard() {
             <span className="activity-time">Hôm nay</span>
             <span className="activity-text">Cập nhật Firestore Rules</span>
           </div>
+          <div className="activity-item">
+            <span className="activity-time">Hôm nay</span>
+            <span className="activity-text">Thêm báo cáo doanh thu và affiliate</span>
+          </div>
         </div>
       </div>
 
       <style>{`
         .dashboard {
           padding: 24px;
-          max-width: 1200px;
+          max-width: 1400px;
           margin: 0 auto;
           animation: fadeInUp 0.6s ease-out;
         }
@@ -239,7 +478,7 @@ export function Dashboard() {
         
         .stats-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
           gap: 24px;
           margin-bottom: 40px;
         }
@@ -261,6 +500,10 @@ export function Dashboard() {
         .stat-card:nth-child(2) { animation-delay: 0.2s; }
         .stat-card:nth-child(3) { animation-delay: 0.3s; }
         .stat-card:nth-child(4) { animation-delay: 0.4s; }
+        .stat-card:nth-child(5) { animation-delay: 0.5s; }
+        .stat-card:nth-child(6) { animation-delay: 0.6s; }
+        .stat-card:nth-child(7) { animation-delay: 0.7s; }
+        .stat-card:nth-child(8) { animation-delay: 0.8s; }
         
         @keyframes slideInUp {
           from {
@@ -386,6 +629,26 @@ export function Dashboard() {
           background: #8b5cf6;
           color: white;
         }
+
+        .customers-btn {
+          background: #10b981;
+          color: white;
+        }
+
+        .staff-btn {
+          background: #3b82f6;
+          color: white;
+        }
+
+        .affiliates-btn {
+          background: #f97316;
+          color: white;
+        }
+
+        .bookings-btn {
+          background: #06b6d4;
+          color: white;
+        }
         
         .all-btn {
           background: #ef4444;
@@ -399,6 +662,112 @@ export function Dashboard() {
         
         .action-btn:active {
           transform: translateY(-1px) scale(1.02);
+        }
+
+        .reports-section {
+          margin-bottom: 32px;
+        }
+
+        .reports-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+          gap: 24px;
+        }
+
+        .report-card {
+          background: white;
+          border-radius: 12px;
+          padding: 24px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          animation: slideInUp 0.8s ease-out;
+        }
+
+        .report-card h3 {
+          color: #1f2937;
+          margin: 0 0 20px 0;
+          font-size: 1.25rem;
+        }
+
+        .report-content {
+          min-height: 200px;
+        }
+
+        .no-data {
+          color: #6b7280;
+          text-align: center;
+          padding: 40px 20px;
+        }
+
+        .recent-list,
+        .affiliates-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .recent-item,
+        .affiliate-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px;
+          background: #f9fafb;
+          border-radius: 8px;
+          border-left: 4px solid #667eea;
+        }
+
+        .item-main {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .item-main strong {
+          color: #1f2937;
+          font-size: 0.9rem;
+        }
+
+        .item-customer,
+        .item-commission {
+          color: #6b7280;
+          font-size: 0.8rem;
+        }
+
+        .item-details {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 4px;
+        }
+
+        .amount,
+        .earnings {
+          color: #059669;
+          font-weight: 600;
+          font-size: 0.9rem;
+        }
+
+        .status {
+          font-size: 0.75rem;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-weight: 500;
+        }
+
+        .status.confirmed,
+        .status.active {
+          background: #dcfce7;
+          color: #166534;
+        }
+
+        .status.pending {
+          background: #fef3c7;
+          color: #92400e;
+        }
+
+        .status.cancelled {
+          background: #fee2e2;
+          color: #991b1b;
         }
         
         .recent-activity {
@@ -458,6 +827,10 @@ export function Dashboard() {
         @media (max-width: 768px) {
           .stats-grid {
             grid-template-columns: repeat(2, 1fr);
+          }
+          
+          .reports-grid {
+            grid-template-columns: 1fr;
           }
           
           .action-buttons {

@@ -19,8 +19,9 @@ import { AdminGuard } from './pages/admin/AdminGuard'
 import { AdminLoginPage } from './pages/admin/AdminLoginPage'
 import { AdminLayout } from './pages/admin/AdminLayout'
 import { Dashboard } from './pages/admin/Dashboard'
-import { CustomersPage, StaffPage, ToursAdminPage, PostsPage, ThemePage, AboutAdminPage, BookingsAdminPage, AffiliatePage } from './pages/admin/sections'
+import { CustomersPage, StaffPage, ToursAdminPage, PostsPage, ThemePage, AboutAdminPage, BookingsAdminPage, AffiliatePage, AffiliateReportPage } from './pages/admin/sections'
 import { TourDetailPage } from './pages/TourDetailPage'
+import { DataDisplayPage } from './pages/DataDisplayPage'
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/viewed" element={<ViewedToursPage />} />
             <Route path="/payment" element={<PaymentPage />} />
+            <Route path="/data" element={<DataDisplayPage />} />
 
             {/* Admin routes must come before the catch-all route */}
             <Route path="/admin/login" element={<AdminProviders><AdminLoginPage /></AdminProviders>} />
@@ -55,6 +57,7 @@ function App() {
               <Route path="/admin/about" element={<AdminLayout><AboutAdminPage /></AdminLayout>} />
               <Route path="/admin/bookings" element={<AdminLayout><BookingsAdminPage /></AdminLayout>} />
               <Route path="/admin/affiliate" element={<AdminLayout><AffiliatePage /></AdminLayout>} />
+              <Route path="/admin/affiliate-report" element={<AdminLayout><AffiliateReportPage /></AdminLayout>} />
             </Route>
             
             {/* The wildcard route MUST be the last one */}

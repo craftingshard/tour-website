@@ -94,6 +94,11 @@ export function AdminLayout({ children }: PropsWithChildren) {
             <span className="nav-icon">🤝</span>
             {!collapsed && <span>Affiliate</span>}
           </NavLink>
+          
+          <NavLink to="/admin/affiliate-report" className="nav-link">
+            <span className="nav-icon">📊</span>
+            {!collapsed && <span>Báo cáo Affiliate</span>}
+          </NavLink>
         </nav>
         
         {/* Logout Button */}

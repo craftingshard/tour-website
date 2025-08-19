@@ -85,7 +85,7 @@ const sampleTours = [
   },
   {
     name: "Đà Lạt - Thành Phố Ngàn Hoa",
-    description: "Khám phá thành phố mộng mơ với khí hậu mát mẻ quanh năm. Thăm các vườn hoa, đồi chè và thưởng thức ẩm thực địa phương độc đáo.",
+    description: "Khám phá thành phố mộng mơ với khí hậu mát mẻ quanh năm. Thăm các vườn hoa, đồi chè và thưởng thức ẩm thực độc đáo.",
     price: 2000000,
     duration: "3 ngày 2 đêm",
     location: "Lâm Đồng, Việt Nam",
@@ -569,6 +569,1002 @@ const samplePosts = [
   }
 ]
 
+// Sample customers data
+const sampleCustomers = [
+  {
+    displayName: "Nguyễn Văn An",
+    email: "nguyenvanan@email.com",
+    phoneNumber: "0901234567",
+    role: "customer",
+    address: "123 Đường ABC, Quận 1, TP.HCM",
+    dateOfBirth: "1990-05-15",
+    preferences: ["Biển", "Văn hóa", "Ẩm thực"],
+    totalBookings: 3,
+    totalSpent: 8500000,
+    createdAt: new Date()
+  },
+  {
+    displayName: "Trần Thị Bình",
+    email: "tranthibinh@email.com",
+    phoneNumber: "0912345678",
+    role: "customer",
+    address: "456 Đường XYZ, Quận 3, TP.HCM",
+    dateOfBirth: "1985-08-22",
+    preferences: ["Núi", "Trekking", "Homestay"],
+    totalBookings: 5,
+    totalSpent: 12000000,
+    createdAt: new Date()
+  },
+  {
+    displayName: "Lê Văn Cường",
+    email: "levancuong@email.com",
+    phoneNumber: "0923456789",
+    role: "customer",
+    address: "789 Đường DEF, Quận 5, TP.HCM",
+    dateOfBirth: "1992-12-10",
+    preferences: ["Thành phố", "Lịch sử", "Mua sắm"],
+    totalBookings: 2,
+    totalSpent: 4500000,
+    createdAt: new Date()
+  },
+  {
+    displayName: "Phạm Thị Dung",
+    email: "phamthidung@email.com",
+    phoneNumber: "0934567890",
+    role: "customer",
+    address: "321 Đường GHI, Quận 7, TP.HCM",
+    dateOfBirth: "1988-03-18",
+    preferences: ["Biển", "Spa", "Resort"],
+    totalBookings: 4,
+    totalSpent: 9800000,
+    createdAt: new Date()
+  },
+  {
+    displayName: "Hoàng Văn Em",
+    email: "hoangvanem@email.com",
+    phoneNumber: "0945678901",
+    role: "customer",
+    address: "654 Đường JKL, Quận 10, TP.HCM",
+    dateOfBirth: "1995-07-25",
+    preferences: ["Mạo hiểm", "Thể thao", "Nhóm"],
+    totalBookings: 6,
+    totalSpent: 15000000,
+    createdAt: new Date()
+  },
+  {
+    displayName: "Vũ Thị Phương",
+    email: "vuthiphuong@email.com",
+    phoneNumber: "0956789012",
+    role: "customer",
+    address: "987 Đường MNO, Quận 2, TP.HCM",
+    dateOfBirth: "1991-11-30",
+    preferences: ["Nghỉ dưỡng", "Yoga", "Thiền"],
+    totalBookings: 3,
+    totalSpent: 7200000,
+    createdAt: new Date()
+  },
+  {
+    displayName: "Đặng Văn Giang",
+    email: "dangvangiang@email.com",
+    phoneNumber: "0967890123",
+    role: "customer",
+    address: "147 Đường PQR, Quận 4, TP.HCM",
+    dateOfBirth: "1987-04-12",
+    preferences: ["Sông nước", "Làng nghề", "Ẩm thực"],
+    totalBookings: 4,
+    totalSpent: 8900000,
+    createdAt: new Date()
+  },
+  {
+    displayName: "Bùi Thị Hoa",
+    email: "buithihoa@email.com",
+    phoneNumber: "0978901234",
+    role: "customer",
+    address: "258 Đường STU, Quận 6, TP.HCM",
+    dateOfBirth: "1993-09-05",
+    preferences: ["Hoa", "Vườn", "Nhiếp ảnh"],
+    totalBookings: 2,
+    totalSpent: 3800000,
+    createdAt: new Date()
+  },
+  {
+    displayName: "Ngô Văn Khoa",
+    email: "ngovankhoa@email.com",
+    phoneNumber: "0989012345",
+    role: "customer",
+    address: "369 Đường VWX, Quận 8, TP.HCM",
+    dateOfBirth: "1989-06-20",
+    preferences: ["Công nghệ", "Thành phố thông minh", "Startup"],
+    totalBookings: 3,
+    totalSpent: 5600000,
+    createdAt: new Date()
+  },
+  {
+    displayName: "Lý Thị Lan",
+    email: "lythilan@email.com",
+    phoneNumber: "0990123456",
+    role: "customer",
+    address: "741 Đường YZA, Quận 9, TP.HCM",
+    dateOfBirth: "1994-01-08",
+    preferences: ["Nghệ thuật", "Bảo tàng", "Triển lãm"],
+    totalBookings: 5,
+    totalSpent: 11000000,
+    createdAt: new Date()
+  },
+  {
+    displayName: "Trịnh Văn Minh",
+    email: "trinhvanminh@email.com",
+    phoneNumber: "0991234567",
+    role: "customer",
+    address: "852 Đường BCD, Quận 11, TP.HCM",
+    dateOfBirth: "1986-10-14",
+    preferences: ["Golf", "Thể thao", "Sang trọng"],
+    totalBookings: 4,
+    totalSpent: 13500000,
+    createdAt: new Date()
+  },
+  {
+    displayName: "Đinh Thị Nga",
+    email: "dinhthinga@email.com",
+    phoneNumber: "0992345678",
+    role: "customer",
+    address: "963 Đường EFG, Quận 12, TP.HCM",
+    dateOfBirth: "1990-02-28",
+    preferences: ["Sức khỏe", "Thể dục", "Dinh dưỡng"],
+    totalBookings: 3,
+    totalSpent: 6700000,
+    createdAt: new Date()
+  },
+  {
+    displayName: "Tô Văn Phúc",
+    email: "tovanphuc@email.com",
+    phoneNumber: "0993456789",
+    role: "customer",
+    address: "159 Đường HIJ, Quận Bình Tân, TP.HCM",
+    dateOfBirth: "1992-12-03",
+    preferences: ["Cộng đồng", "Tình nguyện", "Học tập"],
+    totalBookings: 2,
+    totalSpent: 4200000,
+    createdAt: new Date()
+  },
+  {
+    displayName: "Hồ Thị Quỳnh",
+    email: "hothiquynh@email.com",
+    phoneNumber: "0994567890",
+    role: "customer",
+    address: "357 Đường KLM, Quận Bình Thạnh, TP.HCM",
+    dateOfBirth: "1988-07-17",
+    preferences: ["Gia đình", "Trẻ em", "Giáo dục"],
+    totalBookings: 4,
+    totalSpent: 7800000,
+    createdAt: new Date()
+  },
+  {
+    displayName: "Dương Văn Rồng",
+    email: "duongvanrong@email.com",
+    phoneNumber: "0995678901",
+    role: "customer",
+    address: "486 Đường NOP, Quận Tân Bình, TP.HCM",
+    dateOfBirth: "1991-05-25",
+    preferences: ["Kinh doanh", "Networking", "Hội thảo"],
+    totalBookings: 3,
+    totalSpent: 9200000,
+    createdAt: new Date()
+  }
+]
+
+// Sample staff data
+const sampleStaff = [
+  {
+    displayName: "Nguyễn Văn Admin",
+    email: "admin@tourwebsite.com",
+    role: "admin",
+    uid: "admin001",
+    department: "Quản lý",
+    position: "Quản lý tổng",
+    phoneNumber: "0900000001",
+    salary: 25000000,
+    hireDate: "2023-01-15",
+    status: "active",
+    permissions: ["all"],
+    createdAt: new Date()
+  },
+  {
+    displayName: "Trần Thị Manager",
+    email: "manager@tourwebsite.com",
+    role: "manager",
+    uid: "manager001",
+    department: "Kinh doanh",
+    position: "Trưởng phòng kinh doanh",
+    phoneNumber: "0900000002",
+    salary: 18000000,
+    hireDate: "2023-03-20",
+    status: "active",
+    permissions: ["tours", "bookings", "customers"],
+    createdAt: new Date()
+  },
+  {
+    displayName: "Lê Văn Sales",
+    email: "sales@tourwebsite.com",
+    role: "sales",
+    uid: "sales001",
+    department: "Kinh doanh",
+    position: "Nhân viên kinh doanh",
+    phoneNumber: "0900000003",
+    salary: 12000000,
+    hireDate: "2023-05-10",
+    status: "active",
+    permissions: ["tours", "bookings"],
+    createdAt: new Date()
+  },
+  {
+    displayName: "Phạm Thị Content",
+    email: "content@tourwebsite.com",
+    role: "content",
+    uid: "content001",
+    department: "Marketing",
+    position: "Nhân viên nội dung",
+    phoneNumber: "0900000004",
+    salary: 11000000,
+    hireDate: "2023-06-15",
+    status: "active",
+    permissions: ["posts", "tours"],
+    createdAt: new Date()
+  },
+  {
+    displayName: "Hoàng Văn Support",
+    email: "support@tourwebsite.com",
+    role: "support",
+    uid: "support001",
+    department: "Chăm sóc khách hàng",
+    position: "Nhân viên hỗ trợ",
+    phoneNumber: "0900000005",
+    salary: 10000000,
+    hireDate: "2023-07-01",
+    status: "active",
+    permissions: ["bookings", "customers"],
+    createdAt: new Date()
+  },
+  {
+    displayName: "Vũ Thị Finance",
+    email: "finance@tourwebsite.com",
+    role: "finance",
+    uid: "finance001",
+    department: "Tài chính",
+    position: "Kế toán",
+    phoneNumber: "0900000006",
+    salary: 15000000,
+    hireDate: "2023-08-10",
+    status: "active",
+    permissions: ["bookings", "affiliates", "reports"],
+    createdAt: new Date()
+  },
+  {
+    displayName: "Đặng Văn Guide",
+    email: "guide@tourwebsite.com",
+    role: "guide",
+    uid: "guide001",
+    department: "Hướng dẫn",
+    position: "Hướng dẫn viên",
+    phoneNumber: "0900000007",
+    salary: 13000000,
+    hireDate: "2023-09-05",
+    status: "active",
+    permissions: ["tours"],
+    createdAt: new Date()
+  },
+  {
+    displayName: "Bùi Thị Marketing",
+    email: "marketing@tourwebsite.com",
+    role: "marketing",
+    uid: "marketing001",
+    department: "Marketing",
+    position: "Nhân viên marketing",
+    phoneNumber: "0900000008",
+    salary: 12000000,
+    hireDate: "2023-10-12",
+    status: "active",
+    permissions: ["posts", "affiliates"],
+    createdAt: new Date()
+  },
+  {
+    displayName: "Ngô Văn IT",
+    email: "it@tourwebsite.com",
+    role: "developer",
+    uid: "developer001",
+    department: "Công nghệ",
+    position: "Lập trình viên",
+    phoneNumber: "0900000009",
+    salary: 20000000,
+    hireDate: "2023-11-20",
+    status: "active",
+    permissions: ["all"],
+    createdAt: new Date()
+  },
+  {
+    displayName: "Lý Thị HR",
+    email: "hr@tourwebsite.com",
+    role: "hr",
+    uid: "hr001",
+    department: "Nhân sự",
+    position: "Nhân viên nhân sự",
+    phoneNumber: "0900000010",
+    salary: 11000000,
+    hireDate: "2023-12-01",
+    status: "active",
+    permissions: ["staff"],
+    createdAt: new Date()
+  }
+]
+
+// Sample affiliates data
+const sampleAffiliates = [
+  {
+    name: "Công ty Du lịch ABC",
+    email: "info@abctravel.com",
+    phone: "02812345678",
+    website: "https://abctravel.com",
+    commission: 15,
+    status: "active",
+    active: true,
+    address: "123 Đường ABC, Quận 1, TP.HCM",
+    contactPerson: "Nguyễn Văn A",
+    contactPhone: "0901234567",
+    bankAccount: "1234567890",
+    bankName: "Vietcombank",
+    totalEarnings: 25000000,
+    paidAmount: 15000000,
+    pendingAmount: 10000000,
+    totalBookings: 45,
+    conversionRate: 8.5,
+    createdAt: new Date()
+  },
+  {
+    name: "Công ty Lữ hành XYZ",
+    email: "contact@xyztravel.com",
+    phone: "02823456789",
+    website: "https://xyztravel.com",
+    commission: 12,
+    status: "active",
+    active: true,
+    address: "456 Đường XYZ, Quận 3, TP.HCM",
+    contactPerson: "Trần Thị B",
+    contactPhone: "0912345678",
+    bankAccount: "2345678901",
+    bankName: "BIDV",
+    totalEarnings: 18000000,
+    paidAmount: 12000000,
+    pendingAmount: 6000000,
+    totalBookings: 32,
+    conversionRate: 7.2,
+    createdAt: new Date()
+  },
+  {
+    name: "Công ty Du thuyền DEF",
+    email: "info@defcruise.com",
+    phone: "02834567890",
+    website: "https://defcruise.com",
+    commission: 18,
+    status: "active",
+    active: true,
+    address: "789 Đường DEF, Quận 5, TP.HCM",
+    contactPerson: "Lê Văn C",
+    contactPhone: "0923456789",
+    bankAccount: "3456789012",
+    bankName: "Agribank",
+    totalEarnings: 32000000,
+    paidAmount: 25000000,
+    pendingAmount: 7000000,
+    totalBookings: 58,
+    conversionRate: 9.1,
+    createdAt: new Date()
+  },
+  {
+    name: "Công ty Khám phá GHI",
+    email: "hello@ghiexplore.com",
+    phone: "02845678901",
+    website: "https://ghiexplore.com",
+    commission: 14,
+    status: "active",
+    active: true,
+    address: "321 Đường GHI, Quận 7, TP.HCM",
+    contactPerson: "Phạm Thị D",
+    contactPhone: "0934567890",
+    bankAccount: "4567890123",
+    bankName: "Techcombank",
+    totalEarnings: 15000000,
+    paidAmount: 10000000,
+    pendingAmount: 5000000,
+    totalBookings: 28,
+    conversionRate: 6.8,
+    createdAt: new Date()
+  },
+  {
+    name: "Công ty Mạo hiểm JKL",
+    email: "adventure@jkladventure.com",
+    phone: "02856789012",
+    website: "https://jkladventure.com",
+    commission: 20,
+    status: "active",
+    active: true,
+    address: "654 Đường JKL, Quận 10, TP.HCM",
+    contactPerson: "Hoàng Văn E",
+    contactPhone: "0945678901",
+    bankAccount: "5678901234",
+    bankName: "MB Bank",
+    totalEarnings: 28000000,
+    paidAmount: 20000000,
+    pendingAmount: 8000000,
+    totalBookings: 42,
+    conversionRate: 8.9,
+    createdAt: new Date()
+  },
+  {
+    name: "Công ty Nghỉ dưỡng MNO",
+    email: "resort@mnoresort.com",
+    phone: "02867890123",
+    website: "https://mnoresort.com",
+    commission: 16,
+    status: "active",
+    active: true,
+    address: "987 Đường MNO, Quận 2, TP.HCM",
+    contactPerson: "Vũ Thị F",
+    contactPhone: "0956789012",
+    bankAccount: "6789012345",
+    bankName: "ACB",
+    totalEarnings: 22000000,
+    paidAmount: 18000000,
+    pendingAmount: 4000000,
+    totalBookings: 35,
+    conversionRate: 7.5,
+    createdAt: new Date()
+  },
+  {
+    name: "Công ty Văn hóa PQR",
+    email: "culture@pqrculture.com",
+    phone: "02878901234",
+    website: "https://pqrculture.com",
+    commission: 13,
+    status: "active",
+    active: true,
+    address: "147 Đường PQR, Quận 4, TP.HCM",
+    contactPerson: "Đặng Văn G",
+    contactPhone: "0967890123",
+    bankAccount: "7890123456",
+    bankName: "Sacombank",
+    totalEarnings: 12000000,
+    paidAmount: 8000000,
+    pendingAmount: 4000000,
+    totalBookings: 25,
+    conversionRate: 6.2,
+    createdAt: new Date()
+  },
+  {
+    name: "Công ty Thể thao STU",
+    email: "sport@stusport.com",
+    phone: "02889012345",
+    website: "https://stusport.com",
+    commission: 17,
+    status: "active",
+    active: true,
+    address: "258 Đường STU, Quận 6, TP.HCM",
+    contactPerson: "Bùi Thị H",
+    contactPhone: "0978901234",
+    bankAccount: "8901234567",
+    bankName: "VPBank",
+    totalEarnings: 19000000,
+    paidAmount: 15000000,
+    pendingAmount: 4000000,
+    totalBookings: 30,
+    conversionRate: 7.8,
+    createdAt: new Date()
+  }
+]
+
+// Sample bookings data
+const sampleBookings = [
+  {
+    userId: "customer001",
+    tourId: "tour001",
+    tourName: "Hạ Long Bay - Vịnh Diệu Kỳ",
+    customerName: "Nguyễn Văn An",
+    customerEmail: "nguyenvanan@email.com",
+    customerPhone: "0901234567",
+    status: "confirmed",
+    paid: true,
+    amount: 2500000,
+    affiliateId: "affiliate001",
+    affiliateName: "Công ty Du lịch ABC",
+    commission: 375000,
+    bookingDate: new Date("2024-01-15"),
+    travelDate: new Date("2024-03-20"),
+    numberOfPeople: 2,
+    specialRequests: "Yêu cầu phòng view biển",
+    paymentMethod: "bank_transfer",
+    notes: "Khách hàng VIP"
+  },
+  {
+    userId: "customer002",
+    tourId: "tour002",
+    tourName: "Sapa - Núi Rừng Tây Bắc",
+    customerName: "Trần Thị Bình",
+    customerEmail: "tranthibinh@email.com",
+    customerPhone: "0912345678",
+    status: "confirmed",
+    paid: true,
+    amount: 1800000,
+    affiliateId: "affiliate002",
+    affiliateName: "Công ty Lữ hành XYZ",
+    commission: 216000,
+    bookingDate: new Date("2024-01-18"),
+    travelDate: new Date("2024-04-15"),
+    numberOfPeople: 1,
+    specialRequests: "Homestay với người dân địa phương",
+    paymentMethod: "credit_card",
+    notes: "Khách thích trekking"
+  },
+  {
+    userId: "customer003",
+    tourId: "tour003",
+    tourName: "Phú Quốc - Đảo Ngọc",
+    customerName: "Lê Văn Cường",
+    customerEmail: "levancuong@email.com",
+    customerPhone: "0923456789",
+    status: "pending",
+    paid: false,
+    amount: 3200000,
+    affiliateId: null,
+    affiliateName: null,
+    commission: 0,
+    bookingDate: new Date("2024-01-20"),
+    travelDate: new Date("2024-05-10"),
+    numberOfPeople: 3,
+    specialRequests: "Resort 5 sao, phòng suite",
+    paymentMethod: "pending",
+    notes: "Chờ xác nhận thanh toán"
+  },
+  {
+    userId: "customer004",
+    tourId: "tour004",
+    tourName: "Mai Châu - Thung Lũng Xanh",
+    customerName: "Phạm Thị Dung",
+    customerEmail: "phamthidung@email.com",
+    customerPhone: "0934567890",
+    status: "confirmed",
+    paid: true,
+    amount: 1200000,
+    affiliateId: "affiliate003",
+    affiliateName: "Công ty Du thuyền DEF",
+    commission: 216000,
+    bookingDate: new Date("2024-01-22"),
+    travelDate: new Date("2024-02-28"),
+    numberOfPeople: 2,
+    specialRequests: "Xe đạp để khám phá",
+    paymentMethod: "momo",
+    notes: "Khách thích trải nghiệm dân dã"
+  },
+  {
+    userId: "customer005",
+    tourId: "tour005",
+    tourName: "Nha Trang - Biển Xanh Cát Trắng",
+    customerName: "Hoàng Văn Em",
+    customerEmail: "hoangvanem@email.com",
+    customerPhone: "0945678901",
+    status: "confirmed",
+    paid: true,
+    amount: 2800000,
+    affiliateId: "affiliate004",
+    affiliateName: "Công ty Khám phá GHI",
+    commission: 392000,
+    bookingDate: new Date("2024-01-25"),
+    travelDate: new Date("2024-06-12"),
+    numberOfPeople: 4,
+    specialRequests: "Lặn biển và thăm đảo",
+    paymentMethod: "bank_transfer",
+    notes: "Gia đình có trẻ em"
+  },
+  {
+    userId: "customer006",
+    tourId: "tour006",
+    tourName: "Đà Lạt - Thành Phố Ngàn Hoa",
+    customerName: "Vũ Thị Phương",
+    customerEmail: "vuthiphuong@email.com",
+    customerPhone: "0956789012",
+    status: "cancelled",
+    paid: false,
+    amount: 2000000,
+    affiliateId: "affiliate005",
+    affiliateName: "Công ty Mạo hiểm JKL",
+    commission: 0,
+    bookingDate: new Date("2024-01-28"),
+    travelDate: new Date("2024-03-25"),
+    numberOfPeople: 2,
+    specialRequests: "Vườn hoa và đồi chè",
+    paymentMethod: "cancelled",
+    notes: "Khách hủy do lý do cá nhân"
+  },
+  {
+    userId: "customer007",
+    tourId: "tour007",
+    tourName: "Huế - Cố Đô Lịch Sử",
+    customerName: "Đặng Văn Giang",
+    customerEmail: "dangvangiang@email.com",
+    customerPhone: "0967890123",
+    status: "confirmed",
+    paid: true,
+    amount: 1600000,
+    affiliateId: "affiliate006",
+    affiliateName: "Công ty Nghỉ dưỡng MNO",
+    commission: 256000,
+    bookingDate: new Date("2024-02-01"),
+    travelDate: new Date("2024-04-18"),
+    numberOfPeople: 1,
+    specialRequests: "Thăm Đại Nội và Lăng Khải Định",
+    paymentMethod: "credit_card",
+    notes: "Khách thích lịch sử"
+  },
+  {
+    userId: "customer008",
+    tourId: "tour008",
+    tourName: "Hội An - Phố Cổ Ánh Đèn",
+    customerName: "Bùi Thị Hoa",
+    customerEmail: "buithihoa@email.com",
+    customerPhone: "0978901234",
+    status: "confirmed",
+    paid: true,
+    amount: 2200000,
+    affiliateId: "affiliate007",
+    affiliateName: "Công ty Văn hóa PQR",
+    commission: 286000,
+    bookingDate: new Date("2024-02-05"),
+    travelDate: new Date("2024-05-20"),
+    numberOfPeople: 2,
+    specialRequests: "Làm đèn lồng và ăn cao lầu",
+    paymentMethod: "momo",
+    notes: "Khách thích văn hóa truyền thống"
+  },
+  {
+    userId: "customer009",
+    tourId: "tour009",
+    tourName: "Mekong Delta - Chợ Nổi Cửu Long",
+    customerName: "Ngô Văn Khoa",
+    customerEmail: "ngovankhoa@email.com",
+    customerPhone: "0989012345",
+    status: "pending",
+    paid: false,
+    amount: 1400000,
+    affiliateId: "affiliate008",
+    affiliateName: "Công ty Thể thao STU",
+    commission: 0,
+    bookingDate: new Date("2024-02-08"),
+    travelDate: new Date("2024-06-25"),
+    numberOfPeople: 3,
+    specialRequests: "Chợ nổi và làng nghề",
+    paymentMethod: "pending",
+    notes: "Chờ xác nhận thanh toán"
+  },
+  {
+    userId: "customer010",
+    tourId: "tour010",
+    tourName: "Ba Bể - Hồ Nước Ngọt",
+    customerName: "Lý Thị Lan",
+    customerEmail: "lythilan@email.com",
+    customerPhone: "0990123456",
+    status: "confirmed",
+    paid: true,
+    amount: 1800000,
+    affiliateId: "affiliate001",
+    affiliateName: "Công ty Du lịch ABC",
+    commission: 270000,
+    bookingDate: new Date("2024-02-10"),
+    travelDate: new Date("2024-07-08"),
+    numberOfPeople: 2,
+    specialRequests: "Đi thuyền và trekking",
+    paymentMethod: "bank_transfer",
+    notes: "Khách thích thiên nhiên hoang dã"
+  },
+  {
+    userId: "customer011",
+    tourId: "tour011",
+    tourName: "Côn Đảo - Đảo Tù Lịch Sử",
+    customerName: "Trịnh Văn Minh",
+    customerEmail: "trinhvanminh@email.com",
+    customerPhone: "0991234567",
+    status: "confirmed",
+    paid: true,
+    amount: 3500000,
+    affiliateId: "affiliate002",
+    affiliateName: "Công ty Lữ hành XYZ",
+    commission: 420000,
+    bookingDate: new Date("2024-02-12"),
+    travelDate: new Date("2024-08-15"),
+    numberOfPeople: 2,
+    specialRequests: "Thăm nhà tù và bãi biển",
+    paymentMethod: "credit_card",
+    notes: "Khách thích lịch sử và biển"
+  },
+  {
+    userId: "customer012",
+    tourId: "tour012",
+    tourName: "Y Tý - Nóc Nhà Tây Bắc",
+    customerName: "Đinh Thị Nga",
+    customerEmail: "dinhthinga@email.com",
+    customerPhone: "0992345678",
+    status: "confirmed",
+    paid: true,
+    amount: 2200000,
+    affiliateId: "affiliate003",
+    affiliateName: "Công ty Du thuyền DEF",
+    commission: 396000,
+    bookingDate: new Date("2024-02-15"),
+    travelDate: new Date("2024-09-20"),
+    numberOfPeople: 1,
+    specialRequests: "Leo núi và ngắm mây",
+    paymentMethod: "momo",
+    notes: "Khách thích mạo hiểm"
+  },
+  {
+    userId: "customer013",
+    tourId: "tour013",
+    tourName: "Phong Nha - Hang Động Kỳ Vĩ",
+    customerName: "Tô Văn Phúc",
+    customerEmail: "tovanphuc@email.com",
+    customerPhone: "0993456789",
+    status: "confirmed",
+    paid: true,
+    amount: 2800000,
+    affiliateId: "affiliate004",
+    affiliateName: "Công ty Khám phá GHI",
+    commission: 392000,
+    bookingDate: new Date("2024-02-18"),
+    travelDate: new Date("2024-10-12"),
+    numberOfPeople: 3,
+    specialRequests: "Hang Sơn Đoòng và Phong Nha",
+    paymentMethod: "bank_transfer",
+    notes: "Gia đình thích khám phá"
+  },
+  {
+    userId: "customer014",
+    tourId: "tour014",
+    tourName: "Mũi Né - Biển Cát Đỏ",
+    customerName: "Hồ Thị Quỳnh",
+    customerEmail: "hothiquynh@email.com",
+    customerPhone: "0994567890",
+    status: "confirmed",
+    paid: true,
+    amount: 2400000,
+    affiliateId: "affiliate005",
+    affiliateName: "Công ty Mạo hiểm JKL",
+    commission: 408000,
+    bookingDate: new Date("2024-02-20"),
+    travelDate: new Date("2024-11-08"),
+    numberOfPeople: 2,
+    specialRequests: "Đồi cát và lướt ván",
+    paymentMethod: "credit_card",
+    notes: "Khách thích thể thao biển"
+  },
+  {
+    userId: "customer015",
+    tourId: "tour015",
+    tourName: "Bạch Mã - Vườn Quốc Gia",
+    customerName: "Dương Văn Rồng",
+    customerEmail: "duongvanrong@email.com",
+    customerPhone: "0995678901",
+    status: "confirmed",
+    paid: true,
+    amount: 1600000,
+    affiliateId: "affiliate006",
+    affiliateName: "Công ty Nghỉ dưỡng MNO",
+    commission: 256000,
+    bookingDate: new Date("2024-02-22"),
+    travelDate: new Date("2024-12-15"),
+    numberOfPeople: 1,
+    specialRequests: "Trekking và ngắm cảnh",
+    paymentMethod: "momo",
+    notes: "Khách thích thiên nhiên"
+  },
+  {
+    userId: "customer001",
+    tourId: "tour016",
+    tourName: "Cát Bà - Đảo Khỉ",
+    customerName: "Nguyễn Văn An",
+    customerEmail: "nguyenvanan@email.com",
+    customerPhone: "0901234567",
+    status: "confirmed",
+    paid: true,
+    amount: 2000000,
+    affiliateId: "affiliate007",
+    affiliateName: "Công ty Văn hóa PQR",
+    commission: 260000,
+    bookingDate: new Date("2024-02-25"),
+    travelDate: new Date("2024-01-10"),
+    numberOfPeople: 2,
+    specialRequests: "Vườn quốc gia và bãi biển",
+    paymentMethod: "bank_transfer",
+    notes: "Khách hàng quay lại"
+  },
+  {
+    userId: "customer002",
+    tourId: "tour017",
+    tourName: "Tam Đảo - Núi Mây",
+    customerName: "Trần Thị Bình",
+    customerEmail: "tranthibinh@email.com",
+    customerPhone: "0912345678",
+    status: "confirmed",
+    paid: true,
+    amount: 1400000,
+    affiliateId: "affiliate008",
+    affiliateName: "Công ty Thể thao STU",
+    commission: 238000,
+    bookingDate: new Date("2024-02-28"),
+    travelDate: new Date("2024-02-15"),
+    numberOfPeople: 1,
+    specialRequests: "Ngắm cảnh và ăn gà",
+    paymentMethod: "credit_card",
+    notes: "Khách thích nghỉ dưỡng"
+  },
+  {
+    userId: "customer003",
+    tourId: "tour018",
+    tourName: "Bà Nà Hills - Núi Chúa",
+    customerName: "Lê Văn Cường",
+    customerEmail: "levancuong@email.com",
+    customerPhone: "0923456789",
+    status: "confirmed",
+    paid: true,
+    amount: 1800000,
+    affiliateId: "affiliate001",
+    affiliateName: "Công ty Du lịch ABC",
+    commission: 270000,
+    bookingDate: new Date("2024-03-01"),
+    travelDate: new Date("2024-03-20"),
+    numberOfPeople: 3,
+    specialRequests: "Cáp treo và chùa Linh Ứng",
+    paymentMethod: "momo",
+    notes: "Gia đình có trẻ em"
+  },
+  {
+    userId: "customer004",
+    tourId: "tour019",
+    tourName: "Cù Lao Chàm - Đảo Xanh",
+    customerName: "Phạm Thị Dung",
+    customerEmail: "phamthidung@email.com",
+    customerPhone: "0934567890",
+    status: "confirmed",
+    paid: true,
+    amount: 1600000,
+    affiliateId: "affiliate002",
+    affiliateName: "Công ty Lữ hành XYZ",
+    commission: 192000,
+    bookingDate: new Date("2024-03-05"),
+    travelDate: new Date("2024-04-25"),
+    numberOfPeople: 2,
+    specialRequests: "Lặn biển và bãi biển",
+    paymentMethod: "bank_transfer",
+    notes: "Khách thích biển hoang sơ"
+  },
+  {
+    userId: "customer005",
+    tourId: "tour020",
+    tourName: "Pù Luông - Ruộng Bậc Thang",
+    customerName: "Hoàng Văn Em",
+    customerEmail: "hoangvanem@email.com",
+    customerPhone: "0945678901",
+    status: "confirmed",
+    paid: true,
+    amount: 1400000,
+    affiliateId: "affiliate003",
+    affiliateName: "Công ty Du thuyền DEF",
+    commission: 252000,
+    bookingDate: new Date("2024-03-08"),
+    travelDate: new Date("2024-05-30"),
+    numberOfPeople: 2,
+    specialRequests: "Ruộng bậc thang và trekking",
+    paymentMethod: "credit_card",
+    notes: "Khách thích nông thôn"
+  },
+  {
+    userId: "customer006",
+    tourId: "tour001",
+    tourName: "Hạ Long Bay - Vịnh Diệu Kỳ",
+    customerName: "Vũ Thị Phương",
+    customerEmail: "vuthiphuong@email.com",
+    customerPhone: "0956789012",
+    status: "confirmed",
+    paid: true,
+    amount: 2500000,
+    affiliateId: "affiliate004",
+    affiliateName: "Công ty Khám phá GHI",
+    commission: 350000,
+    bookingDate: new Date("2024-03-10"),
+    travelDate: new Date("2024-06-18"),
+    numberOfPeople: 2,
+    specialRequests: "Kayak và thăm hang động",
+    paymentMethod: "momo",
+    notes: "Khách thích mạo hiểm"
+  },
+  {
+    userId: "customer007",
+    tourId: "tour002",
+    tourName: "Sapa - Núi Rừng Tây Bắc",
+    customerName: "Đặng Văn Giang",
+    customerEmail: "dangvangiang@email.com",
+    customerPhone: "0967890123",
+    status: "confirmed",
+    paid: true,
+    amount: 1800000,
+    affiliateId: "affiliate005",
+    affiliateName: "Công ty Mạo hiểm JKL",
+    commission: 306000,
+    bookingDate: new Date("2024-03-12"),
+    travelDate: new Date("2024-07-25"),
+    numberOfPeople: 1,
+    specialRequests: "Leo Fansipan và homestay",
+    paymentMethod: "bank_transfer",
+    notes: "Khách thích leo núi"
+  },
+  {
+    userId: "customer008",
+    tourId: "tour003",
+    tourName: "Phú Quốc - Đảo Ngọc",
+    customerName: "Bùi Thị Hoa",
+    customerEmail: "buithihoa@email.com",
+    customerPhone: "0978901234",
+    status: "confirmed",
+    paid: true,
+    amount: 3200000,
+    affiliateId: "affiliate006",
+    affiliateName: "Công ty Nghỉ dưỡng MNO",
+    commission: 512000,
+    bookingDate: new Date("2024-03-15"),
+    travelDate: new Date("2024-08-30"),
+    numberOfPeople: 3,
+    specialRequests: "Resort 5 sao và spa",
+    paymentMethod: "credit_card",
+    notes: "Gia đình thích nghỉ dưỡng"
+  },
+  {
+    userId: "customer009",
+    tourId: "tour004",
+    tourName: "Mai Châu - Thung Lũng Xanh",
+    customerName: "Ngô Văn Khoa",
+    customerEmail: "ngovankhoa@email.com",
+    customerPhone: "0989012345",
+    status: "confirmed",
+    paid: true,
+    amount: 1200000,
+    affiliateId: "affiliate007",
+    affiliateName: "Công ty Văn hóa PQR",
+    commission: 156000,
+    bookingDate: new Date("2024-03-18"),
+    travelDate: new Date("2024-09-15"),
+    numberOfPeople: 2,
+    specialRequests: "Xe đạp và múa xòe",
+    paymentMethod: "momo",
+    notes: "Khách thích văn hóa dân tộc"
+  },
+  {
+    userId: "customer010",
+    tourId: "tour005",
+    tourName: "Nha Trang - Biển Xanh Cát Trắng",
+    customerName: "Lý Thị Lan",
+    customerEmail: "lythilan@email.com",
+    customerPhone: "0990123456",
+    status: "confirmed",
+    paid: true,
+    amount: 2800000,
+    affiliateId: "affiliate008",
+    affiliateName: "Công ty Thể thao STU",
+    commission: 476000,
+    bookingDate: new Date("2024-03-20"),
+    travelDate: new Date("2024-10-20"),
+    numberOfPeople: 2,
+    specialRequests: "Lặn biển và tháp Bà",
+    paymentMethod: "bank_transfer",
+    notes: "Khách thích biển và văn hóa"
+  }
+]
+
 // Function to seed tours data
 export const seedToursData = async () => {
   try {
@@ -637,6 +1633,333 @@ export const seedAllData = async () => {
     }
   } catch (error) {
     console.error('❌ Lỗi khi thêm dữ liệu:', error)
+    return { success: false, error }
+  }
+}
+
+// Function to seed customers data
+export const seedCustomersData = async () => {
+  try {
+    console.log('🌱 Bắt đầu thêm dữ liệu khách hàng...')
+    
+    const sampleCustomers = [
+      {
+        displayName: "Nguyễn Văn An",
+        email: "nguyenvanan@email.com",
+        phoneNumber: "0901234567",
+        role: "customer",
+        address: "123 Đường ABC, Quận 1, TP.HCM",
+        dateOfBirth: "1990-05-15",
+        preferences: ["Biển", "Văn hóa", "Ẩm thực"],
+        totalBookings: 3,
+        totalSpent: 8500000,
+        createdAt: new Date()
+      },
+      {
+        displayName: "Trần Thị Bình",
+        email: "tranthibinh@email.com",
+        phoneNumber: "0912345678",
+        role: "customer",
+        address: "456 Đường XYZ, Quận 3, TP.HCM",
+        dateOfBirth: "1985-08-22",
+        preferences: ["Núi", "Trekking", "Homestay"],
+        totalBookings: 5,
+        totalSpent: 12000000,
+        createdAt: new Date()
+      },
+      {
+        displayName: "Lê Văn Cường",
+        email: "levancuong@email.com",
+        phoneNumber: "0923456789",
+        role: "customer",
+        address: "789 Đường DEF, Quận 5, TP.HCM",
+        dateOfBirth: "1992-12-10",
+        preferences: ["Thành phố", "Lịch sử", "Mua sắm"],
+        totalBookings: 2,
+        totalSpent: 4500000,
+        createdAt: new Date()
+      },
+      {
+        displayName: "Phạm Thị Dung",
+        email: "phamthidung@email.com",
+        phoneNumber: "0934567890",
+        role: "customer",
+        address: "321 Đường GHI, Quận 7, TP.HCM",
+        dateOfBirth: "1988-03-18",
+        preferences: ["Biển", "Spa", "Resort"],
+        totalBookings: 4,
+        totalSpent: 9800000,
+        createdAt: new Date()
+      },
+      {
+        displayName: "Hoàng Văn Em",
+        email: "hoangvanem@email.com",
+        phoneNumber: "0945678901",
+        role: "customer",
+        address: "654 Đường JKL, Quận 10, TP.HCM",
+        dateOfBirth: "1995-07-25",
+        preferences: ["Mạo hiểm", "Thể thao", "Nhóm"],
+        totalBookings: 6,
+        totalSpent: 15000000,
+        createdAt: new Date()
+      }
+    ]
+    
+    for (let i = 0; i < sampleCustomers.length; i++) {
+      const customer = sampleCustomers[i]
+      await addDoc(collection(db, 'users'), {
+        ...customer,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        status: 'active'
+      })
+      console.log(`✅ Đã thêm khách hàng: ${customer.displayName}`)
+    }
+    
+    console.log(`🎉 Hoàn thành! Đã thêm ${sampleCustomers.length} khách hàng`)
+    return { success: true, count: sampleCustomers.length }
+  } catch (error) {
+    console.error('❌ Lỗi khi thêm khách hàng:', error)
+    return { success: false, error }
+  }
+}
+
+// Function to seed staff data
+export const seedStaffData = async () => {
+  try {
+    console.log('🌱 Bắt đầu thêm dữ liệu nhân viên...')
+    
+    const sampleStaff = [
+      {
+        displayName: "Nguyễn Văn Admin",
+        email: "admin@tourwebsite.com",
+        role: "admin",
+        uid: "admin001",
+        department: "Quản lý",
+        position: "Quản lý tổng",
+        phoneNumber: "0900000001",
+        salary: 25000000,
+        hireDate: "2023-01-15",
+        status: "active",
+        permissions: ["all"],
+        createdAt: new Date()
+      },
+      {
+        displayName: "Trần Thị Manager",
+        email: "manager@tourwebsite.com",
+        role: "manager",
+        uid: "manager001",
+        department: "Kinh doanh",
+        position: "Trưởng phòng kinh doanh",
+        phoneNumber: "0900000002",
+        salary: 18000000,
+        hireDate: "2023-03-20",
+        status: "active",
+        permissions: ["tours", "bookings", "customers"],
+        createdAt: new Date()
+      },
+      {
+        displayName: "Lê Văn Sales",
+        email: "sales@tourwebsite.com",
+        role: "sales",
+        uid: "sales001",
+        department: "Kinh doanh",
+        position: "Nhân viên kinh doanh",
+        phoneNumber: "0900000003",
+        salary: 12000000,
+        hireDate: "2023-05-10",
+        status: "active",
+        permissions: ["tours", "bookings"],
+        createdAt: new Date()
+      }
+    ]
+    
+    for (let i = 0; i < sampleStaff.length; i++) {
+      const staff = sampleStaff[i]
+      await addDoc(collection(db, 'admins'), {
+        ...staff,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      console.log(`✅ Đã thêm nhân viên: ${staff.displayName}`)
+    }
+    
+    console.log(`🎉 Hoàn thành! Đã thêm ${sampleStaff.length} nhân viên`)
+    return { success: true, count: sampleStaff.length }
+  } catch (error) {
+    console.error('❌ Lỗi khi thêm nhân viên:', error)
+    return { success: false, error }
+  }
+}
+
+// Function to seed affiliates data
+export const seedAffiliatesData = async () => {
+  try {
+    console.log('🌱 Bắt đầu thêm dữ liệu đối tác affiliate...')
+    
+    const sampleAffiliates = [
+      {
+        name: "Công ty Du lịch ABC",
+        email: "info@abctravel.com",
+        phone: "02812345678",
+        website: "https://abctravel.com",
+        commission: 15,
+        status: "active",
+        active: true,
+        address: "123 Đường ABC, Quận 1, TP.HCM",
+        contactPerson: "Nguyễn Văn A",
+        contactPhone: "0901234567",
+        bankAccount: "1234567890",
+        bankName: "Vietcombank",
+        totalEarnings: 25000000,
+        paidAmount: 15000000,
+        pendingAmount: 10000000,
+        totalBookings: 45,
+        conversionRate: 8.5,
+        createdAt: new Date()
+      },
+      {
+        name: "Công ty Lữ hành XYZ",
+        email: "contact@xyztravel.com",
+        phone: "02823456789",
+        website: "https://xyztravel.com",
+        commission: 12,
+        status: "active",
+        active: true,
+        address: "456 Đường XYZ, Quận 3, TP.HCM",
+        contactPerson: "Trần Thị B",
+        contactPhone: "0912345678",
+        bankAccount: "2345678901",
+        bankName: "BIDV",
+        totalEarnings: 18000000,
+        paidAmount: 12000000,
+        pendingAmount: 6000000,
+        totalBookings: 32,
+        conversionRate: 7.2,
+        createdAt: new Date()
+      },
+      {
+        name: "Công ty Du thuyền DEF",
+        email: "info@defcruise.com",
+        phone: "02834567890",
+        website: "https://defcruise.com",
+        commission: 18,
+        status: "active",
+        active: true,
+        address: "789 Đường DEF, Quận 5, TP.HCM",
+        contactPerson: "Lê Văn C",
+        contactPhone: "0923456789",
+        bankAccount: "3456789012",
+        bankName: "Agribank",
+        totalEarnings: 32000000,
+        paidAmount: 25000000,
+        pendingAmount: 7000000,
+        totalBookings: 58,
+        conversionRate: 9.1,
+        createdAt: new Date()
+      }
+    ]
+    
+    for (let i = 0; i < sampleAffiliates.length; i++) {
+      const affiliate = sampleAffiliates[i]
+      await addDoc(collection(db, 'affiliates'), {
+        ...affiliate,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      console.log(`✅ Đã thêm đối tác affiliate: ${affiliate.name}`)
+    }
+    
+    console.log(`🎉 Hoàn thành! Đã thêm ${sampleAffiliates.length} đối tác affiliate`)
+    return { success: true, count: sampleAffiliates.length }
+  } catch (error) {
+    console.error('❌ Lỗi khi thêm đối tác affiliate:', error)
+    return { success: false, error }
+  }
+}
+
+// Function to seed bookings data
+export const seedBookingsData = async () => {
+  try {
+    console.log('🌱 Bắt đầu thêm dữ liệu đặt tour...')
+    
+    const sampleBookings = [
+      {
+        userId: "customer001",
+        tourId: "tour001",
+        tourName: "Hạ Long Bay - Vịnh Diệu Kỳ",
+        customerName: "Nguyễn Văn An",
+        customerEmail: "nguyenvanan@email.com",
+        customerPhone: "0901234567",
+        status: "confirmed",
+        paid: true,
+        amount: 2500000,
+        affiliateId: "affiliate001",
+        affiliateName: "Công ty Du lịch ABC",
+        commission: 375000,
+        bookingDate: new Date("2024-01-15"),
+        travelDate: new Date("2024-03-20"),
+        numberOfPeople: 2,
+        specialRequests: "Yêu cầu phòng view biển",
+        paymentMethod: "bank_transfer",
+        notes: "Khách hàng VIP"
+      },
+      {
+        userId: "customer002",
+        tourId: "tour002",
+        tourName: "Sapa - Núi Rừng Tây Bắc",
+        customerName: "Trần Thị Bình",
+        customerEmail: "tranthibinh@email.com",
+        customerPhone: "0912345678",
+        status: "confirmed",
+        paid: true,
+        amount: 1800000,
+        affiliateId: "affiliate002",
+        affiliateName: "Công ty Lữ hành XYZ",
+        commission: 216000,
+        bookingDate: new Date("2024-01-18"),
+        travelDate: new Date("2024-04-15"),
+        numberOfPeople: 1,
+        specialRequests: "Homestay với người dân địa phương",
+        paymentMethod: "credit_card",
+        notes: "Khách thích trekking"
+      },
+      {
+        userId: "customer003",
+        tourId: "tour003",
+        tourName: "Phú Quốc - Đảo Ngọc",
+        customerName: "Lê Văn Cường",
+        customerEmail: "levancuong@email.com",
+        customerPhone: "0923456789",
+        status: "pending",
+        paid: false,
+        amount: 3200000,
+        affiliateId: null,
+        affiliateName: null,
+        commission: 0,
+        bookingDate: new Date("2024-01-20"),
+        travelDate: new Date("2024-05-10"),
+        numberOfPeople: 3,
+        specialRequests: "Resort 5 sao, phòng suite",
+        paymentMethod: "pending",
+        notes: "Chờ xác nhận thanh toán"
+      }
+    ]
+    
+    for (let i = 0; i < sampleBookings.length; i++) {
+      const booking = sampleBookings[i]
+      await addDoc(collection(db, 'bookings'), {
+        ...booking,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      console.log(`✅ Đã thêm đặt tour: ${booking.tourName}`)
+    }
+    
+    console.log(`🎉 Hoàn thành! Đã thêm ${sampleBookings.length} đặt tour`)
+    return { success: true, count: sampleBookings.length }
+  } catch (error) {
+    console.error('❌ Lỗi khi thêm đặt tour:', error)
     return { success: false, error }
   }
 }

@@ -22,6 +22,7 @@ export function Header() {
           <NavLink to="/tours">Tours</NavLink>
           <NavLink to="/guide">Cẩm nang</NavLink>
           <NavLink to="/contact">Liên hệ</NavLink>
+          <NavLink to="/data">Dữ liệu</NavLink>
         </nav>
         <div className="spacer" />
         <nav className="nav" aria-label="User Navigation">
