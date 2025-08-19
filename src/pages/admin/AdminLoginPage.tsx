@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAdmin } from '../../context/AdminProviders'
 
 export function AdminLoginPage() {
@@ -6,8 +7,15 @@ export function AdminLoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
+  const { login, isAdmin, loading: authLoading } = useAdmin()
   
-  const { login } = useAdmin()
+  // Auto-redirect to dashboard if already admin
+  useEffect(() => {
+    if (isAdmin && !authLoading) {
+      navigate('/admin', { replace: true })
+    }
+  }, [isAdmin, authLoading, navigate])
   
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -16,11 +24,29 @@ export function AdminLoginPage() {
     
     try {
       await login(email, password)
+      // Login successful, redirect to dashboard
+      navigate('/admin', { replace: true })
     } catch (err: any) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
+  }
+
+  // Show loading while checking auth state
+  if (authLoading) {
+    return (
+      <div className="container">
+        <div className="card" style={{maxWidth:420, margin:'40px auto', textAlign: 'center'}}>
+          <div>🔄 Đang kiểm tra trạng thái đăng nhập...</div>
+        </div>
+      </div>
+    )
+  }
+
+  // Don't show login form if already admin
+  if (isAdmin) {
+    return null
   }
 
   return (
