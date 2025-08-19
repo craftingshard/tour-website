@@ -1,4 +1,5 @@
-import { PropsWithChildren, createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import type { PropsWithChildren } from 'react'
 import { onAuthStateChanged, signOut, signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '../firebase'
 import { db } from '../firebase'
