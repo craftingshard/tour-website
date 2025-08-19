@@ -7,6 +7,27 @@
     <title>Website Tour Du Lịch</title>
   </head>
   <body>
+    <script>
+      // Basic anti-copy: disable context menu and common key combos. Allow inputs/textarea.
+      document.addEventListener('contextmenu', function (e) {
+        const tag = (e.target && e.target.tagName || '').toLowerCase();
+        if (tag === 'input' || tag === 'textarea') return;
+        e.preventDefault();
+      });
+      document.addEventListener('keydown', function (e) {
+        const tag = (e.target && e.target.tagName || '').toLowerCase();
+        if (tag === 'input' || tag === 'textarea') return;
+        if ((e.ctrlKey || e.metaKey) && ['s','p','u','c','x','a'].includes(e.key.toLowerCase())) {
+          e.preventDefault();
+        }
+      });
+    </script>
+    <style>
+      /* Prevent text selection and drag on general content; allow in inputs/textarea */
+      body { -webkit-user-select: none; -ms-user-select: none; user-select: none; }
+      input, textarea { -webkit-user-select: text; -ms-user-select: text; user-select: text; }
+      img { -webkit-user-drag: none; user-drag: none; }
+    </style>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

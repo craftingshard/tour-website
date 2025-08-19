@@ -3,7 +3,7 @@ import { addDoc, collection, deleteDoc, doc, onSnapshot, updateDoc, getDocs } fr
 import { db } from '../../../firebase'
 import { useAdmin } from '../../../context/AdminProviders'
 
-type FieldType = 'string' | 'number' | 'boolean' | 'text' | 'date' | 'array' | 'select' | 'select-multiple'
+type FieldType = 'string' | 'number' | 'boolean' | 'text' | 'date' | 'array' | 'select' | 'select-multiple' | 'color'
 
 export type CrudColumn = {
   key: string
@@ -27,6 +27,7 @@ type CrudTableProps = {
 
 export function CrudTable({ collectionName, columns, title, createDefaults }: CrudTableProps) {
   const [items, setItems] = useState<Array<{ id: string; [k: string]: any }>>([])
+  const [queryText, setQueryText] = useState<string>('')
   const [form, setForm] = useState<Record<string, any>>({})
   const [editingId, setEditingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -40,10 +41,26 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
   const colRef = useMemo(() => collection(db, collectionName), [collectionName])
 
   // Calculate pagination
-  const totalPages = Math.ceil(items.length / itemsPerPage)
+  const filteredItems = useMemo(() => {
+    if (!queryText.trim()) return items
+    const q = queryText.trim().toLowerCase()
+    return items.filter((row) => {
+      return columns.some((c) => {
+        const v = row[c.key]
+        if (v == null) return false
+        if (typeof v === 'string') return v.toLowerCase().includes(q)
+        if (typeof v === 'number') return String(v).includes(q)
+        if (v?.toDate) return v.toDate().toLocaleDateString('vi-VN').toLowerCase().includes(q)
+        if (Array.isArray(v)) return v.join(', ').toLowerCase().includes(q)
+        return String(v).toLowerCase().includes(q)
+      })
+    })
+  }, [items, columns, queryText])
+
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  const currentItems = items.slice(startIndex, endIndex)
+  const currentItems = filteredItems.slice(startIndex, endIndex)
 
   // Reset to first page when collection changes
   useEffect(() => { 
@@ -89,6 +106,14 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
     const unsub = onSnapshot(colRef, (snap) => {
       const rows: Array<{ id: string; [k: string]: any }> = []
       snap.forEach((d) => rows.push({ id: d.id, ...d.data() }))
+      rows.sort((a, b) => {
+        const aCreated = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (typeof a.createdAt === 'number' ? a.createdAt : (a.createdAt ? new Date(a.createdAt).getTime() : 0))
+        const bCreated = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (typeof b.createdAt === 'number' ? b.createdAt : (b.createdAt ? new Date(b.createdAt).getTime() : 0))
+        if (bCreated !== aCreated) return bCreated - aCreated
+        const aUpdated = a.updatedAt?.toDate ? a.updatedAt.toDate().getTime() : (typeof a.updatedAt === 'number' ? a.updatedAt : (a.updatedAt ? new Date(a.updatedAt).getTime() : 0))
+        const bUpdated = b.updatedAt?.toDate ? b.updatedAt.toDate().getTime() : (typeof b.updatedAt === 'number' ? b.updatedAt : (b.updatedAt ? new Date(b.updatedAt).getTime() : 0))
+        return bUpdated - aUpdated
+      })
       setItems(rows)
       setLoading(false)
     })
@@ -269,6 +294,16 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
 
   const renderField = (col: CrudColumn) => {
     const value = form[col.key] ?? ''
+    if (col.type === 'color') {
+      return (
+        <input 
+          type="color"
+          value={value || '#000000'}
+          onChange={(e) => onChange(col.key, e.target.value)}
+        />
+      )
+    }
+
     
     if (col.type === 'boolean') {
       return (
@@ -452,7 +487,15 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
       {/* Table Section */}
       <div className="table-section">
         <div className="table-header">
-          <h3>📋 Danh sách ({items.length} bản ghi)</h3>
+          <h3>📋 Danh sách ({filteredItems.length} bản ghi)</h3>
+          <div className="header-actions">
+            <input
+              placeholder="Tìm kiếm..."
+              value={queryText}
+              onChange={(e)=> setQueryText(e.target.value)}
+              className="search-input"
+            />
+          </div>
         </div>
         
         <div className="table-container">
@@ -520,6 +563,7 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
           border-radius: 12px;
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
           overflow: hidden;
+          color: #111827;
         }
         
         .crud-header {
@@ -648,6 +692,20 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
           font-size: 18px;
           font-weight: 600;
         }
+
+        .table-header .header-actions {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .search-input {
+          padding: 8px 12px;
+          border: 1px solid #d1d5db;
+          border-radius: 8px;
+          font-size: 14px;
+          min-width: 220px;
+        }
         
         .table-container {
           background: white;
@@ -697,6 +755,7 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
           border-bottom: 1px solid #f3f4f6;
           vertical-align: top;
           min-width: 120px;
+          color: #111827;
         }
         
         .data-table tr:hover {

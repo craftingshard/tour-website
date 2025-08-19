@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { collection, getDocs, query, orderBy, limit, startAfter } from 'firebase/firestore'
+import { collection, getDocs, query, limit, startAfter } from 'firebase/firestore'
 import { db } from '../firebase'
 
 export function GuidePage() {
   const [posts, setPosts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
 
   const [hasMore, setHasMore] = useState(true)
   const [lastDoc, setLastDoc] = useState<any>(null)
@@ -17,20 +18,10 @@ export function GuidePage() {
   const loadPosts = async (isLoadMore = false) => {
     try {
       setLoading(true)
-      
-      let q = query(
-        collection(db, 'POSTS'),
-        orderBy('createdAt', 'desc'),
-        limit(postsPerPage)
-      )
+      let q = query(collection(db, 'POSTS'), limit(postsPerPage))
 
       if (isLoadMore && lastDoc) {
-        q = query(
-          collection(db, 'POSTS'),
-          orderBy('createdAt', 'desc'),
-          startAfter(lastDoc),
-          limit(postsPerPage)
-        )
+        q = query(collection(db, 'POSTS'), startAfter(lastDoc), limit(postsPerPage))
       }
 
       const snapshot = await getDocs(q)
@@ -73,6 +64,15 @@ export function GuidePage() {
         <p>Khám phá những bài viết hữu ích về du lịch Việt Nam</p>
       </div>
 
+      <div className="card" style={{margin:'12px 0', padding:'12px'}}>
+        <input 
+          placeholder="Tìm theo tiêu đề bài viết..."
+          value={search}
+          onChange={e=>setSearch(e.target.value)}
+          style={{width:'100%'}}
+        />
+      </div>
+
       {loading && posts.length === 0 ? (
         <div className="loading-section">
           <div className="loading-spinner">🔄</div>
@@ -80,9 +80,11 @@ export function GuidePage() {
         </div>
       ) : (
         <>
-          <div className="posts-grid">
-            {posts.map(post => (
-              <div key={post.id} className="post-card">
+          <div className="posts-grid" role="list">
+            {posts
+              .filter(p => !search || String(p.title || '').toLowerCase().includes(search.toLowerCase()))
+              .map(post => (
+              <div key={post.id} className="post-card" role="listitem" onClick={() => window.location.assign(`/guide/${post.id}`)} style={{cursor:'pointer'}}>
                 {post.imageUrl && (
                   <div className="post-image">
                     <img src={post.imageUrl} alt={post.title} />

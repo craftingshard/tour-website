@@ -10,6 +10,8 @@ export function HomePage() {
   const [firestoreTours, setFirestoreTours] = useState<any[]>([])
   const [firestorePosts, setFirestorePosts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState<{ location?: string; minPrice?: number; maxPrice?: number; category?: string }>({})
+  const [pendingFilter, setPendingFilter] = useState<{ location?: string; minPrice?: number; maxPrice?: number; category?: string }>({})
 
   useEffect(() => {
     loadFirestoreData()
@@ -40,6 +42,7 @@ export function HomePage() {
           limit(10)
         )
       )
+      console.log('Posts snapshot size:', postsSnapshot.size)
       console.log('Firestore posts found:', postsSnapshot.docs.length)
       const postsData = postsSnapshot.docs.map(doc => ({
         id: doc.id,
@@ -56,10 +59,33 @@ export function HomePage() {
     }
   }
 
-  // Combine mock tours with Firestore tours for backward compatibility
-  const allTours = useMemo(() => [...tours, ...firestoreTours], [tours, firestoreTours])
-  const hotTours = useMemo(() => allTours.filter(t => t.hot || t.featured), [allTours])
-  const topTours = useMemo(() => [...allTours].sort((a,b) => (b.rating || 0) - (a.rating || 0)).slice(0,10), [allTours])
+  // Combine tours with deduplication by id to avoid duplicate keys
+  const allTours = useMemo(() => {
+    const seen = new Set<string>()
+    const out: any[] = []
+    for (const t of tours) {
+      const id = t.id
+      if (!seen.has(id)) { seen.add(id); out.push(t) }
+    }
+    for (const t of firestoreTours) {
+      const id = t.id
+      if (!seen.has(id)) { seen.add(id); out.push(t) }
+    }
+    return out
+  }, [tours, firestoreTours])
+  const filteredTours = useMemo(() => {
+    return allTours.filter(t => {
+      const matchesLocation = filter.location ? String(t.location || '').toLowerCase().includes(filter.location.toLowerCase()) : true
+      const price = Number(t.price) || 0
+      const matchesMin = filter.minPrice != null ? price >= filter.minPrice : true
+      const matchesMax = filter.maxPrice != null ? price <= filter.maxPrice : true
+      const matchesCategory = filter.category ? String(t.category || '').toLowerCase().includes(filter.category.toLowerCase()) : true
+      return matchesLocation && matchesMin && matchesMax && matchesCategory
+    })
+  }, [allTours, filter])
+
+  const hotTours = useMemo(() => filteredTours.filter(t => t.hot || t.featured), [filteredTours])
+  const topTours = useMemo(() => [...filteredTours].sort((a,b) => (b.rating || 0) - (a.rating || 0)).slice(0,10), [filteredTours])
   
   console.log('Debug HomePage:')
   console.log('- context tours:', tours.length)
@@ -92,22 +118,36 @@ export function HomePage() {
           height={650}
           itemWidth={400}
           items={hotTours.map(t => (
-            <TourCard key={t.id} id={t.id} />
+            <TourCard key={t.id} tour={t} />
           ))}
           ariaLabel="Hot Tours"
         />
       ) : (
         <div className="grid grid-3">
           {allTours.slice(0, 6).map(t => (
-            <TourCard key={t.id} id={t.id} />
+            <TourCard key={t.id} tour={t} />
           ))}
         </div>
       )}
 
+      {/* Tour Filters - placed under the carousel (apply on submit to avoid hiding carousel while typing) */}
+      <div className="card" style={{margin:'12px 0', padding:'12px'}}>
+        <form onSubmit={(e)=> { e.preventDefault(); setFilter(pendingFilter) }}>
+          <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))', gap:12}}>
+            <input placeholder="Địa điểm" value={pendingFilter.location || ''} onChange={e=>setPendingFilter(f=>({...f, location:e.target.value}))} />
+            <input type="number" placeholder="Giá từ" value={pendingFilter.minPrice ?? ''} onChange={e=>setPendingFilter(f=>({...f, minPrice: e.target.value===''? undefined : Number(e.target.value)}))} />
+            <input type="number" placeholder="Giá đến" value={pendingFilter.maxPrice ?? ''} onChange={e=>setPendingFilter(f=>({...f, maxPrice: e.target.value===''? undefined : Number(e.target.value)}))} />
+            <input placeholder="Danh mục" value={pendingFilter.category || ''} onChange={e=>setPendingFilter(f=>({...f, category:e.target.value}))} />
+            <button className="btn primary" type="submit">Lọc</button>
+            <button type="button" className="btn ghost" onClick={()=>{ setFilter({}); setPendingFilter({}) }}>Xóa lọc</button>
+          </div>
+        </form>
+      </div>
+
       <h3 className="section-title">Tour nổi bật ({topTours.length})</h3>
       <div className="grid grid-3">
         {topTours.length > 0 ? topTours.map(t => (
-          <TourCard key={t.id} id={t.id} />
+          <TourCard key={t.id} tour={t} />
         )) : (
           <div className="muted">Không có tour nào để hiển thị</div>
         )}

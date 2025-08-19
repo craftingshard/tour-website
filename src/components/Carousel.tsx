@@ -90,7 +90,7 @@ export function Carousel({ items, height = 500, itemWidth = 350, ariaLabel = 'Ca
 						<div
 							key={idx}
 							className="carousel-slide stack-slide"
-							style={{ width: itemWidth, transform: `translateX(${x}px)`, zIndex: z, opacity: isPast ? 0 : 1 }}
+							style={{ width: itemWidth, transform: `translateX(${x}px)`, zIndex: z, opacity: isPast ? 0 : 1, pointerEvents: idx === current ? 'auto' : 'none' }}
 						>
 							{node}
 						</div>

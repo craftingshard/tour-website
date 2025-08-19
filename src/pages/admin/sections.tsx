@@ -346,12 +346,26 @@ export function PostsPage(){
 export function ThemePage(){
   const cols: CrudColumn[] = [
     { key:'name', label:'Tên theme', type:'string', required:true },
-    { key:'primaryColor', label:'Màu chính', type:'string' },
-    { key:'secondaryColor', label:'Màu phụ', type:'string' },
+    { key:'primaryColor', label:'Màu chính', type:'color' },
+    { key:'secondaryColor', label:'Màu phụ', type:'color' },
     { key:'darkMode', label:'Dark mode', type:'boolean' },
     { key:'active', label:'Kích hoạt', type:'boolean' },
   ]
   return <CrudTable title="Quản lý theme" collectionName="themes" columns={cols} />
+}
+
+export function SettingsPage(){
+  const cols: CrudColumn[] = [
+    { key:'siteName', label:'Tên website', type:'string', required:true },
+    { key:'logoUrl', label:'Logo URL', type:'string' },
+    { key:'primaryPhone', label:'Điện thoại', type:'string' },
+    { key:'supportEmail', label:'Email hỗ trợ', type:'string' },
+    { key:'address', label:'Địa chỉ', type:'text' },
+    { key:'facebook', label:'Facebook', type:'string' },
+    { key:'zalo', label:'Zalo', type:'string' },
+    { key:'hotline', label:'Hotline', type:'string' },
+  ]
+  return <CrudTable title="Cấu hình hệ thống" collectionName="settings" columns={cols} createDefaults={{ id:'global' }} />
 }
 
 export function AboutAdminPage(){

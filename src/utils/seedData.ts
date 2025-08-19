@@ -16,7 +16,7 @@ const sampleTours = [
     included: ["Vé máy bay", "Khách sạn 4 sao", "Ăn uống", "Hướng dẫn viên"],
     excluded: ["Chi phí cá nhân", "Bảo hiểm", "Tips"],
     maxGroupSize: 15,
-    difficulty: "Dễ",
+    
     bestTime: "Tháng 3-5, 9-11"
   },
   {
@@ -32,7 +32,7 @@ const sampleTours = [
     included: ["Vé xe", "Homestay", "Ăn uống", "Hướng dẫn viên"],
     excluded: ["Vé cáp treo", "Chi phí cá nhân", "Bảo hiểm"],
     maxGroupSize: 12,
-    difficulty: "Trung bình",
+    
     bestTime: "Tháng 9-11, 3-5"
   }
 ]

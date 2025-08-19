@@ -1,21 +1,26 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppProviders'
 import { QuickBookingForm } from './QuickBookingForm'
 
-export function TourCard({ id }: { id: string }) {
+export function TourCard({ id, tour: tourProp }: { id?: string; tour?: any }) {
   const navigate = useNavigate()
   const { tours, selectedTourIds, toggleSelect, markViewed } = useApp()
-  const tour = tours.find(t => t.id === id)
+  const tour = tourProp || (id ? tours.find(t => t.id === id) : null)
   const [showQuickBooking, setShowQuickBooking] = useState(false)
   
   if (!tour) return null
 
-  const isSelected = selectedTourIds.includes(id)
+  const resolvedId = tour.id
+  const priceNumber = Number(tour.price) || 0
+  const ratingNumber = Number(tour.rating) || 0
+  const isSelected = selectedTourIds.includes(resolvedId)
+  const displayedTitle = tour.title || tour.name || ''
 
   const handleSelect = () => {
-    markViewed(id)
-    toggleSelect(id)
+    markViewed(resolvedId)
+    toggleSelect(resolvedId)
   }
 
   const handleBook = () => {
@@ -24,32 +29,31 @@ export function TourCard({ id }: { id: string }) {
 
   return (
     <div className="card tour-card carousel-card">
-      <div style={{position:'relative', cursor:'pointer'}} onClick={() => navigate(`/tours/${tour.id}`)}>
-        <img src={tour.imageUrl} alt={tour.title} />
+      <div style={{position:'relative'}}>
+        <img src={tour.imageUrl} alt={displayedTitle} />
         <div style={{position:'absolute', left:8, bottom:8, display:'flex', gap:6, alignItems:'flex-end'}}>
-          <span style={{background:'#fde047', color:'#06101a', fontWeight:800, padding:'4px 8px', borderRadius:8}}>{tour.price.toLocaleString()} đ</span>
-          <span style={{fontWeight:800, textShadow:'0 1px 0 rgba(0,0,0,.4)'}}>{tour.title}</span>
+          <span style={{background:'#fde047', color:'#06101a', fontWeight:800, padding:'4px 8px', borderRadius:8}}>{priceNumber.toLocaleString()} đ</span>
+          <span style={{fontWeight:800, textShadow:'0 1px 0 rgba(0,0,0,.4)'}}>{displayedTitle}</span>
         </div>
       </div>
       <div className="tour-meta">
         <div style={{cursor:'pointer'}} onClick={() => navigate(`/tours/${tour.id}`)}>
-          <div style={{fontWeight:700}}>{tour.title}</div>
-          <div className="muted">{tour.location} • ⭐ {tour.rating.toFixed(1)}</div>
+          <div style={{fontWeight:700}}>{displayedTitle}</div>
+          <div className="muted">{tour.location} • ⭐ {ratingNumber.toFixed(1)}</div>
         </div>
         {tour.hot && <span className="badge">HOT</span>}
       </div>
       <div className="tour-actions" style={{justifyContent:'center'}}>
         <button className="btn" onClick={handleSelect}>{isSelected ? 'Bỏ chọn' : 'Chọn'}</button>
-        {isSelected && (
-          <button className="btn primary" onClick={handleBook}>Đặt tour</button>
-        )}
+        <button className="btn primary" onClick={handleBook}>Đặt tour</button>
       </div>
 
-      {showQuickBooking && (
-        <QuickBookingForm 
-          tour={tour} 
-          onClose={() => setShowQuickBooking(false)} 
-        />
+      {showQuickBooking && createPortal(
+        <QuickBookingForm
+          tour={tour}
+          onClose={() => setShowQuickBooking(false)}
+        />,
+        document.body
       )}
     </div>
   )

@@ -88,11 +88,45 @@ export function AppProviders({ children }: PropsWithChildren) {
     return () => unsub()
   }, [])
 
-  // Load tours from both admin_tours and TOURS collections
+  // Load tours from both admin_tours and TOURS collections with robust fallbacks
   useEffect(() => {
-    const loadTours = () => {
-      // First try TOURS collection (new format)
-      const unsubTours = onSnapshot(collection(db, 'TOURS'), (snap) => {
+    let unsubscribePrimary: (() => void) | null = null
+    let unsubscribeFallback: (() => void) | null = null
+
+    const subscribeAdminTours = () => {
+      try {
+        unsubscribeFallback = onSnapshot(collection(db, 'admin_tours'), (adminSnap) => {
+          const adminToursList: Tour[] = []
+          adminSnap.forEach((d) => {
+            const data = d.data() as any
+            adminToursList.push({
+              id: d.id,
+              title: data.title || '',
+              location: data.location || '',
+              price: Number(data.price) || 0,
+              rating: Number(data.rating) || 0,
+              hot: Boolean(data.hot),
+              imageUrl: data.imageUrl || data.image || data.photo || data.thumbnail || data.picture || 'https://images.unsplash.com/photo-1545243424-0ce743321e11?q=80&w=1600&auto=format&fit=crop',
+            })
+          })
+          if (adminToursList.length > 0) {
+            console.log('Loaded tours from admin_tours collection:', adminToursList.length)
+            setTours(adminToursList)
+          } else {
+            console.log('Using mock tours')
+            setTours(MOCK_TOURS)
+          }
+        }, (err) => {
+          console.warn('admin_tours snapshot error:', err)
+          setTours(MOCK_TOURS)
+        })
+      } catch (e) {
+        setTours(MOCK_TOURS)
+      }
+    }
+
+    try {
+      unsubscribePrimary = onSnapshot(collection(db, 'TOURS'), (snap) => {
         const toursList: Tour[] = []
         snap.forEach((d) => {
           const data = d.data() as any
@@ -103,45 +137,28 @@ export function AppProviders({ children }: PropsWithChildren) {
             price: Number(data.price) || 0,
             rating: Number(data.rating) || 0,
             hot: Boolean(data.hot || data.featured),
-            imageUrl: data.imageUrl || data.image || '',
+            imageUrl: data.imageUrl || data.image || data.photo || data.thumbnail || data.picture || 'https://images.unsplash.com/photo-1545243424-0ce743321e11?q=80&w=1600&auto=format&fit=crop',
           })
         })
-        
+
         if (toursList.length > 0) {
           console.log('Loaded tours from TOURS collection:', toursList.length)
           setTours(toursList)
         } else {
-          // Fallback to admin_tours collection
-          const unsubAdminTours = onSnapshot(collection(db, 'admin_tours'), (adminSnap) => {
-            const adminToursList: Tour[] = []
-            adminSnap.forEach((d) => {
-              const data = d.data() as any
-              adminToursList.push({
-                id: d.id,
-                title: data.title || '',
-                location: data.location || '',
-                price: Number(data.price) || 0,
-                rating: Number(data.rating) || 0,
-                hot: Boolean(data.hot),
-                imageUrl: data.imageUrl || '',
-              })
-            })
-            
-            if (adminToursList.length > 0) {
-              console.log('Loaded tours from admin_tours collection:', adminToursList.length)
-              setTours(adminToursList)
-            } else {
-              console.log('Using mock tours')
-              setTours(MOCK_TOURS)
-            }
-          })
-          return () => unsubAdminTours()
+          subscribeAdminTours()
         }
+      }, (err) => {
+        console.warn('TOURS snapshot error:', err)
+        subscribeAdminTours()
       })
-      return () => unsubTours()
+    } catch (e) {
+      subscribeAdminTours()
     }
-    
-    return loadTours()
+
+    return () => {
+      if (unsubscribePrimary) unsubscribePrimary()
+      if (unsubscribeFallback) unsubscribeFallback()
+    }
   }, [])
 
   // Load current customer profile
@@ -219,7 +236,7 @@ export function AppProviders({ children }: PropsWithChildren) {
     const newReview = {
       tourId,
       userId: user.uid,
-      userName: user.email || user.displayName || 'User',
+      userName: user.displayName || user.email || 'User',
       rating: Math.max(1, Math.min(10, Math.round(rating * 2) / 2)),
       comment: comment.trim(),
       createdAt: Date.now(),
@@ -229,10 +246,19 @@ export function AppProviders({ children }: PropsWithChildren) {
 
   const createBooking = async (payload: { tourId: string; amount: number; method: 'card' | 'cash'; people: number; startDate: number; notes?: string; paid: boolean }) => {
     if (!user) throw new Error('Bạn cần đăng nhập')
+    const safePayload = {
+      tourId: payload.tourId,
+      amount: Number(payload.amount) || 0,
+      method: payload.method,
+      people: Number(payload.people) || 0,
+      startDate: Number(payload.startDate) || Date.now(),
+      notes: payload.notes || '',
+      paid: Boolean(payload.paid),
+    }
     const docRef = await addDoc(collection(db, 'bookings'), {
       userId: user.uid,
-      ...payload,
-      status: payload.paid ? 'paid' : 'pending',
+      ...safePayload,
+      status: safePayload.paid ? 'paid' : 'pending',
       createdAt: Date.now(),
     })
     setBookedTourIds(prev => prev.includes(payload.tourId) ? prev : [...prev, payload.tourId])

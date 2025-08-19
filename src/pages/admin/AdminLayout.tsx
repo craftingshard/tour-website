@@ -156,6 +156,9 @@ export function AdminLayout() {
                 <NavLink to="/admin/themes" className="nav-item">
                   🎨 Themes
                 </NavLink>
+                <NavLink to="/admin/settings" className="nav-item">
+                  ⚙️ Cấu hình
+                </NavLink>
                 <NavLink to="/admin/about" className="nav-item">
                   ℹ️ Giới thiệu
                 </NavLink>

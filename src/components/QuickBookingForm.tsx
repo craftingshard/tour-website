@@ -10,9 +10,16 @@ interface QuickBookingFormProps {
   onClose: () => void
 }
 
+interface TicketType {
+  type: 'adult' | 'child' | 'senior'
+  label: string
+  price: number
+  count: number
+}
+
 export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
   const navigate = useNavigate()
-  const { user, bookTour } = useApp()
+  const { user, bookTour, currentCustomer } = useApp()
   
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -25,10 +32,17 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
   const [customerAddress, setCustomerAddress] = useState('')
   
   // Booking info
-  const [numberOfPeople, setNumberOfPeople] = useState(1)
   const [travelDate, setTravelDate] = useState('')
   const [specialRequests, setSpecialRequests] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'cash'>('card')
+  const [includeInsurance, setIncludeInsurance] = useState(false)
+  
+  // Ticket types
+  const [tickets, setTickets] = useState<TicketType[]>([
+    { type: 'adult', label: 'Người lớn', price: tour?.price || 0, count: 1 },
+    { type: 'child', label: 'Trẻ em (5-12 tuổi)', price: Math.round((tour?.price || 0) * 0.7), count: 0 },
+    { type: 'senior', label: 'Người cao tuổi (65+)', price: Math.round((tour?.price || 0) * 0.8), count: 0 }
+  ])
   
   // Check if customer exists
   const [existingCustomer, setExistingCustomer] = useState<any>(null)
@@ -40,8 +54,20 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
     setTravelDate(tomorrow.toISOString().split('T')[0])
   }, [])
 
+  // Prefill customer info for logged-in users
+  useEffect(() => {
+    if (user) {
+      setCustomerName(prev => prev || currentCustomer?.name || user.displayName || '')
+      setCustomerEmail(prev => prev || user.email || '')
+      setCustomerPhone(prev => prev || currentCustomer?.phone || '')
+      setCustomerAddress(prev => prev || (currentCustomer as any)?.address || '')
+    }
+  }, [user, currentCustomer])
+
   const checkExistingCustomer = async () => {
     if (!customerEmail && !customerPhone) return
+    // Only allow checking existing customers when authenticated to satisfy security rules
+    if (!auth.currentUser) return
     
     try {
       let q = null
@@ -75,7 +101,7 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (customerEmail || customerPhone) {
+      if ((customerEmail || customerPhone)) {
         checkExistingCustomer()
       }
     }, 1000)
@@ -83,10 +109,33 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
     return () => clearTimeout(timeoutId)
   }, [customerEmail, customerPhone])
 
+  const updateTicketCount = (type: 'adult' | 'child' | 'senior', newCount: number) => {
+    setTickets(prev => prev.map(ticket => 
+      ticket.type === type ? { ...ticket, count: Math.max(0, newCount) } : ticket
+    ))
+  }
+
+  const getTotalAmount = () => {
+    const ticketsTotal = tickets.reduce((sum, ticket) => sum + (ticket.price * ticket.count), 0)
+    const insuranceCost = includeInsurance ? 50000 : 0 // 50k VND for insurance
+    return ticketsTotal + insuranceCost
+  }
+
+  const getTotalPeople = () => {
+    return tickets.reduce((sum, ticket) => sum + ticket.count, 0)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError(null)
+
+    const validation = validateForm()
+    if (validation) {
+      setError(validation)
+      setIsLoading(false)
+      return
+    }
 
     try {
       let customerId = user?.uid
@@ -127,18 +176,26 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
         customerName: customerName,
         customerEmail: customerEmail,
         customerPhone: customerPhone,
-        numberOfPeople: numberOfPeople,
+        tickets: tickets,
+        totalPeople: getTotalPeople(),
         travelDate: new Date(travelDate),
         specialRequests: specialRequests,
         paymentMethod: paymentMethod,
-        amount: tour.price * numberOfPeople,
+        includeInsurance: includeInsurance,
+        amount: getTotalAmount(),
         status: 'pending',
         paid: false,
         createdAt: new Date(),
         updatedAt: new Date()
       }
 
-      const bookingRef = await addDoc(collection(db, 'bookings'), bookingData)
+      const bookingRef = await addDoc(collection(db, 'bookings'), {
+        ...bookingData,
+        tourId: tour.id,
+        tourName: tour.title || tour.name || '',
+        amount: Number(bookingData.amount) || 0,
+        totalPeople: Number(bookingData.totalPeople) || 0,
+      })
       
       // If user is logged in, update their booking list
       if (user) {
@@ -167,11 +224,18 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
   }
 
   const validateForm = () => {
+    // For logged-in users, only require date and at least 1 ticket
+    if (user) {
+      if (!travelDate) return 'Vui lòng chọn ngày đi'
+      if (getTotalPeople() === 0) return 'Vui lòng chọn ít nhất 1 vé'
+      return null
+    }
+    // Guests must provide contact info
     if (!customerName.trim()) return 'Vui lòng nhập tên khách hàng'
     if (!customerEmail.trim()) return 'Vui lòng nhập email'
     if (!customerPhone.trim()) return 'Vui lòng nhập số điện thoại'
     if (!travelDate) return 'Vui lòng chọn ngày đi'
-    if (numberOfPeople < 1) return 'Số người phải lớn hơn 0'
+    if (getTotalPeople() === 0) return 'Vui lòng chọn ít nhất 1 vé'
     return null
   }
 
@@ -190,6 +254,7 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
   return (
     <div className="quick-booking-overlay" onClick={onClose}>
       <div className="quick-booking-modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-handle" aria-hidden="true" />
         <div className="modal-header">
           <h3>Đặt tour nhanh</h3>
           <button className="close-btn" onClick={onClose}>×</button>
@@ -200,12 +265,12 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
           <div>
             <h4>{tour.title}</h4>
             <p>{tour.location}</p>
-            <div className="price">{tour.price.toLocaleString()} đ/người</div>
+            <div className="price">{tour.price.toLocaleString()} đ/người lớn</div>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="booking-form">
-          {!user && (
+          {!user ? (
             <div className="customer-section">
               <h4>Thông tin khách hàng</h4>
               
@@ -266,22 +331,12 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
                 </div>
               )}
             </div>
-          )}
+          ) : null}
 
           <div className="booking-section">
             <h4>Thông tin đặt tour</h4>
             
             <div className="form-row">
-              <div className="form-group">
-                <label>Số người *</label>
-                <input
-                  type="number"
-                  min="1"
-                  value={numberOfPeople}
-                  onChange={e => setNumberOfPeople(Number(e.target.value))}
-                  required
-                />
-              </div>
               <div className="form-group">
                 <label>Ngày đi *</label>
                 <input
@@ -292,17 +347,63 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
                   min={new Date().toISOString().split('T')[0]}
                 />
               </div>
+              <div className="form-group">
+                <label>Phương thức thanh toán</label>
+                <select
+                  value={paymentMethod}
+                  onChange={e => setPaymentMethod(e.target.value as 'card' | 'cash')}
+                >
+                  <option value="card">Thẻ tín dụng</option>
+                  <option value="cash">Tiền mặt</option>
+                </select>
+              </div>
             </div>
 
-            <div className="form-group">
-              <label>Phương thức thanh toán</label>
-              <select
-                value={paymentMethod}
-                onChange={e => setPaymentMethod(e.target.value as 'card' | 'cash')}
-              >
-                <option value="card">Thẻ tín dụng</option>
-                <option value="cash">Tiền mặt</option>
-              </select>
+            <div className="tickets-section">
+              <h5>Chọn vé</h5>
+              {tickets.map(ticket => (
+                <div key={ticket.type} className="ticket-row">
+                  <div className="ticket-info">
+                    <div className="ticket-label">{ticket.label}</div>
+                    <div className="ticket-price">{ticket.price.toLocaleString()} đ</div>
+                  </div>
+                  <div className="ticket-controls">
+                    <button
+                      type="button"
+                      className="ticket-btn"
+                      onClick={() => updateTicketCount(ticket.type, ticket.count - 1)}
+                      disabled={ticket.count === 0}
+                    >
+                      -
+                    </button>
+                    <span className="ticket-count">{ticket.count}</span>
+                    <button
+                      type="button"
+                      className="ticket-btn"
+                      onClick={() => updateTicketCount(ticket.type, ticket.count + 1)}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="insurance-section">
+              <div className="insurance-option">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={includeInsurance}
+                    onChange={e => setIncludeInsurance(e.target.checked)}
+                  />
+                  <span className="checkmark"></span>
+                  <div className="insurance-info">
+                    <div className="insurance-title">Bảo hiểm du lịch</div>
+                    <div className="insurance-desc">Bảo hiểm toàn diện cho chuyến đi (+50.000 đ)</div>
+                  </div>
+                </label>
+              </div>
             </div>
 
             <div className="form-group">
@@ -318,12 +419,26 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
 
           <div className="booking-summary">
             <div className="summary-row">
-              <span>Giá tour:</span>
-              <span>{tour.price.toLocaleString()} đ × {numberOfPeople}</span>
+              <span>Tổng số người:</span>
+              <span>{getTotalPeople()} người</span>
             </div>
+            {tickets.map(ticket => (
+              ticket.count > 0 && (
+                <div key={ticket.type} className="summary-row">
+                  <span>{ticket.label}:</span>
+                  <span>{ticket.count} × {ticket.price.toLocaleString()} đ</span>
+                </div>
+              )
+            ))}
+            {includeInsurance && (
+              <div className="summary-row">
+                <span>Bảo hiểm:</span>
+                <span>50.000 đ</span>
+              </div>
+            )}
             <div className="summary-row total">
               <span>Tổng cộng:</span>
-              <span>{(tour.price * numberOfPeople).toLocaleString()} đ</span>
+              <span>{getTotalAmount().toLocaleString()} đ</span>
             </div>
           </div>
 
@@ -341,7 +456,7 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
             <button
               type="submit"
               className="btn primary"
-              disabled={isLoading || !!validateForm()}
+              disabled={isLoading}
             >
               {isLoading ? 'Đang xử lý...' : 'Đặt tour ngay'}
             </button>
@@ -374,6 +489,15 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
           box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
+        .modal-handle {
+          display: none;
+          width: 44px;
+          height: 5px;
+          background: rgba(255,255,255,0.2);
+          border-radius: 999px;
+          margin: 8px auto 0 auto;
+        }
+
         .modal-header {
           display: flex;
           justify-content: space-between;
@@ -400,10 +524,12 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
           display: flex;
           align-items: center;
           justify-content: center;
+          transition: all 0.2s ease;
         }
 
         .close-btn:hover {
           background: rgba(255,255,255,0.1);
+          transform: scale(1.1);
         }
 
         .tour-summary {
@@ -494,11 +620,12 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
         .form-group select,
         .form-group textarea {
           padding: 0.75rem;
-          border: 1px solid rgba(255,255,255,0.2);
+          border: 1px solid rgba(255,255,255,0.28);
           border-radius: 8px;
-          background: rgba(255,255,255,0.05);
-          color: var(--text);
-          font-size: 0.9rem;
+          background: rgba(255,255,255,0.1);
+          color: #f8fafc;
+          font-size: 0.95rem;
+          transition: all 0.2s ease;
         }
 
         .form-group input:focus,
@@ -506,7 +633,146 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
         .form-group textarea:focus {
           outline: none;
           border-color: var(--primary);
-          box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+          box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35);
+          transform: translateY(-1px);
+          background: rgba(15,23,42,0.6);
+        }
+
+        .tickets-section {
+          margin: 1.5rem 0;
+        }
+
+        .tickets-section h5 {
+          margin: 0 0 1rem 0;
+          color: var(--text);
+          font-size: 1rem;
+        }
+
+        .ticket-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1rem;
+          background: rgba(255,255,255,0.05);
+          border-radius: 8px;
+          margin-bottom: 0.5rem;
+        }
+
+        .ticket-info {
+          flex: 1;
+        }
+
+        .ticket-label {
+          font-weight: 500;
+          color: var(--text);
+          margin-bottom: 0.25rem;
+        }
+
+        .ticket-price {
+          color: var(--primary);
+          font-size: 0.9rem;
+        }
+
+        .ticket-controls {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .ticket-btn {
+          width: 32px;
+          height: 32px;
+          border: 1px solid var(--primary);
+          background: transparent;
+          color: var(--primary);
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          transition: all 0.2s ease;
+        }
+
+        .ticket-btn:hover:not(:disabled) {
+          background: var(--primary);
+          color: #06101a;
+          transform: scale(1.1);
+        }
+
+        .ticket-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .ticket-count {
+          min-width: 30px;
+          text-align: center;
+          font-weight: 600;
+          color: var(--text);
+        }
+
+        .insurance-section {
+          margin: 1.5rem 0;
+        }
+
+        .insurance-option {
+          padding: 1rem;
+          background: rgba(255,255,255,0.05);
+          border-radius: 8px;
+          border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .checkbox-label {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.75rem;
+          cursor: pointer;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+          display: none;
+        }
+
+        .checkmark {
+          width: 20px;
+          height: 20px;
+          border: 2px solid var(--primary);
+          border-radius: 4px;
+          position: relative;
+          flex-shrink: 0;
+          margin-top: 2px;
+          transition: all 0.2s ease;
+        }
+
+        .checkbox-label input[type="checkbox"]:checked + .checkmark {
+          background: var(--primary);
+        }
+
+        .checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+          content: '✓';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: #06101a;
+          font-weight: bold;
+          font-size: 12px;
+        }
+
+        .insurance-info {
+          flex: 1;
+        }
+
+        .insurance-title {
+          font-weight: 500;
+          color: var(--text);
+          margin-bottom: 0.25rem;
+        }
+
+        .insurance-desc {
+          font-size: 0.85rem;
+          color: var(--muted);
         }
 
         .booking-summary {
@@ -546,6 +812,45 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
           margin-top: 1.5rem;
         }
 
+        .btn {
+          padding: 0.75rem 1.5rem;
+          border-radius: 8px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          border: none;
+          font-size: 0.9rem;
+        }
+
+        .btn.ghost {
+          background: transparent;
+          color: var(--text);
+          border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn.ghost:hover:not(:disabled) {
+          background: rgba(255,255,255,0.1);
+          transform: translateY(-1px);
+        }
+
+        .btn.primary {
+          background: var(--primary);
+          color: #06101a;
+          border: 1px solid var(--primary);
+        }
+
+        .btn.primary:hover:not(:disabled) {
+          background: var(--primary-600);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+        }
+
+        .btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          transform: none !important;
+        }
+
         .success {
           text-align: center;
           padding: 3rem 2rem;
@@ -574,9 +879,43 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
             flex-direction: column;
           }
 
+          /* Bottom sheet style on mobile */
+          .quick-booking-overlay {
+            align-items: flex-end;
+            padding: 0;
+            background: rgba(0,0,0,0.6);
+          }
+
           .quick-booking-modal {
-            margin: 1rem;
-            max-height: calc(100vh - 2rem);
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            max-width: 100%;
+            width: 100%;
+            max-height: 100vh;
+            height: 100vh;
+            overflow-y: auto;
+            animation: slideUpSheet 220ms ease-out;
+          }
+
+          .modal-handle {
+            display: block;
+          }
+
+          .ticket-row {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: stretch;
+          }
+
+          .ticket-controls {
+            justify-content: center;
+          }
+
+          @keyframes slideUpSheet {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
           }
         }
       `}</style>

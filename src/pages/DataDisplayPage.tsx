@@ -112,7 +112,7 @@ export function DataDisplayPage() {
             {activeTab === 'posts' && (
               <div className="posts-grid">
                 {posts.map(post => (
-                  <div key={post.id} className="post-card">
+                  <div key={post.id} className="post-card" onClick={()=> window.location.assign(`/guide/${post.id}`)} style={{cursor:'pointer'}}>
                     <div className="post-image">
                       <img src={post.imageUrl || 'https://picsum.photos/300/200'} alt={post.title} />
                       {post.featured && <span className="featured-badge">⭐ Nổi bật</span>}

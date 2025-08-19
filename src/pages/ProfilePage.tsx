@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useApp } from '../context/AppProviders'
 import { db } from '../firebase'
-import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore'
+import { collection, onSnapshot, query, where } from 'firebase/firestore'
 
 type Booking = {
   id: string
@@ -28,10 +28,11 @@ export function ProfilePage(){
 
   useEffect(() => {
     if (!user) { setBookings([]); return }
-    const q = query(collection(db, 'bookings'), where('userId', '==', user.uid), orderBy('createdAt', 'desc'))
+    const q = query(collection(db, 'bookings'), where('userId', '==', user.uid))
     const unsub = onSnapshot(q, (snap) => {
       const list: Booking[] = []
       snap.forEach(d => list.push({ id: d.id, ...(d.data() as any) }))
+      list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
       setBookings(list)
     })
     return () => unsub()

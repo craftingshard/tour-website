@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, getDocs, query, orderBy, where } from 'firebase/firestore'
+import { collection, getDocs, query, orderBy } from 'firebase/firestore'
 import { db } from '../../firebase'
 
 export function AffiliateReportPage() {
@@ -35,14 +35,15 @@ export function AffiliateReportPage() {
       const affiliatesData = affiliatesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[]
       setAffiliates(affiliatesData)
 
-      // Load bookings
+      // Load bookings (filter client-side to avoid composite index requirements)
       const bookingsQuery = query(
         collection(db, 'bookings'),
-        where('affiliateId', '!=', null),
         orderBy('bookingDate', 'desc')
       )
       const bookingsSnapshot = await getDocs(bookingsQuery)
-      const bookingsData = bookingsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      const bookingsData = bookingsSnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter((b: any) => !!b.affiliateId)
       setBookings(bookingsData)
 
       // Calculate stats

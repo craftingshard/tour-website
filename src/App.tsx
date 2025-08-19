@@ -9,19 +9,19 @@ import { TourDetailPage } from './pages/TourDetailPage'
 import { AboutPage } from './pages/AboutPage'
 import { ContactPage } from './pages/ContactPage'
 import { GuidePage } from './pages/GuidePage'
+import { PostDetailPage } from './pages/PostDetailPage'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { PaymentPage } from './pages/PaymentPage'
 import { BookingsPage } from './pages/BookingsPage'
 import { ViewedToursPage } from './pages/ViewedToursPage'
-import { DataDisplayPage } from './pages/DataDisplayPage'
 import { AdminLayout } from './pages/admin/AdminLayout'
 import { AdminGuard } from './pages/admin/AdminGuard'
 import { AdminLoginPage } from './pages/admin/AdminLoginPage'
 import { Dashboard } from './pages/admin/Dashboard'
 import { StaffDashboard } from './pages/admin/StaffDashboard'
-import { ToursAdminPage, PostsPage as PostsAdminPage, ThemePage, AboutAdminPage, BookingsAdminPage, AffiliatePage, AffiliateReportPage, AffiliatePaymentPage, RevenueReportPage, TourPerformancePage, CustomersAdminPage, StaffAdminPage } from './pages/admin/sections'
+import { ToursAdminPage, PostsPage as PostsAdminPage, ThemePage, AboutAdminPage, BookingsAdminPage, AffiliatePage, AffiliateReportPage, AffiliatePaymentPage, RevenueReportPage, TourPerformancePage, CustomersAdminPage, StaffAdminPage, SettingsPage } from './pages/admin/sections'
 
 function App() {
   return (
@@ -36,13 +36,14 @@ function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/guide" element={<GuidePage />} />
+            <Route path="/guide/:id" element={<PostDetailPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/payment" element={<PaymentPage />} />
             <Route path="/bookings" element={<BookingsPage />} />
             <Route path="/viewed" element={<ViewedToursPage />} />
-            <Route path="/data" element={<DataDisplayPage />} />
+            
             
             {/* Admin Routes */}
             <Route path="/admin/login" element={
@@ -70,6 +71,7 @@ function App() {
                 <Route path="revenue-report" element={<RevenueReportPage />} />
                 <Route path="tour-performance" element={<TourPerformancePage />} />
                 <Route path="themes" element={<ThemePage />} />
+                <Route path="settings" element={<SettingsPage />} />
                 <Route path="about" element={<AboutAdminPage />} />
               </Route>
             </Route>
