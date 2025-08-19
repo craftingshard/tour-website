@@ -8,14 +8,18 @@ export function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-  const { login, isAdmin, loading: authLoading } = useAdmin()
+  const { login, isAuthenticated, currentUser, loading: authLoading } = useAdmin()
   
-  // Auto-redirect to dashboard if already admin
+  // Auto-redirect to appropriate dashboard based on role
   useEffect(() => {
-    if (isAdmin && !authLoading) {
-      navigate('/admin', { replace: true })
+    if (isAuthenticated && currentUser && !authLoading) {
+      if (currentUser.role === 'staff') {
+        navigate('/admin/staff-dashboard', { replace: true })
+      } else {
+        navigate('/admin', { replace: true })
+      }
     }
-  }, [isAdmin, authLoading, navigate])
+  }, [isAuthenticated, currentUser, authLoading, navigate])
   
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,8 +28,7 @@ export function AdminLoginPage() {
     
     try {
       await login(email, password)
-      // Login successful, redirect to dashboard
-      navigate('/admin', { replace: true })
+      // Login successful, navigation will be handled by useEffect
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -44,8 +47,8 @@ export function AdminLoginPage() {
     )
   }
 
-  // Don't show login form if already admin
-  if (isAdmin) {
+  // Don't show login form if already authenticated
+  if (isAuthenticated) {
     return null
   }
 

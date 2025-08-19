@@ -1,10 +1,14 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppProviders'
+import { QuickBookingForm } from './QuickBookingForm'
 
 export function TourCard({ id }: { id: string }) {
   const navigate = useNavigate()
-  const { tours, selectedTourIds, toggleSelect, bookTour, user, markViewed } = useApp()
+  const { tours, selectedTourIds, toggleSelect, markViewed } = useApp()
   const tour = tours.find(t => t.id === id)
+  const [showQuickBooking, setShowQuickBooking] = useState(false)
+  
   if (!tour) return null
 
   const isSelected = selectedTourIds.includes(id)
@@ -15,12 +19,7 @@ export function TourCard({ id }: { id: string }) {
   }
 
   const handleBook = () => {
-    if (user) {
-      bookTour(id)
-      navigate('/payment', { state: { tourId: id } })
-    } else {
-      navigate('/register', { state: { redirectTo: '/payment', tourId: id } })
-    }
+    setShowQuickBooking(true)
   }
 
   return (
@@ -45,6 +44,13 @@ export function TourCard({ id }: { id: string }) {
           <button className="btn primary" onClick={handleBook}>Đặt tour</button>
         )}
       </div>
+
+      {showQuickBooking && (
+        <QuickBookingForm 
+          tour={tour} 
+          onClose={() => setShowQuickBooking(false)} 
+        />
+      )}
     </div>
   )
 }

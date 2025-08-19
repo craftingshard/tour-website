@@ -1,69 +1,59 @@
 # React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## TODO List
 
-Currently, two official plugins are available:
+### ✅ Completed Tasks
+- [x] **Role-based authentication system** with Admin, Manager, Staff roles
+- [x] **Role checking middleware** for all admin actions
+- [x] **Permission restrictions** - Manager: no delete, Staff: limited access
+- [x] **Separate dashboard for Staff role**
+- [x] **Customer frontend** to display tours and posts from collections
+- [x] **Browser title** changed from "Vite + React + TS" to "Website Tour Du Lịch"
+- [x] **Router error fix** - Removed duplicate BrowserRouter components
+- [x] **Fixed critical CSS bug** - Added missing App.css import and proper styling
+- [x] **Fixed tours not showing** - Updated AppProviders to load from TOURS collection
+- [x] **Guide page pagination** - Load all posts with 10 posts per page
+- [x] **Quick booking form** - Integrated registration for non-logged users
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 🔄 Pending Tasks
+- [ ] **Enable tour booking functionality** for customers on the client-side
 
-## Expanding the ESLint configuration
+### 🐛 Recent Bug Fixes
+- [x] Fixed Router error: Removed duplicate BrowserRouter from App.tsx (Router was already provided in main.tsx)
+- [x] Updated browser title to "Website Tour Du Lịch"
+- [x] Fixed CSS completely missing in customer view
+- [x] Fixed tours not displaying from database collections
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Features Implemented
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Role-Based Access Control
+- **Admin**: Full permissions (create, read, update, delete)
+- **Manager**: Can add and edit data, but cannot delete
+- **Staff**: Can only add and edit POST, TOUR, and Booking tour data with separate dashboard
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+### Customer Frontend
+- Displays tours and posts from Firestore collections
+- Responsive design with modern UI
+- Tour cards with images and details
+- **Guide page with pagination** (10 posts per page)
+- **Quick booking form** with integrated registration
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Quick Booking System
+- **Integrated registration** for non-logged users
+- **Auto customer detection** - checks existing customers by email/phone
+- **Auto account creation** with phone number as default password
+- **Seamless booking flow** - register and book in one step
+- **Real-time validation** and error handling
+- **Success feedback** and automatic redirect to payment
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Admin Panel
+- Comprehensive CRUD operations with role-based permissions
+- Multiple report pages (Affiliate, Revenue, Tour Performance)
+- Pagination and improved table layouts
+- Form validation and tooltips
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Data Management
+- Seed data for all collections
+- Image display in tables
+- Date handling and validation
+- Custom scrollbars and responsive design

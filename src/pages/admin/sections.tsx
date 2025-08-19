@@ -12,44 +12,333 @@ export function CustomersPage(){
   return <CrudTable title="Quản lý khách hàng" collectionName="users" columns={cols} />
 }
 
-export function StaffPage(){
+export function StaffAdminPage(){
   const cols: CrudColumn[] = [
-    { key:'displayName', label:'Tên', type:'string', required:true },
-    { key:'email', label:'Email', type:'string', required:true },
-    { key:'role', label:'Vai trò', type:'string' },
-    { key:'uid', label:'User ID', type:'string' },
-    { key:'createdAt', label:'Ngày tạo', type:'date' },
+    { 
+      key:'name', 
+      label:'Tên nhân viên', 
+      type:'string', 
+      required:true,
+      tooltip: 'Họ và tên đầy đủ của nhân viên'
+    },
+    { 
+      key:'email', 
+      label:'Email', 
+      type:'string', 
+      required:true,
+      tooltip: 'Email liên hệ chính của nhân viên'
+    },
+    { 
+      key:'phone', 
+      label:'Điện thoại', 
+      type:'string',
+      tooltip: 'Số điện thoại liên hệ (chỉ nhập số và ký tự +, -, (, ), khoảng trắng)'
+    },
+    { 
+      key:'role', 
+      label:'Vai trò', 
+      type:'select',
+      options: [
+        { value: 'admin', label: 'Quản trị viên' },
+        { value: 'manager', label: 'Quản lý' },
+        { value: 'staff', label: 'Nhân viên' },
+        { value: 'guide', label: 'Hướng dẫn viên' },
+        { value: 'support', label: 'Hỗ trợ khách hàng' }
+      ],
+      tooltip: 'Vai trò và quyền hạn của nhân viên trong hệ thống'
+    },
+    { 
+      key:'uid', 
+      label:'User ID', 
+      type:'string',
+      tooltip: 'ID người dùng từ Firebase Authentication (tự động tạo)'
+    },
+    { 
+      key:'department', 
+      label:'Phòng ban', 
+      type:'select',
+      options: [
+        { value: 'sales', label: 'Kinh doanh' },
+        { value: 'marketing', label: 'Marketing' },
+        { value: 'operations', label: 'Vận hành' },
+        { value: 'customer_service', label: 'Chăm sóc khách hàng' },
+        { value: 'finance', label: 'Tài chính' },
+        { value: 'hr', label: 'Nhân sự' }
+      ],
+      tooltip: 'Phòng ban nơi nhân viên làm việc'
+    },
+    { 
+      key:'position', 
+      label:'Chức vụ', 
+      type:'string',
+      tooltip: 'Chức vụ cụ thể của nhân viên trong phòng ban'
+    },
+    { 
+      key:'hireDate', 
+      label:'Ngày vào làm', 
+      type:'date',
+      tooltip: 'Ngày nhân viên bắt đầu làm việc tại công ty'
+    },
+    { 
+      key:'salary', 
+      label:'Lương cơ bản', 
+      type:'number',
+      tooltip: 'Mức lương cơ bản của nhân viên (VNĐ)'
+    },
+    { 
+      key:'active', 
+      label:'Đang làm việc', 
+      type:'boolean',
+      tooltip: 'Đánh dấu nếu nhân viên đang làm việc tại công ty'
+    },
+    { 
+      key:'address', 
+      label:'Địa chỉ', 
+      type:'text',
+      tooltip: 'Địa chỉ nhà của nhân viên'
+    },
+    { 
+      key:'emergencyContact', 
+      label:'Liên hệ khẩn cấp', 
+      type:'string',
+      tooltip: 'Tên và số điện thoại người liên hệ khẩn cấp'
+    },
+    { 
+      key:'skills', 
+      label:'Kỹ năng', 
+      type:'array',
+      tooltip: 'Các kỹ năng chuyên môn của nhân viên (phân cách bằng dấu phẩy)'
+    },
+    { 
+      key:'notes', 
+      label:'Ghi chú', 
+      type:'text',
+      tooltip: 'Ghi chú nội bộ về nhân viên'
+    }
   ]
   return <CrudTable title="Quản lý nhân viên" collectionName="admins" columns={cols} />
 }
 
 export function ToursAdminPage(){
   const cols: CrudColumn[] = [
-    { key:'name', label:'Tên tour', type:'string', required:true },
-    { key:'location', label:'Địa điểm', type:'string', required:true },
-    { key:'price', label:'Giá', type:'number', required:true },
-    { key:'rating', label:'Đánh giá', type:'number' },
-    { key:'category', label:'Danh mục', type:'string' },
-    { key:'duration', label:'Thời gian', type:'string' },
-    { key:'featured', label:'Nổi bật', type:'boolean' },
-    { key:'status', label:'Trạng thái', type:'string' },
-    { key:'imageUrl', label:'Ảnh', type:'string' },
+    { 
+      key:'name', 
+      label:'Tên tour', 
+      type:'string', 
+      required:true,
+      tooltip: 'Tên đầy đủ của tour du lịch'
+    },
+    { 
+      key:'location', 
+      label:'Địa điểm', 
+      type:'string', 
+      required:true,
+      tooltip: 'Địa điểm du lịch (tỉnh/thành phố, quốc gia)'
+    },
+    { 
+      key:'price', 
+      label:'Giá (VNĐ)', 
+      type:'number', 
+      required:true,
+      tooltip: 'Giá tour tính theo VNĐ (chỉ nhập số)'
+    },
+    { 
+      key:'rating', 
+      label:'Đánh giá', 
+      type:'number',
+      tooltip: 'Điểm đánh giá từ 1-10 (chỉ nhập số)'
+    },
+    { 
+      key:'category', 
+      label:'Danh mục', 
+      type:'select',
+      options: [
+        { value: 'Biển', label: 'Biển' },
+        { value: 'Núi', label: 'Núi' },
+        { value: 'Thành phố', label: 'Thành phố' },
+        { value: 'Nông thôn', label: 'Nông thôn' },
+        { value: 'Văn hóa', label: 'Văn hóa' },
+        { value: 'Ẩm thực', label: 'Ẩm thực' },
+        { value: 'Khám phá', label: 'Khám phá' }
+      ],
+      tooltip: 'Chọn danh mục phù hợp với loại hình tour'
+    },
+    { 
+      key:'duration', 
+      label:'Thời gian', 
+      type:'string',
+      tooltip: 'Thời gian tour (ví dụ: 3 ngày 2 đêm)'
+    },
+    { 
+      key:'featured', 
+      label:'Nổi bật', 
+      type:'boolean',
+      tooltip: 'Đánh dấu nếu tour nổi bật cần quảng bá'
+    },
+    { 
+      key:'status', 
+      label:'Trạng thái', 
+      type:'select',
+      options: [
+        { value: 'active', label: 'Hoạt động' },
+        { value: 'inactive', label: 'Tạm dừng' },
+        { value: 'draft', label: 'Nháp' }
+      ],
+      tooltip: 'Trạng thái hoạt động của tour'
+    },
+    { 
+      key:'imageUrl', 
+      label:'Ảnh', 
+      type:'string',
+      tooltip: 'URL ảnh đại diện cho tour (hỗ trợ jpg, png, gif)'
+    },
+    { 
+      key:'description', 
+      label:'Mô tả', 
+      type:'text',
+      tooltip: 'Mô tả chi tiết về tour du lịch'
+    },
+    { 
+      key:'highlights', 
+      label:'Điểm nổi bật', 
+      type:'array',
+      tooltip: 'Các điểm nổi bật của tour (phân cách bằng dấu phẩy)'
+    },
+    { 
+      key:'included', 
+      label:'Bao gồm', 
+      type:'array',
+      tooltip: 'Dịch vụ bao gồm trong tour (phân cách bằng dấu phẩy)'
+    },
+    { 
+      key:'excluded', 
+      label:'Không bao gồm', 
+      type:'array',
+      tooltip: 'Dịch vụ không bao gồm trong tour (phân cách bằng dấu phẩy)'
+    },
+    { 
+      key:'maxGroupSize', 
+      label:'Số người tối đa', 
+      type:'number',
+      tooltip: 'Số người tối đa cho mỗi nhóm tour (chỉ nhập số)'
+    },
+    { 
+      key:'bestTime', 
+      label:'Thời gian tốt nhất', 
+      type:'string',
+      tooltip: 'Thời gian trong năm phù hợp nhất để đi tour'
+    }
   ]
   return <CrudTable title="Quản lý tour" collectionName="TOURS" columns={cols} />
 }
 
 export function PostsPage(){
   const cols: CrudColumn[] = [
-    { key:'title', label:'Tiêu đề', type:'string', required:true },
-    { key:'author', label:'Tác giả', type:'string', required:true },
-    { key:'category', label:'Danh mục', type:'string' },
-    { key:'tags', label:'Tags', type:'array' },
-    { key:'readTime', label:'Thời gian đọc', type:'string' },
-    { key:'views', label:'Lượt xem', type:'number' },
-    { key:'likes', label:'Lượt thích', type:'number' },
-    { key:'status', label:'Trạng thái', type:'string' },
-    { key:'featured', label:'Nổi bật', type:'boolean' },
-    { key:'publishedAt', label:'Ngày xuất bản', type:'date' },
+    { 
+      key:'title', 
+      label:'Tiêu đề', 
+      type:'string', 
+      required:true,
+      tooltip: 'Tiêu đề chính của bài viết'
+    },
+    { 
+      key:'author', 
+      label:'Tác giả', 
+      type:'string', 
+      required:true,
+      tooltip: 'Tên tác giả viết bài'
+    },
+    { 
+      key:'category', 
+      label:'Danh mục', 
+      type:'select',
+      options: [
+        { value: 'Du lịch', label: 'Du lịch' },
+        { value: 'Ẩm thực', label: 'Ẩm thực' },
+        { value: 'Văn hóa', label: 'Văn hóa' },
+        { value: 'Khám phá', label: 'Khám phá' },
+        { value: 'Kinh nghiệm', label: 'Kinh nghiệm' },
+        { value: 'Tin tức', label: 'Tin tức' }
+      ],
+      tooltip: 'Chọn danh mục phù hợp với nội dung bài viết'
+    },
+    { 
+      key:'tags', 
+      label:'Tags', 
+      type:'array',
+      tooltip: 'Các từ khóa liên quan đến bài viết (phân cách bằng dấu phẩy)'
+    },
+    { 
+      key:'readTime', 
+      label:'Thời gian đọc', 
+      type:'string',
+      tooltip: 'Thời gian ước tính để đọc hết bài viết (ví dụ: 5 phút)'
+    },
+    { 
+      key:'views', 
+      label:'Lượt xem', 
+      type:'number',
+      tooltip: 'Số lượt xem bài viết (tự động tính)'
+    },
+    { 
+      key:'likes', 
+      label:'Lượt thích', 
+      type:'number',
+      tooltip: 'Số lượt thích bài viết (tự động tính)'
+    },
+    { 
+      key:'status', 
+      label:'Trạng thái', 
+      type:'select',
+      options: [
+        { value: 'draft', label: 'Nháp' },
+        { value: 'published', label: 'Đã xuất bản' },
+        { value: 'archived', label: 'Đã lưu trữ' }
+      ],
+      tooltip: 'Trạng thái xuất bản của bài viết'
+    },
+    { 
+      key:'featured', 
+      label:'Nổi bật', 
+      type:'boolean',
+      tooltip: 'Đánh dấu nếu bài viết nổi bật cần hiển thị ở vị trí đặc biệt'
+    },
+    { 
+      key:'publishedAt', 
+      label:'Ngày xuất bản', 
+      type:'date',
+      tooltip: 'Ngày bài viết được xuất bản công khai'
+    },
+    { 
+      key:'excerpt', 
+      label:'Tóm tắt', 
+      type:'text',
+      tooltip: 'Đoạn tóm tắt ngắn gọn nội dung bài viết'
+    },
+    { 
+      key:'content', 
+      label:'Nội dung', 
+      type:'text',
+      tooltip: 'Nội dung chính của bài viết (có thể sử dụng HTML)'
+    },
+    { 
+      key:'imageUrl', 
+      label:'Ảnh đại diện', 
+      type:'string',
+      tooltip: 'URL ảnh đại diện cho bài viết (hỗ trợ jpg, png, gif)'
+    },
+    { 
+      key:'seoTitle', 
+      label:'SEO Title', 
+      type:'string',
+      tooltip: 'Tiêu đề tối ưu cho SEO (khác với tiêu đề hiển thị)'
+    },
+    { 
+      key:'seoDescription', 
+      label:'SEO Description', 
+      type:'text',
+      tooltip: 'Mô tả tối ưu cho SEO (hiển thị trong kết quả tìm kiếm)'
+    }
   ]
   return <CrudTable title="Quản lý bài viết" collectionName="POSTS" columns={cols} />
 }
@@ -78,37 +367,345 @@ export function AboutAdminPage(){
 
 export function BookingsAdminPage(){
   const cols: CrudColumn[] = [
-    { key:'tourName', label:'Tên tour', type:'string', required:true },
-    { key:'customerName', label:'Tên khách', type:'string', required:true },
-    { key:'customerEmail', label:'Email khách', type:'string' },
-    { key:'customerPhone', label:'Điện thoại', type:'string' },
-    { key:'status', label:'Trạng thái', type:'string' },
-    { key:'paid', label:'Đã thanh toán', type:'boolean' },
-    { key:'amount', label:'Số tiền', type:'number' },
-    { key:'affiliateName', label:'Đối tác', type:'string' },
-    { key:'bookingDate', label:'Ngày đặt', type:'date' },
-    { key:'travelDate', label:'Ngày đi', type:'date' },
+    { 
+      key:'tourId', 
+      label:'Tour', 
+      type:'select', 
+      required:true,
+      collection: 'TOURS',
+      displayField: 'name',
+      valueField: 'id',
+      tooltip: 'Chọn tour từ danh sách có sẵn'
+    },
+    { 
+      key:'customerName', 
+      label:'Tên khách hàng', 
+      type:'string', 
+      required:true,
+      tooltip: 'Nhập tên khách hàng mới hoặc chọn từ danh sách khách hàng có sẵn'
+    },
+    { 
+      key:'customerEmail', 
+      label:'Email khách', 
+      type:'string',
+      tooltip: 'Email liên hệ của khách hàng'
+    },
+    { 
+      key:'customerPhone', 
+      label:'Điện thoại', 
+      type:'string',
+      tooltip: 'Số điện thoại liên hệ (chỉ nhập số và ký tự +, -, (, ), khoảng trắng)'
+    },
+    { 
+      key:'status', 
+      label:'Trạng thái', 
+      type:'select',
+      required: true,
+      options: [
+        { value: 'pending', label: 'Chờ xác nhận' },
+        { value: 'confirmed', label: 'Đã xác nhận' },
+        { value: 'cancelled', label: 'Đã hủy' },
+        { value: 'completed', label: 'Hoàn thành' }
+      ],
+      tooltip: 'Trạng thái đặt tour: Chờ xác nhận, Đã xác nhận, Đã hủy, Hoàn thành'
+    },
+    { 
+      key:'paid', 
+      label:'Đã thanh toán', 
+      type:'boolean',
+      tooltip: 'Đánh dấu nếu khách hàng đã thanh toán'
+    },
+    { 
+      key:'amount', 
+      label:'Số tiền (VNĐ)', 
+      type:'number',
+      required: true,
+      tooltip: 'Tổng số tiền tour (chỉ nhập số)'
+    },
+    { 
+      key:'affiliateId', 
+      label:'Đối tác affiliate', 
+      type:'select',
+      collection: 'affiliates',
+      displayField: 'name',
+      valueField: 'id',
+      tooltip: 'Chọn đối tác affiliate nếu có'
+    },
+    { 
+      key:'bookingDate', 
+      label:'Ngày đặt', 
+      type:'date',
+      required: true,
+      tooltip: 'Ngày khách hàng đặt tour'
+    },
+    { 
+      key:'travelDate', 
+      label:'Ngày đi', 
+      type:'date',
+      required: true,
+      tooltip: 'Ngày khởi hành tour'
+    },
+    { 
+      key:'numberOfPeople', 
+      label:'Số người', 
+      type:'number',
+      required: true,
+      tooltip: 'Số người tham gia tour (chỉ nhập số)'
+    },
+    { 
+      key:'specialRequests', 
+      label:'Yêu cầu đặc biệt', 
+      type:'text',
+      tooltip: 'Ghi chú yêu cầu đặc biệt của khách hàng'
+    },
+    { 
+      key:'paymentMethod', 
+      label:'Phương thức thanh toán', 
+      type:'select',
+      options: [
+        { value: 'cash', label: 'Tiền mặt' },
+        { value: 'bank_transfer', label: 'Chuyển khoản' },
+        { value: 'credit_card', label: 'Thẻ tín dụng' },
+        { value: 'online_payment', label: 'Thanh toán online' }
+      ],
+      tooltip: 'Phương thức thanh toán khách hàng sử dụng'
+    },
+    { 
+      key:'notes', 
+      label:'Ghi chú', 
+      type:'text',
+      tooltip: 'Ghi chú nội bộ về đặt tour'
+    }
   ]
   return <CrudTable title="Danh sách đặt tour" collectionName="bookings" columns={cols} />
 }
 
 export function AffiliatePage(){
   const cols: CrudColumn[] = [
-    { key:'name', label:'Tên đối tác', type:'string', required:true },
-    { key:'email', label:'Email', type:'string', required:true },
-    { key:'phone', label:'Điện thoại', type:'string' },
-    { key:'website', label:'Website', type:'string' },
-    { key:'commission', label:'Hoa hồng (%)', type:'number' },
-    { key:'totalEarnings', label:'Tổng thu nhập', type:'number' },
-    { key:'paidAmount', label:'Đã thanh toán', type:'number' },
-    { key:'pendingAmount', label:'Chờ thanh toán', type:'number' },
-    { key:'status', label:'Trạng thái', type:'string' },
-    { key:'active', label:'Kích hoạt', type:'boolean' },
-    { key:'createdAt', label:'Ngày tạo', type:'date' },
+    { 
+      key:'name', 
+      label:'Tên đối tác', 
+      type:'string', 
+      required:true,
+      tooltip: 'Tên đầy đủ của công ty/đối tác affiliate'
+    },
+    { 
+      key:'email', 
+      label:'Email', 
+      type:'string', 
+      required:true,
+      tooltip: 'Email liên hệ chính của đối tác'
+    },
+    { 
+      key:'phone', 
+      label:'Điện thoại', 
+      type:'string',
+      tooltip: 'Số điện thoại liên hệ (chỉ nhập số và ký tự +, -, (, ), khoảng trắng)'
+    },
+    { 
+      key:'website', 
+      label:'Website', 
+      type:'string',
+      tooltip: 'Website chính thức của đối tác affiliate'
+    },
+    { 
+      key:'commission', 
+      label:'Hoa hồng (%)', 
+      type:'number',
+      tooltip: 'Tỷ lệ hoa hồng tính theo phần trăm (chỉ nhập số từ 0-100)'
+    },
+    { 
+      key:'totalEarnings', 
+      label:'Tổng thu nhập', 
+      type:'number',
+      tooltip: 'Tổng số tiền đối tác đã kiếm được (tự động tính)'
+    },
+    { 
+      key:'paidAmount', 
+      label:'Đã thanh toán', 
+      type:'number',
+      tooltip: 'Số tiền đã thanh toán cho đối tác (tự động tính)'
+    },
+    { 
+      key:'pendingAmount', 
+      label:'Chờ thanh toán', 
+      type:'number',
+      tooltip: 'Số tiền còn nợ đối tác (tự động tính)'
+    },
+    { 
+      key:'status', 
+      label:'Trạng thái', 
+      type:'select',
+      options: [
+        { value: 'active', label: 'Hoạt động' },
+        { value: 'inactive', label: 'Tạm dừng' },
+        { value: 'suspended', label: 'Tạm khóa' }
+      ],
+      tooltip: 'Trạng thái hoạt động của đối tác affiliate'
+    },
+    { 
+      key:'active', 
+      label:'Kích hoạt', 
+      type:'boolean',
+      tooltip: 'Đánh dấu nếu đối tác đang hoạt động và có thể nhận hoa hồng'
+    },
+    { 
+      key:'address', 
+      label:'Địa chỉ', 
+      type:'text',
+      tooltip: 'Địa chỉ văn phòng của đối tác affiliate'
+    },
+    { 
+      key:'contactPerson', 
+      label:'Người liên hệ', 
+      type:'string',
+      tooltip: 'Tên người đại diện liên hệ chính'
+    },
+    { 
+      key:'bankInfo', 
+      label:'Thông tin ngân hàng', 
+      type:'text',
+      tooltip: 'Thông tin tài khoản ngân hàng để thanh toán hoa hồng'
+    },
+    { 
+      key:'contractStart', 
+      label:'Ngày bắt đầu hợp đồng', 
+      type:'date',
+      tooltip: 'Ngày bắt đầu hợp tác affiliate'
+    },
+    { 
+      key:'contractEnd', 
+      label:'Ngày kết thúc hợp đồng', 
+      type:'date',
+      tooltip: 'Ngày kết thúc hợp tác affiliate (nếu có)'
+    }
   ]
   return <CrudTable title="Quản lý đối tác affiliate" collectionName="affiliates" columns={cols} />
 }
 
 export { AffiliateReportPage } from './AffiliateReportPage'
+export { AffiliatePaymentPage } from './AffiliatePaymentPage'
+export { RevenueReportPage } from './RevenueReportPage'
+export { TourPerformancePage } from './TourPerformancePage'
+
+export function CustomersAdminPage(){
+  const cols: CrudColumn[] = [
+    { 
+      key:'name', 
+      label:'Tên khách hàng', 
+      type:'string', 
+      required:true,
+      tooltip: 'Họ và tên đầy đủ của khách hàng'
+    },
+    { 
+      key:'email', 
+      label:'Email', 
+      type:'string', 
+      required:true,
+      tooltip: 'Email liên hệ chính của khách hàng'
+    },
+    { 
+      key:'phone', 
+      label:'Điện thoại', 
+      type:'string',
+      tooltip: 'Số điện thoại liên hệ (chỉ nhập số và ký tự +, -, (, ), khoảng trắng)'
+    },
+    { 
+      key:'vip', 
+      label:'Khách VIP', 
+      type:'boolean',
+      tooltip: 'Đánh dấu nếu khách hàng là VIP'
+    },
+    { 
+      key:'address', 
+      label:'Địa chỉ', 
+      type:'text',
+      tooltip: 'Địa chỉ nhà của khách hàng'
+    },
+    { 
+      key:'city', 
+      label:'Thành phố', 
+      type:'string',
+      tooltip: 'Thành phố nơi khách hàng sinh sống'
+    },
+    { 
+      key:'country', 
+      label:'Quốc gia', 
+      type:'string',
+      tooltip: 'Quốc gia nơi khách hàng sinh sống'
+    },
+    { 
+      key:'birthDate', 
+      label:'Ngày sinh', 
+      type:'date',
+      tooltip: 'Ngày sinh của khách hàng'
+    },
+    { 
+      key:'gender', 
+      label:'Giới tính', 
+      type:'select',
+      options: [
+        { value: 'male', label: 'Nam' },
+        { value: 'female', label: 'Nữ' },
+        { value: 'other', label: 'Khác' }
+      ],
+      tooltip: 'Giới tính của khách hàng'
+    },
+    { 
+      key:'occupation', 
+      label:'Nghề nghiệp', 
+      type:'string',
+      tooltip: 'Nghề nghiệp hiện tại của khách hàng'
+    },
+    { 
+      key:'interests', 
+      label:'Sở thích', 
+      type:'array',
+      tooltip: 'Các sở thích du lịch của khách hàng (phân cách bằng dấu phẩy)'
+    },
+    { 
+      key:'preferredDestinations', 
+      label:'Điểm đến yêu thích', 
+      type:'array',
+      tooltip: 'Các điểm đến du lịch yêu thích (phân cách bằng dấu phẩy)'
+    },
+    { 
+      key:'budgetRange', 
+      label:'Khoảng ngân sách', 
+      type:'select',
+      options: [
+        { value: 'low', label: 'Thấp (< 5 triệu)' },
+        { value: 'medium', label: 'Trung bình (5-15 triệu)' },
+        { value: 'high', label: 'Cao (> 15 triệu)' }
+      ],
+      tooltip: 'Khoảng ngân sách khách hàng thường chi cho du lịch'
+    },
+    { 
+      key:'travelFrequency', 
+      label:'Tần suất du lịch', 
+      type:'select',
+      options: [
+        { value: 'rarely', label: 'Hiếm khi' },
+        { value: 'occasionally', label: 'Thỉnh thoảng' },
+        { value: 'frequently', label: 'Thường xuyên' },
+        { value: 'very_frequently', label: 'Rất thường xuyên' }
+      ],
+      tooltip: 'Tần suất khách hàng đi du lịch'
+    },
+    { 
+      key:'notes', 
+      label:'Ghi chú', 
+      type:'text',
+      tooltip: 'Ghi chú nội bộ về khách hàng'
+    },
+    { 
+      key:'createdAt', 
+      label:'Ngày tạo', 
+      type:'date',
+      tooltip: 'Ngày khách hàng được thêm vào hệ thống'
+    }
+  ]
+  return <CrudTable title="Quản lý khách hàng" collectionName="customers" columns={cols} />
+}
 
 

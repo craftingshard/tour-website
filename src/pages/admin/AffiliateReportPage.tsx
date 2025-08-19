@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, getDocs, query, orderBy, where, limit } from 'firebase/firestore'
+import { collection, getDocs, query, orderBy, where } from 'firebase/firestore'
 import { db } from '../../firebase'
 
 export function AffiliateReportPage() {
@@ -32,7 +32,7 @@ export function AffiliateReportPage() {
         orderBy('totalEarnings', 'desc')
       )
       const affiliatesSnapshot = await getDocs(affiliatesQuery)
-      const affiliatesData = affiliatesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      const affiliatesData = affiliatesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[]
       setAffiliates(affiliatesData)
 
       // Load bookings
@@ -52,7 +52,7 @@ export function AffiliateReportPage() {
       const totalPaid = affiliatesData.reduce((sum, a) => sum + (a.paidAmount || 0), 0)
       const totalPending = affiliatesData.reduce((sum, a) => sum + (a.pendingAmount || 0), 0)
       const totalBookings = bookingsData.length
-      const totalCommission = bookingsData.reduce((sum, b) => sum + (b.commission || 0), 0)
+      const totalCommission = bookingsData.reduce((sum, b: any) => sum + (b.commission || 0), 0)
 
       setStats({
         totalAffiliates,
@@ -78,9 +78,7 @@ export function AffiliateReportPage() {
     return bookings.filter(b => b.affiliateId === selectedAffiliate)
   }
 
-  const getAffiliateById = (id: string) => {
-    return affiliates.find(a => a.id === id)
-  }
+
 
   const formatCurrency = (amount: number) => {
     return amount.toLocaleString('vi-VN') + 'đ'

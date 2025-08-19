@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../context/AppProviders'
+import { QuickBookingForm } from '../components/QuickBookingForm'
 
 export function TourDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { tours, user, addReview, reviewsByTourId, bookTour } = useApp()
+  const { tours, user, addReview, reviewsByTourId } = useApp()
   const tour = useMemo(() => tours.find(t => t.id === id), [tours, id])
   const related = useMemo(() => tours.filter(t => t.id !== id && (t.location === tour?.location || t.hot)).slice(0,6), [tours, id, tour])
   const reviews = reviewsByTourId[id || ''] || []
@@ -13,18 +14,14 @@ export function TourDetailPage() {
   const [rating, setRating] = useState(8)
   const [comment, setComment] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [showQuickBooking, setShowQuickBooking] = useState(false)
 
   if (!tour) {
     return <div className="container"><div className="card">Tour không tồn tại.</div></div>
   }
 
   const handleBook = () => {
-    if (user) {
-      bookTour(tour.id)
-      navigate('/payment', { state: { tourId: tour.id } })
-    } else {
-      navigate('/register', { state: { redirectTo: '/payment', tourId: tour.id } })
-    }
+    setShowQuickBooking(true)
   }
 
   const submitReview = (e: React.FormEvent) => {
@@ -81,7 +78,7 @@ export function TourDetailPage() {
             </div>
             <p style={{marginTop:12}}>Trải nghiệm hành trình {tour.title} tại {tour.location}. Lịch trình hấp dẫn, dịch vụ chu đáo.</p>
             <div style={{display:'flex', justifyContent:'center', marginTop:16}}>
-              <button className="btn primary" onClick={handleBook}>Đặt tour</button>
+              <button className="btn primary" onClick={handleBook}>Đặt tour nhanh</button>
             </div>
           </div>
         </div>
@@ -138,6 +135,13 @@ export function TourDetailPage() {
           </div>
         </div>
       </div>
+
+      {showQuickBooking && (
+        <QuickBookingForm 
+          tour={tour} 
+          onClose={() => setShowQuickBooking(false)} 
+        />
+      )}
     </div>
   )
 }

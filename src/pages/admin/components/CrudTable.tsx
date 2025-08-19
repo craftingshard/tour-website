@@ -1,14 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
-import { addDoc, collection, deleteDoc, doc, onSnapshot, updateDoc } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, onSnapshot, updateDoc, getDocs } from 'firebase/firestore'
 import { db } from '../../../firebase'
+import { useAdmin } from '../../../context/AdminProviders'
 
-type FieldType = 'string' | 'number' | 'boolean' | 'text' | 'date' | 'array'
+type FieldType = 'string' | 'number' | 'boolean' | 'text' | 'date' | 'array' | 'select' | 'select-multiple'
 
 export type CrudColumn = {
   key: string
   label: string
   type: FieldType
   required?: boolean
+  tooltip?: string
+  options?: Array<{ value: string; label: string }>
+  collection?: string
+  displayField?: string
+  valueField?: string
+  createDefaults?: Record<string, unknown>
 }
 
 type CrudTableProps = {
@@ -25,8 +32,58 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [showForm, setShowForm] = useState<boolean>(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
+  const [referenceData, setReferenceData] = useState<Record<string, any[]>>({})
+  const { hasPermission, currentUser } = useAdmin()
 
   const colRef = useMemo(() => collection(db, collectionName), [collectionName])
+
+  // Calculate pagination
+  const totalPages = Math.ceil(items.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentItems = items.slice(startIndex, endIndex)
+
+  // Reset to first page when collection changes
+  useEffect(() => { 
+    setCurrentPage(1)
+    resetForm() 
+  }, [collectionName])
+
+  // Load reference data for select fields
+  useEffect(() => {
+    loadReferenceData()
+  }, [columns])
+
+  const loadReferenceData = async () => {
+    const refData: Record<string, any[]> = {}
+    
+    for (const col of columns) {
+      if (col.type === 'select' && col.collection) {
+        try {
+          const snapshot = await getDocs(collection(db, col.collection))
+          const data = snapshot.docs.map(doc => ({ 
+            id: doc.id, 
+            ...doc.data() 
+          }))
+          refData[col.key] = data
+        } catch (error) {
+          console.error(`Error loading reference data for ${col.collection}:`, error)
+          refData[col.key] = []
+        }
+      }
+    }
+    
+    setReferenceData(refData)
+  }
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)))
+  }
+
+  const goToNextPage = () => goToPage(currentPage + 1)
+  const goToPrevPage = () => goToPage(currentPage - 1)
 
   useEffect(() => {
     const unsub = onSnapshot(colRef, (snap) => {
@@ -43,6 +100,14 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
     columns.forEach((c) => {
       if (c.type === 'boolean') init[c.key] = false
       else if (c.type === 'array') init[c.key] = []
+      else if (c.type === 'date') {
+        // Set default date to today for bookingDate and travelDate
+        if (c.key === 'bookingDate' || c.key === 'travelDate') {
+          init[c.key] = new Date().toISOString().split('T')[0]
+        } else {
+          init[c.key] = ''
+        }
+      }
       else init[c.key] = ''
     })
     if (createDefaults) Object.assign(init, createDefaults)
@@ -59,12 +124,31 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
   const onEdit = (row: any) => {
     setEditingId(row.id)
     const f: Record<string, any> = {}
-    columns.forEach((c) => (f[c.key] = row[c.key] ?? (c.type === 'boolean' ? false : c.type === 'array' ? [] : '')))
+    columns.forEach((c) => {
+      if (c.key === 'createdAt') return // Skip createdAt on edit
+      if (c.type === 'boolean') f[c.key] = row[c.key] ?? false
+      else if (c.type === 'array') f[c.key] = row[c.key] ?? []
+      else if (c.type === 'date') {
+        if (row[c.key]?.toDate) {
+          f[c.key] = row[c.key].toDate().toISOString().split('T')[0]
+        } else if (row[c.key]) {
+          f[c.key] = new Date(row[c.key]).toISOString().split('T')[0]
+        } else {
+          f[c.key] = ''
+        }
+      }
+      else f[c.key] = row[c.key] ?? ''
+    })
     setForm(f)
     setShowForm(true)
   }
 
   const onDelete = async (id: string) => {
+    if (!hasPermission('delete', collectionName)) {
+      setError('Bạn không có quyền xóa dữ liệu này')
+      return
+    }
+    
     if (!confirm('Xóa bản ghi này?')) return
     try {
       await deleteDoc(doc(db, collectionName, id))
@@ -76,22 +160,73 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    
+    // Check permissions
+    const action = editingId ? 'update' : 'create'
+    if (!hasPermission(action, collectionName)) {
+      setError(`Bạn không có quyền ${action === 'create' ? 'thêm' : 'cập nhật'} dữ liệu này`)
+      return
+    }
+    
     try {
       const payload: Record<string, any> = {}
       for (const c of columns) {
+        // Skip createdAt and updatedAt fields in the form
+        if (c.key === 'createdAt' || c.key === 'updatedAt') continue
+        
         const raw = form[c.key]
         if (c.required && (raw === '' || raw === undefined || raw === null)) {
           throw new Error(`Vui lòng nhập ${c.label}`)
         }
-        if (c.type === 'number') payload[c.key] = raw === '' ? null : Number(raw)
+        
+        // Validate number fields
+        if (c.type === 'number') {
+          if (raw !== '' && isNaN(Number(raw))) {
+            throw new Error(`${c.label} phải là số`)
+          }
+          payload[c.key] = raw === '' ? null : Number(raw)
+        }
+        // Validate phone number format
+        else if (c.key === 'customerPhone' && raw !== '') {
+          const phoneRegex = /^[0-9+\-\s()]+$/
+          if (!phoneRegex.test(raw)) {
+            throw new Error('Số điện thoại chỉ được chứa số và ký tự +, -, (, ), khoảng trắng')
+          }
+          payload[c.key] = raw
+        }
+        // Validate amount fields
+        else if (c.key === 'amount' && raw !== '') {
+          if (isNaN(Number(raw)) || Number(raw) < 0) {
+            throw new Error('Số tiền phải là số dương')
+          }
+          payload[c.key] = Number(raw)
+        }
         else if (c.type === 'boolean') payload[c.key] = Boolean(raw)
         else if (c.type === 'date') payload[c.key] = raw ? new Date(raw) : null
         else if (c.type === 'array') payload[c.key] = Array.isArray(raw) ? raw : [raw]
+        else if (c.type === 'select' || c.type === 'select-multiple') {
+          if (c.type === 'select-multiple') {
+            payload[c.key] = Array.isArray(raw) ? raw : [raw]
+          } else {
+            payload[c.key] = raw
+          }
+        }
         else payload[c.key] = raw
       }
       if (createDefaults) Object.assign(payload, createDefaults)
-      if ('createdAt' in form && !form['createdAt']) payload['createdAt'] = new Date()
-      if ('updatedAt' in form) payload['updatedAt'] = new Date()
+      
+      // Auto-set timestamps and creator info
+      if (editingId) {
+        // Update: only set updatedAt and updatedBy
+        payload['updatedAt'] = new Date()
+        payload['updatedBy'] = currentUser?.uid
+      } else {
+        // Create: set both timestamps and creator info
+        payload['createdAt'] = new Date()
+        payload['updatedAt'] = new Date()
+        payload['createdBy'] = currentUser?.uid
+        payload['createdByName'] = currentUser?.name
+      }
 
       if (editingId) {
         await updateDoc(doc(db, collectionName, editingId), payload)
@@ -111,7 +246,147 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
     if (type === 'date') return value?.toDate ? value.toDate().toLocaleDateString('vi-VN') : new Date(value).toLocaleDateString('vi-VN')
     if (type === 'array') return Array.isArray(value) ? value.join(', ') : value
     if (type === 'number') return value.toLocaleString('vi-VN')
+    
+    // Handle image URLs
+    if (type === 'string' && value.includes('http') && (value.includes('.jpg') || value.includes('.jpeg') || value.includes('.png') || value.includes('.gif') || value.includes('picsum.photos'))) {
+      return (
+        <img 
+          src={value} 
+          alt="Image" 
+          style={{ 
+            width: '60px', 
+            height: '60px', 
+            objectFit: 'cover', 
+            borderRadius: '6px',
+            border: '1px solid #e5e7eb'
+          }} 
+        />
+      )
+    }
+    
     return String(value)
+  }
+
+  const renderField = (col: CrudColumn) => {
+    const value = form[col.key] ?? ''
+    
+    if (col.type === 'boolean') {
+      return (
+        <div className="checkbox-wrapper">
+          <input 
+            type="checkbox" 
+            checked={!!value} 
+            onChange={(e) => onChange(col.key, e.target.checked)} 
+          />
+          <span className="checkmark"></span>
+        </div>
+      )
+    }
+    
+    if (col.type === 'text') {
+      return (
+        <textarea 
+          rows={4} 
+          value={value} 
+          onChange={(e) => onChange(col.key, e.target.value)}
+          placeholder={`Nhập ${col.label.toLowerCase()}...`}
+        />
+      )
+    }
+    
+    if (col.type === 'date') {
+      return (
+        <input 
+          type="date" 
+          value={value} 
+          onChange={(e) => onChange(col.key, e.target.value)}
+        />
+      )
+    }
+    
+    if (col.type === 'array') {
+      return (
+        <input 
+          type="text" 
+          value={Array.isArray(value) ? value.join(', ') : value} 
+          onChange={(e) => onChange(col.key, e.target.value.split(',').map(s => s.trim()))}
+          placeholder="Nhập các giá trị, phân cách bằng dấu phẩy"
+        />
+      )
+    }
+    
+    if (col.type === 'select') {
+      if (col.collection && referenceData[col.key]) {
+        const options = referenceData[col.key]
+        const displayField = col.displayField || 'name'
+        const valueField = col.valueField || 'id'
+        
+        return (
+          <select 
+            value={value} 
+            onChange={(e) => onChange(col.key, e.target.value)}
+          >
+            <option value="">Chọn {col.label.toLowerCase()}</option>
+            {options.map((option) => (
+              <option key={option.id} value={option[valueField]}>
+                {option[displayField]}
+              </option>
+            ))}
+          </select>
+        )
+      }
+      
+      if (col.options) {
+        return (
+          <select 
+            value={value} 
+            onChange={(e) => onChange(col.key, e.target.value)}
+          >
+            <option value="">Chọn {col.label.toLowerCase()}</option>
+            {col.options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        )
+      }
+    }
+    
+    if (col.type === 'select-multiple') {
+      if (col.collection && referenceData[col.key]) {
+        const options = referenceData[col.key]
+        const displayField = col.displayField || 'name'
+        const valueField = col.valueField || 'id'
+        
+        return (
+          <select 
+            multiple
+            value={Array.isArray(value) ? value : []} 
+            onChange={(e) => {
+              const selectedValues = Array.from(e.target.selectedOptions, option => option.value)
+              onChange(col.key, selectedValues)
+            }}
+          >
+            {options.map((option) => (
+              <option key={option.id} value={option[valueField]}>
+                {option[displayField]}
+              </option>
+            ))}
+          </select>
+        )
+      }
+    }
+    
+    // Default input field
+    return (
+      <input 
+        type={col.type === 'number' ? 'number' : 'text'} 
+        value={value} 
+        onChange={(e) => onChange(col.key, col.type === 'number' ? (e.target.value === '' ? '' : Number(e.target.value)) : e.target.value)}
+        placeholder={`Nhập ${col.label.toLowerCase()}...`}
+      />
+    )
   }
 
   return (
@@ -120,33 +395,21 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
       <div className="crud-header">
         <h2>{title}</h2>
         <div className="header-actions">
-          <button 
-            type="button" 
-            className="btn primary"
-            onClick={() => setShowForm(!showForm)}
-          >
-            {showForm ? '📋 Xem danh sách' : '➕ Thêm mới'}
-          </button>
+          {hasPermission('create', collectionName) && (
+            <button 
+              type="button" 
+              className="btn primary"
+              onClick={() => setShowForm(!showForm)}
+            >
+              {showForm ? '📋 Xem danh sách' : '➕ Thêm mới'}
+            </button>
+          )}
         </div>
       </div>
 
       {/* Form Section */}
       {showForm && (
         <div className="form-section">
-          <div className="form-header">
-            <h3>{editingId ? '✏️ Chỉnh sửa' : '➕ Thêm mới'}</h3>
-            <button 
-              type="button" 
-              className="close-btn"
-              onClick={() => {
-                setShowForm(false)
-                resetForm()
-              }}
-            >
-              ✕
-            </button>
-          </div>
-          
           <form onSubmit={onSubmit} className="crud-form">
             <div className="form-grid">
               {columns.map((c) => (
@@ -155,45 +418,13 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
                     <span className="field-label">
                       {c.label}
                       {c.required && <span className="required">*</span>}
+                      {c.tooltip && (
+                        <span className="tooltip-icon" title={c.tooltip}>
+                          ℹ️
+                        </span>
+                      )}
                     </span>
-                    
-                    {c.type === 'boolean' ? (
-                      <div className="checkbox-wrapper">
-                        <input 
-                          type="checkbox" 
-                          checked={!!form[c.key]} 
-                          onChange={(e) => onChange(c.key, e.target.checked)} 
-                        />
-                        <span className="checkmark"></span>
-                      </div>
-                    ) : c.type === 'text' ? (
-                      <textarea 
-                        rows={4} 
-                        value={form[c.key] ?? ''} 
-                        onChange={(e) => onChange(c.key, e.target.value)}
-                        placeholder={`Nhập ${c.label.toLowerCase()}...`}
-                      />
-                    ) : c.type === 'date' ? (
-                      <input 
-                        type="date" 
-                        value={form[c.key] ?? ''} 
-                        onChange={(e) => onChange(c.key, e.target.value)}
-                      />
-                    ) : c.type === 'array' ? (
-                      <input 
-                        type="text" 
-                        value={Array.isArray(form[c.key]) ? form[c.key].join(', ') : form[c.key] ?? ''} 
-                        onChange={(e) => onChange(c.key, e.target.value.split(',').map(s => s.trim()))}
-                        placeholder="Nhập các giá trị, phân cách bằng dấu phẩy"
-                      />
-                    ) : (
-                      <input 
-                        type={c.type === 'number' ? 'number' : 'text'} 
-                        value={form[c.key] ?? ''} 
-                        onChange={(e) => onChange(c.key, c.type === 'number' ? (e.target.value === '' ? '' : Number(e.target.value)) : e.target.value)}
-                        placeholder={`Nhập ${c.label.toLowerCase()}...`}
-                      />
-                    )}
+                    {renderField(c)}
                   </label>
                 </div>
               ))}
@@ -249,7 +480,7 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
                 </tr>
               </thead>
               <tbody>
-                {items.map(row => (
+                {currentItems.map(row => (
                   <tr key={row.id} className="data-row">
                     {columns.map(c => (
                       <td key={c.key} className="data-cell">
@@ -257,12 +488,16 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
                       </td>
                     ))}
                     <td className="actions-cell">
-                      <button className="btn small primary" onClick={() => onEdit(row)}>
-                        ✏️ Sửa
-                      </button>
-                      <button className="btn small danger" onClick={() => onDelete(row.id)}>
-                        🗑️ Xóa
-                      </button>
+                      {hasPermission('update', collectionName) && (
+                        <button className="btn small primary" onClick={() => onEdit(row)}>
+                          ✏️ Sửa
+                        </button>
+                      )}
+                      {hasPermission('delete', collectionName) && (
+                        <button className="btn small danger" onClick={() => onDelete(row.id)}>
+                          🗑️ Xóa
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -270,6 +505,13 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
             </table>
           )}
         </div>
+        {totalPages > 1 && (
+          <div className="pagination-controls">
+            <button onClick={goToPrevPage} disabled={currentPage === 1}>Trước</button>
+            <span>Trang {currentPage} / {totalPages}</span>
+            <button onClick={goToNextPage} disabled={currentPage === totalPages}>Sau</button>
+          </div>
+        )}
       </div>
 
       <style>{`
@@ -291,8 +533,8 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
         
         .crud-header h2 {
           margin: 0;
-          font-size: 1.5rem;
-          font-weight: 600;
+          font-size: 24px;
+          font-weight: 700;
         }
         
         .header-actions {
@@ -302,78 +544,69 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
         
         .form-section {
           padding: 24px;
-          border-bottom: 1px solid #e5e7eb;
-          background: #f9fafb;
-        }
-        
-        .form-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-        }
-        
-        .form-header h3 {
-          margin: 0;
-          color: #374151;
-        }
-        
-        .close-btn {
-          background: #ef4444;
-          color: white;
-          border: none;
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          cursor: pointer;
-          font-size: 1rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          background: #f8fafc;
+          border-bottom: 1px solid #e2e8f0;
         }
         
         .crud-form {
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
+          background: white;
+          padding: 24px;
+          border-radius: 12px;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
         }
         
         .form-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
           gap: 20px;
+          margin-bottom: 24px;
         }
         
         .form-field {
           display: flex;
           flex-direction: column;
+          gap: 8px;
         }
         
         .field-label {
-          display: block;
-          margin-bottom: 8px;
-          font-weight: 500;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-weight: 600;
           color: #374151;
         }
         
         .required {
           color: #ef4444;
-          margin-left: 4px;
+          font-weight: 700;
+        }
+        
+        .tooltip-icon {
+          cursor: help;
+          font-size: 14px;
+          opacity: 0.7;
+        }
+        
+        .tooltip-icon:hover {
+          opacity: 1;
         }
         
         .form-field input,
+        .form-field select,
         .form-field textarea {
           padding: 12px;
           border: 2px solid #e5e7eb;
           border-radius: 8px;
-          font-size: 1rem;
+          font-size: 14px;
           transition: border-color 0.2s;
         }
         
         .form-field input:focus,
+        .form-field select:focus,
         .form-field textarea:focus {
           outline: none;
           border-color: #667eea;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
         
         .checkbox-wrapper {
@@ -382,10 +615,8 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
           gap: 8px;
         }
         
-        .form-actions {
-          display: flex;
-          gap: 12px;
-          flex-wrap: wrap;
+        .checkmark {
+          font-size: 16px;
         }
         
         .error-message {
@@ -393,25 +624,45 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
           color: #dc2626;
           padding: 12px;
           border-radius: 8px;
+          margin-bottom: 20px;
           border: 1px solid #fecaca;
+        }
+        
+        .form-actions {
+          display: flex;
+          gap: 12px;
+          justify-content: flex-end;
         }
         
         .table-section {
           padding: 24px;
         }
         
+        .table-header {
+          margin-bottom: 20px;
+        }
+        
         .table-header h3 {
-          margin: 0 0 20px 0;
+          margin: 0;
           color: #374151;
+          font-size: 18px;
+          font-weight: 600;
         }
         
         .table-container {
-          overflow-x: auto;
+          background: white;
           border-radius: 8px;
-          border: 1px solid #e5e7eb;
+          overflow: hidden;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
         }
         
-        .loading,
+        .loading {
+          padding: 40px;
+          text-align: center;
+          color: #6b7280;
+          font-size: 16px;
+        }
+        
         .empty-state {
           padding: 40px;
           text-align: center;
@@ -419,14 +670,15 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
         }
         
         .empty-icon {
-          font-size: 3rem;
+          font-size: 48px;
           margin-bottom: 16px;
         }
         
         .data-table {
           width: 100%;
+          min-width: 800px;
           border-collapse: collapse;
-          table-layout: fixed;
+          font-size: 14px;
         }
         
         .data-table th {
@@ -436,161 +688,156 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
           font-weight: 600;
           color: #374151;
           border-bottom: 2px solid #e5e7eb;
+          min-width: 120px;
           white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
         }
         
         .data-table td {
           padding: 16px 12px;
-          border-bottom: 1px solid #e5e7eb;
-          color: #374151;
-          word-wrap: break-word;
-          max-width: 200px;
+          border-bottom: 1px solid #f3f4f6;
+          vertical-align: top;
+          min-width: 120px;
         }
         
-        .data-row:hover {
+        .data-table tr:hover {
           background: #f9fafb;
         }
         
         .actions-header {
+          min-width: 150px;
+          text-align: center;
+        }
+        
+        .actions-cell {
+          min-width: 150px;
+          text-align: center;
+        }
+        
+        .actions-cell .btn {
+          margin: 0 4px;
+        }
+        
+        .pagination-controls {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 16px;
+          margin-top: 24px;
+          padding: 16px;
+        }
+        
+        .pagination-controls button {
+          padding: 8px 16px;
+          border: 1px solid #d1d5db;
+          background: white;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        
+        .pagination-controls button:hover:not(:disabled) {
+          background: #f3f4f6;
+          border-color: #9ca3af;
+        }
+        
+        .pagination-controls button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        
+        .pagination-controls span {
+          color: #6b7280;
+          font-weight: 500;
+        }
+        
+        /* Custom scrollbar for table */
+        .table-container {
+          overflow-x: auto;
+        }
+        
+        .table-container::-webkit-scrollbar {
+          height: 8px;
+        }
+        
+        .table-container::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 4px;
+        }
+        
+        .table-container::-webkit-scrollbar-thumb {
+          background: #c1c1c1;
+          border-radius: 4px;
+        }
+        
+        .table-container::-webkit-scrollbar-thumb:hover {
+          background: #a8a8a8;
+        }
+        
+        /* Column width adjustments */
+        .data-table th:nth-child(1),
+        .data-table td:nth-child(1) {
+          width: 200px;
+          min-width: 200px;
+        }
+        
+        .data-table th:nth-child(2),
+        .data-table td:nth-child(2) {
+          width: 180px;
+          min-width: 180px;
+        }
+        
+        .data-table th:nth-child(3),
+        .data-table td:nth-child(3) {
+          width: 200px;
+          min-width: 200px;
+        }
+        
+        .data-table th:nth-child(4),
+        .data-table td:nth-child(4) {
           width: 150px;
           min-width: 150px;
         }
         
-        .actions-cell {
-          display: flex;
-          gap: 8px;
-          white-space: nowrap;
-        }
-
-        /* Column width optimizations */
-        .data-table th:nth-child(1), .data-table td:nth-child(1) { width: 20%; } /* Name/Title */
-        .data-table th:nth-child(2), .data-table td:nth-child(2) { width: 15%; } /* Location/Author */
-        .data-table th:nth-child(3), .data-table td:nth-child(3) { width: 12%; } /* Price/Email */
-        .data-table th:nth-child(4), .data-table td:nth-child(4) { width: 10%; } /* Rating/Category */
-        .data-table th:nth-child(5), .data-table td:nth-child(5) { width: 12%; } /* Category/Tags */
-        .data-table th:nth-child(6), .data-table td:nth-child(6) { width: 10%; } /* Duration/ReadTime */
-        .data-table th:nth-child(7), .data-table td:nth-child(7) { width: 8%; }  /* Featured/Views */
-        .data-table th:nth-child(8), .data-table td:nth-child(8) { width: 8%; }  /* Status/Likes */
-        .data-table th:nth-child(9), .data-table td:nth-child(9) { width: 10%; } /* Image/Status */
-        .data-table th:nth-child(10), .data-table td:nth-child(10) { width: 10%; } /* Featured */
-        .data-table th:nth-child(11), .data-table td:nth-child(11) { width: 10%; } /* PublishedAt */
-        
-        /* Special handling for boolean columns */
-        .data-table td:nth-child(7) input[type="checkbox"],
-        .data-table td:nth-child(8) input[type="checkbox"] {
-          transform: scale(1.2);
+        .data-table th:nth-child(5),
+        .data-table td:nth-child(5) {
+          width: 120px;
+          min-width: 120px;
         }
         
-        /* Responsive table */
-        @media (max-width: 1024px) {
-          .data-table {
-            table-layout: auto;
-          }
-          
-          .data-table th,
-          .data-table td {
-            padding: 12px 8px;
-            font-size: 0.875rem;
-          }
+        .data-table th:nth-child(6),
+        .data-table td:nth-child(6) {
+          width: 120px;
+          min-width: 120px;
         }
         
-        @media (max-width: 768px) {
-          .data-table {
-            display: block;
-            overflow-x: auto;
-            white-space: nowrap;
-          }
-          
-          .data-table th,
-          .data-table td {
-            padding: 8px 6px;
-            font-size: 0.75rem;
-            min-width: 100px;
-          }
-          
-          .actions-cell {
-            flex-direction: column;
-            gap: 4px;
-          }
-          
-          .btn.small {
-            padding: 4px 8px;
-            font-size: 0.7rem;
-          }
+        .data-table th:nth-child(7),
+        .data-table td:nth-child(7) {
+          width: 120px;
+          min-width: 120px;
         }
         
-        .btn {
-          padding: 8px 16px;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-          font-size: 0.875rem;
-          font-weight: 500;
-          transition: all 0.2s;
-          text-decoration: none;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
+        .data-table th:nth-child(8),
+        .data-table td:nth-child(8) {
+          width: 150px;
+          min-width: 150px;
         }
         
-        .btn.primary {
-          background: #667eea;
-          color: white;
+        .data-table th:nth-child(9),
+        .data-table td:nth-child(9) {
+          width: 120px;
+          min-width: 120px;
         }
         
-        .btn.primary:hover {
-          background: #5a67d8;
-          transform: translateY(-1px);
+        .data-table th:nth-child(10),
+        .data-table td:nth-child(10) {
+          width: 120px;
+          min-width: 120px;
         }
         
-        .btn.secondary {
-          background: #6b7280;
-          color: white;
-        }
-        
-        .btn.secondary:hover {
-          background: #4b5563;
-        }
-        
-        .btn.ghost {
-          background: transparent;
-          color: #6b7280;
-          border: 1px solid #d1d5db;
-        }
-        
-        .btn.ghost:hover {
-          background: #f3f4f6;
-        }
-        
-        .btn.danger {
-          background: #ef4444;
-          color: white;
-        }
-        
-        .btn.danger:hover {
-          background: #dc2626;
-        }
-        
-        .btn.small {
-          padding: 6px 12px;
-          font-size: 0.75rem;
-        }
-        
-        @media (max-width: 768px) {
-          .form-grid {
-            grid-template-columns: 1fr;
-          }
-          
-          .form-actions {
-            flex-direction: column;
-          }
-          
-          .btn {
-            width: 100%;
-            justify-content: center;
-          }
+        .data-table th:nth-child(11),
+        .data-table td:nth-child(11) {
+          width: 120px;
+          min-width: 120px;
         }
       `}</style>
     </div>

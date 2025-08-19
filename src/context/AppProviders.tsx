@@ -88,25 +88,60 @@ export function AppProviders({ children }: PropsWithChildren) {
     return () => unsub()
   }, [])
 
-  // Map admin_tours -> public tours
+  // Load tours from both admin_tours and TOURS collections
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'admin_tours'), (snap) => {
-      const list: Tour[] = []
-      snap.forEach((d) => {
-        const data = d.data() as any
-        list.push({
-          id: d.id,
-          title: data.title || '',
-          location: data.location || '',
-          price: Number(data.price) || 0,
-          rating: Number(data.rating) || 0,
-          hot: Boolean(data.hot),
-          imageUrl: data.imageUrl || '',
+    const loadTours = () => {
+      // First try TOURS collection (new format)
+      const unsubTours = onSnapshot(collection(db, 'TOURS'), (snap) => {
+        const toursList: Tour[] = []
+        snap.forEach((d) => {
+          const data = d.data() as any
+          toursList.push({
+            id: d.id,
+            title: data.title || data.name || '',
+            location: data.location || data.destination || '',
+            price: Number(data.price) || 0,
+            rating: Number(data.rating) || 0,
+            hot: Boolean(data.hot || data.featured),
+            imageUrl: data.imageUrl || data.image || '',
+          })
         })
+        
+        if (toursList.length > 0) {
+          console.log('Loaded tours from TOURS collection:', toursList.length)
+          setTours(toursList)
+        } else {
+          // Fallback to admin_tours collection
+          const unsubAdminTours = onSnapshot(collection(db, 'admin_tours'), (adminSnap) => {
+            const adminToursList: Tour[] = []
+            adminSnap.forEach((d) => {
+              const data = d.data() as any
+              adminToursList.push({
+                id: d.id,
+                title: data.title || '',
+                location: data.location || '',
+                price: Number(data.price) || 0,
+                rating: Number(data.rating) || 0,
+                hot: Boolean(data.hot),
+                imageUrl: data.imageUrl || '',
+              })
+            })
+            
+            if (adminToursList.length > 0) {
+              console.log('Loaded tours from admin_tours collection:', adminToursList.length)
+              setTours(adminToursList)
+            } else {
+              console.log('Using mock tours')
+              setTours(MOCK_TOURS)
+            }
+          })
+          return () => unsubAdminTours()
+        }
       })
-      setTours(list.length ? list : MOCK_TOURS)
-    })
-    return () => unsub()
+      return () => unsubTours()
+    }
+    
+    return loadTours()
   }, [])
 
   // Load current customer profile

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore'
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore'
 import { db } from '../../firebase'
 
 export function Dashboard() {
@@ -15,7 +15,6 @@ export function Dashboard() {
     pendingAffiliatePayments: 0
   })
   const [loading, setLoading] = useState(true)
-  const [message, setMessage] = useState<string | null>(null)
   const [recentBookings, setRecentBookings] = useState<any[]>([])
   const [topAffiliates, setTopAffiliates] = useState<any[]>([])
 
@@ -122,87 +121,6 @@ export function Dashboard() {
     }
   }
 
-  const handleSeedData = async (type: 'tours' | 'posts' | 'customers' | 'staff' | 'affiliates' | 'bookings' | 'all') => {
-    try {
-      setMessage('Đang thêm dữ liệu...')
-      
-      if (type === 'tours' || type === 'all') {
-        const { seedToursData } = await import('../../utils/seedData')
-        const result = await seedToursData()
-        if (result.success) {
-          setMessage(`✅ Đã thêm ${result.count} tours thành công!`)
-        } else {
-          setMessage('❌ Lỗi khi thêm tours')
-        }
-      }
-      
-      if (type === 'posts' || type === 'all') {
-        const { seedPostsData } = await import('../../utils/seedData')
-        const result = await seedPostsData()
-        if (result.success) {
-          setMessage(`✅ Đã thêm ${result.count} posts thành công!`)
-        } else {
-          setMessage('❌ Lỗi khi thêm posts')
-        }
-      }
-
-      if (type === 'customers' || type === 'all') {
-        const { seedCustomersData } = await import('../../utils/seedData')
-        const result = await seedCustomersData()
-        if (result.success) {
-          setMessage(`✅ Đã thêm ${result.count} khách hàng thành công!`)
-        } else {
-          setMessage('❌ Lỗi khi thêm khách hàng')
-        }
-      }
-
-      if (type === 'staff' || type === 'all') {
-        const { seedStaffData } = await import('../../utils/seedData')
-        const result = await seedStaffData()
-        if (result.success) {
-          setMessage(`✅ Đã thêm ${result.count} nhân viên thành công!`)
-        } else {
-          setMessage('❌ Lỗi khi thêm nhân viên')
-        }
-      }
-
-      if (type === 'affiliates' || type === 'all') {
-        const { seedAffiliatesData } = await import('../../utils/seedData')
-        const result = await seedAffiliatesData()
-        if (result.success) {
-          setMessage(`✅ Đã thêm ${result.count} đối tác affiliate thành công!`)
-        } else {
-          setMessage('❌ Lỗi khi thêm đối tác affiliate')
-        }
-      }
-
-      if (type === 'bookings' || type === 'all') {
-        const { seedBookingsData } = await import('../../utils/seedData')
-        const result = await seedBookingsData()
-        if (result.success) {
-          setMessage(`✅ Đã thêm ${result.count} đặt tour thành công!`)
-        } else {
-          setMessage('❌ Lỗi khi thêm đặt tour')
-        }
-      }
-      
-      if (type === 'all') {
-        setMessage('🎉 Đã thêm tất cả dữ liệu mẫu!')
-      }
-      
-      // Reload stats after seeding
-      setTimeout(() => {
-        loadStats()
-        loadRecentBookings()
-        loadTopAffiliates()
-        setMessage(null)
-      }, 3000)
-      
-    } catch (err: any) {
-      setMessage('❌ Lỗi: ' + err.message)
-    }
-  }
-
   return (
     <div className="dashboard">
       <div className="dashboard-header">
@@ -275,75 +193,6 @@ export function Dashboard() {
             <p>Chưa thanh toán</p>
           </div>
         </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="quick-actions">
-        <h2>Thao Tác Nhanh</h2>
-        
-        <div className="action-buttons">
-          <button 
-            onClick={() => handleSeedData('tours')}
-            className="action-btn tours-btn"
-          >
-            🌱 Thêm 20 Tours Mẫu
-          </button>
-          
-          <button 
-            onClick={() => handleSeedData('posts')}
-            className="action-btn posts-btn"
-          >
-            📝 Thêm 20 Posts Mẫu
-          </button>
-
-          <button 
-            onClick={() => handleSeedData('customers')}
-            className="action-btn customers-btn"
-          >
-            👥 Thêm 15 Khách Hàng Mẫu
-          </button>
-
-          <button 
-            onClick={() => handleSeedData('staff')}
-            className="action-btn staff-btn"
-          >
-            👨‍💼 Thêm 10 Nhân Viên Mẫu
-          </button>
-
-          <button 
-            onClick={() => handleSeedData('affiliates')}
-            className="action-btn affiliates-btn"
-          >
-            🤝 Thêm 8 Đối Tác Affiliate Mẫu
-          </button>
-
-          <button 
-            onClick={() => handleSeedData('bookings')}
-            className="action-btn bookings-btn"
-          >
-            📅 Thêm 25 Đặt Tour Mẫu
-          </button>
-          
-          <button 
-            onClick={() => handleSeedData('all')}
-            className="action-btn all-btn"
-          >
-            🚀 Thêm Tất Cả Dữ Liệu
-          </button>
-        </div>
-        
-        {message && (
-          <div className="message" style={{
-            padding: '12px',
-            marginTop: '16px',
-            borderRadius: '6px',
-            backgroundColor: message.includes('✅') ? '#dcfce7' : '#fef2f2',
-            color: message.includes('✅') ? '#166534' : '#dc2626',
-            border: `1px solid ${message.includes('✅') ? '#bbf7d0' : '#fecaca'}`
-          }}>
-            {message}
-          </div>
-        )}
       </div>
 
       {/* Recent Activity & Reports */}
