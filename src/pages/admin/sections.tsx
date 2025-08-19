@@ -198,6 +198,18 @@ export function ToursAdminPage(){
       type:'text',
       tooltip: 'Mô tả chi tiết về tour du lịch'
     },
+    {
+      key:'insuranceIncluded',
+      label:'Bao gồm bảo hiểm',
+      type:'boolean',
+      tooltip:'Đánh dấu nếu tour bao gồm bảo hiểm du lịch'
+    },
+    {
+      key:'insuranceDetails',
+      label:'Chi tiết bảo hiểm',
+      type:'text',
+      tooltip:'Mô tả quyền lợi bảo hiểm, phạm vi, điều kiện'
+    },
     { 
       key:'highlights', 
       label:'Điểm nổi bật', 
@@ -390,6 +402,12 @@ export function BookingsAdminPage(){
       displayField: 'name',
       valueField: 'id',
       tooltip: 'Chọn tour từ danh sách có sẵn'
+    },
+    {
+      key:'tourName',
+      label:'Tên tour',
+      type:'string',
+      tooltip:'Tên tour tại thời điểm đặt (tự động điền khi tạo)'
     },
     { 
       key:'customerName', 

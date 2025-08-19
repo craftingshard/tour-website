@@ -265,8 +265,24 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
     }
   }
 
-  const formatValue = (value: any, type: FieldType) => {
+  const formatValue = (value: any, type: FieldType, column?: CrudColumn) => {
     if (value === null || value === undefined) return '-'
+    // Resolve select values to display text when possible
+    if ((type === 'select' || type === 'select-multiple') && column && column.collection) {
+      const options = referenceData[column.key] || []
+      const displayField = column.displayField || 'name'
+      const valueField = column.valueField || 'id'
+      if (type === 'select-multiple' && Array.isArray(value)) {
+        const labels = value.map((v: any) => {
+          const found = options.find((o: any) => String(o[valueField]) === String(v))
+          return found ? String(found[displayField] ?? v) : String(v)
+        })
+        return labels.join(', ')
+      } else {
+        const found = options.find((o: any) => String(o[valueField]) === String(value))
+        if (found) return String(found[displayField] ?? value)
+      }
+    }
     if (type === 'boolean') return value ? '✅' : '❌'
     if (type === 'date') return value?.toDate ? value.toDate().toLocaleDateString('vi-VN') : new Date(value).toLocaleDateString('vi-VN')
     if (type === 'array') return Array.isArray(value) ? value.join(', ') : value
@@ -527,7 +543,7 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
                   <tr key={row.id} className="data-row">
                     {columns.map(c => (
                       <td key={c.key} className="data-cell">
-                        {formatValue(row[c.key], c.type)}
+                        {formatValue(row[c.key], c.type, c)}
                       </td>
                     ))}
                     <td className="actions-cell">
@@ -788,7 +804,7 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
         .pagination-controls button {
           padding: 8px 16px;
           border: 1px solid #d1d5db;
-          background: white;
+          background: #ffffff;
           border-radius: 6px;
           cursor: pointer;
           transition: all 0.2s;

@@ -48,6 +48,7 @@ export function AdminLayout() {
   return (
     <div className="admin-layout">
         {/* Header */}
+      {/* Removed top horizontal menu per request; keep a minimal header */}
       <header className="admin-header">
         <div className="header-content">
           <div className="logo-section">
