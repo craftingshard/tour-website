@@ -26,6 +26,8 @@ export function AdminProviders({ children }: PropsWithChildren) {
       try {
         if (user) {
           setUid(user.uid)
+          // Check if user has admin role in custom claims or user metadata
+          // For now, we'll check if the user exists in admins collection
           const adminDoc = await getDoc(doc(db, 'admins', user.uid))
           setIsAdmin(adminDoc.exists())
         } else {
@@ -41,10 +43,26 @@ export function AdminProviders({ children }: PropsWithChildren) {
 
   const login = async (email: string, password: string) => {
     const cred = await signInWithEmailAndPassword(auth, email, password)
-    const snapshot = await getDoc(doc(db, 'admins', cred.user.uid))
+    console.log('User UID:', cred.user.uid)
+    console.log('User Email:', cred.user.email)
+    
+    // Check if user exists in admins collection
+    const adminDocRef = doc(db, 'admins', cred.user.uid)
+    console.log('Checking admin document at path:', adminDocRef.path)
+    
+    const snapshot = await getDoc(adminDocRef)
+    console.log('Admin document exists:', snapshot.exists())
+    
+    if (snapshot.exists()) {
+      console.log('Admin document data:', snapshot.data())
+    }
+    
     if (!snapshot.exists()) {
+      console.log('❌ Admin document NOT found - denying access')
       await signOut(auth)
       throw new Error('Tài khoản không có quyền quản trị')
+    } else {
+      console.log('✅ Admin document found - access granted')
     }
   }
 

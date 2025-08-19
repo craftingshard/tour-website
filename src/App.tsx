@@ -18,7 +18,8 @@ import { AdminProviders } from './context/AdminProviders'
 import { AdminGuard } from './pages/admin/AdminGuard'
 import { AdminLoginPage } from './pages/admin/AdminLoginPage'
 import { AdminLayout } from './pages/admin/AdminLayout'
-import { CustomersPage, StaffPage, ToursAdminPage, PostsPage, ThemePage, AboutAdminPage, BookingsAdminPage } from './pages/admin/sections'
+import { Dashboard } from './pages/admin/Dashboard'
+import { CustomersPage, StaffPage, ToursAdminPage, PostsPage, ThemePage, AboutAdminPage, BookingsAdminPage, AffiliatePage } from './pages/admin/sections'
 import { TourDetailPage } from './pages/TourDetailPage'
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
         <Header />
         <main className="app-main">
           <Routes>
+            {/* All public routes */}
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/tours" element={<ToursPage />} />
@@ -40,10 +42,11 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/viewed" element={<ViewedToursPage />} />
             <Route path="/payment" element={<PaymentPage />} />
-            {/* Admin routes */}
+
+            {/* Admin routes must come before the catch-all route */}
             <Route path="/admin/login" element={<AdminProviders><AdminLoginPage /></AdminProviders>} />
             <Route element={<AdminProviders><AdminGuard /></AdminProviders>}>
-              <Route path="/admin" element={<AdminLayout><CustomersPage /></AdminLayout>} />
+              <Route path="/admin" element={<AdminLayout><Dashboard /></AdminLayout>} />
               <Route path="/admin/customers" element={<AdminLayout><CustomersPage /></AdminLayout>} />
               <Route path="/admin/staff" element={<AdminLayout><StaffPage /></AdminLayout>} />
               <Route path="/admin/tours" element={<AdminLayout><ToursAdminPage /></AdminLayout>} />
@@ -51,14 +54,17 @@ function App() {
               <Route path="/admin/theme" element={<AdminLayout><ThemePage /></AdminLayout>} />
               <Route path="/admin/about" element={<AdminLayout><AboutAdminPage /></AdminLayout>} />
               <Route path="/admin/bookings" element={<AdminLayout><BookingsAdminPage /></AdminLayout>} />
+              <Route path="/admin/affiliate" element={<AdminLayout><AffiliatePage /></AdminLayout>} />
             </Route>
+            
+            {/* The wildcard route MUST be the last one */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
         <Footer />
       </div>
     </AppProviders>
-  )
+  );
 }
 
-export default App
+export default App;
