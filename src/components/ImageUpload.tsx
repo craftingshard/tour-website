@@ -162,7 +162,7 @@ export function ImageUpload({
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .image-upload {
           display: flex;
           flex-direction: column;

@@ -272,7 +272,7 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .crud-container {
           background: white;
           border-radius: 12px;

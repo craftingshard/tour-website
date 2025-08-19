@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../../firebase'
 
 export function Dashboard() {
@@ -186,7 +186,7 @@ export function Dashboard() {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .dashboard {
           padding: 24px;
           max-width: 1200px;

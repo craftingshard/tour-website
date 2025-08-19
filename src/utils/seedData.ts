@@ -1,5 +1,5 @@
 import { db } from '../firebase'
-import { collection, addDoc, doc, setDoc } from 'firebase/firestore'
+import { collection, addDoc } from 'firebase/firestore'
 
 // Sample tour data
 const sampleTours = [
