@@ -54,15 +54,14 @@ export function AdminProviders({ children }: PropsWithChildren) {
     console.log('Admin document exists:', snapshot.exists())
     
     if (snapshot.exists()) {
-      console.log('Admin document data:', snapshot.data())
-    }
-    
-    if (!snapshot.exists()) {
+      console.log('✅ Admin document found - access granted')
+      // Update state immediately for better UX
+      setUid(cred.user.uid)
+      setIsAdmin(true)
+    } else {
       console.log('❌ Admin document NOT found - denying access')
       await signOut(auth)
       throw new Error('Tài khoản không có quyền quản trị')
-    } else {
-      console.log('✅ Admin document found - access granted')
     }
   }
 
