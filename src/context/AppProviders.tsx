@@ -4,7 +4,7 @@ import type { PropsWithChildren } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import type { User } from 'firebase/auth'
 import { auth, db } from '../firebase'
-import { addDoc, collection, doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
+import { addDoc, collection, doc, onSnapshot, setDoc, updateDoc, query, where, getDocs, getDoc } from 'firebase/firestore'
 
 export type Tour = {
   id: string
@@ -14,6 +14,9 @@ export type Tour = {
   rating: number
   hot?: boolean
   imageUrl: string
+  approved?: boolean
+  createdBy?: string
+  createdByName?: string
 }
 
 export type Review = {
@@ -47,7 +50,8 @@ type AppContextType = {
   bookTour: (id: string) => void
   addReview: (tourId: string, rating: number, comment: string) => void
   saveCustomerProfile: (data: Partial<Customer>) => Promise<void>
-  createBooking: (payload: { tourId: string; amount: number; method: 'card' | 'cash'; people: number; startDate: number; notes?: string; paid: boolean }) => Promise<string>
+  createBooking: (payload: { tourId: string; amount: number; method: 'card' | 'cash' | 'bank_transfer'; people: number; startDate: number; endDate?: number; notes?: string; paid: boolean }) => Promise<string>
+  cancelBooking: (tourId: string) => Promise<void>
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
@@ -107,6 +111,9 @@ export function AppProviders({ children }: PropsWithChildren) {
               rating: Number(data.rating) || 0,
               hot: Boolean(data.hot),
               imageUrl: data.imageUrl || data.image || data.photo || data.thumbnail || data.picture || 'https://images.unsplash.com/photo-1545243424-0ce743321e11?q=80&w=1600&auto=format&fit=crop',
+              approved: Boolean(data.approved),
+              createdBy: data.createdBy,
+              createdByName: data.createdByName,
             })
           })
           if (adminToursList.length > 0) {
@@ -138,6 +145,9 @@ export function AppProviders({ children }: PropsWithChildren) {
             rating: Number(data.rating) || 0,
             hot: Boolean(data.hot || data.featured),
             imageUrl: data.imageUrl || data.image || data.photo || data.thumbnail || data.picture || 'https://images.unsplash.com/photo-1545243424-0ce743321e11?q=80&w=1600&auto=format&fit=crop',
+            approved: Boolean(data.approved),
+            createdBy: data.createdBy,
+            createdByName: data.createdByName,
           })
         })
 
@@ -244,14 +254,36 @@ export function AppProviders({ children }: PropsWithChildren) {
     await addDoc(collection(db, 'reviews'), newReview)
   }
 
-  const createBooking = async (payload: { tourId: string; amount: number; method: 'card' | 'cash'; people: number; startDate: number; notes?: string; paid: boolean }) => {
+  const createBooking = async (payload: { tourId: string; amount: number; method: 'card' | 'cash' | 'bank_transfer'; people: number; startDate: number; endDate?: number; notes?: string; paid: boolean }) => {
     if (!user) throw new Error('Bạn cần đăng nhập')
+    // Validate dates
+    const start = Number(payload.startDate)
+    if (!start || isNaN(start)) throw new Error('Ngày khởi hành không hợp lệ')
+    const today = new Date(); today.setHours(0,0,0,0)
+    if (start < today.getTime()) throw new Error('Ngày khởi hành không thể ở quá khứ')
+    if (payload.endDate) {
+      const end = Number(payload.endDate)
+      if (isNaN(end) || end <= start) throw new Error('Ngày kết thúc phải sau ngày khởi hành')
+    }
+
+    // Duplicate booking check (same user, tour, date and active status)
+    const dupQ = query(collection(db, 'bookings'), where('userId','==', user.uid), where('tourId','==', payload.tourId))
+    const dupSnap = await getDocs(dupQ)
+    const hasDup = dupSnap.docs.some(d => {
+      const b = d.data() as any
+      const status = String(b.status || '')
+      const active = ['pending','paid','confirmed','completed']
+      const sameStart = Number(b.startDate || b.travelDate) === start
+      return active.includes(status) && sameStart
+    })
+    if (hasDup) throw new Error('Bạn đã đặt tour này cho ngày này rồi')
     const safePayload = {
       tourId: payload.tourId,
       amount: Number(payload.amount) || 0,
       method: payload.method,
       people: Number(payload.people) || 0,
       startDate: Number(payload.startDate) || Date.now(),
+      endDate: payload.endDate ? Number(payload.endDate) : undefined,
       notes: payload.notes || '',
       paid: Boolean(payload.paid),
     }
@@ -261,8 +293,45 @@ export function AppProviders({ children }: PropsWithChildren) {
       status: safePayload.paid ? 'paid' : 'pending',
       createdAt: Date.now(),
     })
+    // Notifications to admins and tour creator
+    try {
+      const tourDoc = await getDoc(doc(db, 'TOURS', payload.tourId))
+      const tData: any = tourDoc.exists() ? tourDoc.data() : {}
+      const creatorId = tData?.createdBy
+      const notifBase = {
+        type: 'booking_created',
+        tourId: payload.tourId,
+        bookingId: docRef.id,
+        userId: user.uid,
+        createdAt: Date.now(),
+        message: `Có đơn đặt tour mới: ${tData?.title || tData?.name || ''}`,
+        read: false,
+      }
+      await addDoc(collection(db, 'notifications'), { ...notifBase, recipientRole: 'admin' })
+      if (creatorId) {
+        await addDoc(collection(db, 'notifications'), { ...notifBase, recipientId: creatorId })
+      }
+    } catch {}
     setBookedTourIds(prev => prev.includes(payload.tourId) ? prev : [...prev, payload.tourId])
     return docRef.id
+  }
+
+  const cancelBooking = async (tourId: string) => {
+    if (!user) throw new Error('Bạn cần đăng nhập')
+    const qBk = query(collection(db, 'bookings'), where('userId','==', user.uid), where('tourId','==', tourId))
+    const snap = await getDocs(qBk)
+    let latestId: string | null = null
+    let latestCreated = -1
+    snap.forEach(d => {
+      const b = d.data() as any
+      const status = String(b.status || '')
+      if (['cancelled','completed'].includes(status)) return
+      const created = Number(b.createdAt || 0)
+      if (created > latestCreated) { latestCreated = created; latestId = d.id }
+    })
+    if (!latestId) throw new Error('Không có đặt chỗ nào để hủy')
+    await updateDoc(doc(db, 'bookings', latestId), { status: 'cancelled', updatedAt: Date.now() })
+    setBookedTourIds(prev => prev.filter(x => x !== tourId))
   }
 
   const value = useMemo(() => ({
@@ -279,6 +348,7 @@ export function AppProviders({ children }: PropsWithChildren) {
     addReview,
     saveCustomerProfile,
     createBooking,
+    cancelBooking,
   }), [user, tours, reviewsByTourId, currentCustomer, viewedTourIds, selectedTourIds, bookedTourIds])
 
   return (

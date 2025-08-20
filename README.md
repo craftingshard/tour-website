@@ -15,28 +15,12 @@
 - [x] **Guide page pagination** - Load all posts with 10 posts per page
 - [x] **Quick booking form** - Integrated registration for non-logged users
 
-### 🔄 Pending Tasks
-- [ ] **Enable tour booking functionality** for customers on the client-side
-
-### 🐛 Recent Bug Fixes
-- [x] Fixed Router error: Removed duplicate BrowserRouter from App.tsx (Router was already provided in main.tsx)
-- [x] Updated browser title to "Website Tour Du Lịch"
-- [x] Fixed CSS completely missing in customer view
-- [x] Fixed tours not displaying from database collections
-
 ## Features Implemented
 
 ### Role-Based Access Control
 - **Admin**: Full permissions (create, read, update, delete)
 - **Manager**: Can add and edit data, but cannot delete
 - **Staff**: Can only add and edit POST, TOUR, and Booking tour data with separate dashboard
-
-### Customer Frontend
-- Displays tours and posts from Firestore collections
-- Responsive design with modern UI
-- Tour cards with images and details
-- **Guide page with pagination** (10 posts per page)
-- **Quick booking form** with integrated registration
 
 ### Quick Booking System
 - **Integrated registration** for non-logged users

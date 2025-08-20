@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { collection, query, where, getDocs, addDoc, doc, setDoc } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
 import { db, auth } from '../firebase'
 import { useApp } from '../context/AppProviders'
@@ -169,33 +169,35 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
       }
 
       // Create booking
-      const bookingData = {
-        tourId: tour.id,
-        tourName: tour.title,
-        customerId: customerId,
-        customerName: customerName,
-        customerEmail: customerEmail,
-        customerPhone: customerPhone,
-        tickets: tickets,
-        totalPeople: getTotalPeople(),
-        travelDate: new Date(travelDate),
-        specialRequests: specialRequests,
-        paymentMethod: paymentMethod,
-        includeInsurance: includeInsurance,
-        amount: getTotalAmount(),
-        status: 'pending',
-        paid: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
+      // const bookingData = {
+      //   tourId: tour.id,
+      //   tourName: tour.title,
+      //   customerId: customerId,
+      //   customerName: customerName,
+      //   customerEmail: customerEmail,
+      //   customerPhone: customerPhone,
+      //   tickets: tickets,
+      //   totalPeople: getTotalPeople(),
+      //   travelDate: new Date(travelDate),
+      //   specialRequests: specialRequests,
+      //   paymentMethod: paymentMethod,
+      //   includeInsurance: includeInsurance,
+      //   amount: getTotalAmount(),
+      //   status: 'pending',
+      //   paid: false,
+      //   createdAt: new Date(),
+      //   updatedAt: new Date()
+      // }
+
+      // Validate date is not in the past
+      const startMs = new Date(travelDate).setHours(0,0,0,0)
+      const today = new Date(); today.setHours(0,0,0,0)
+      if (startMs < today.getTime()) {
+        throw new Error('Ngày khởi hành không thể ở quá khứ')
       }
 
-      const bookingRef = await addDoc(collection(db, 'bookings'), {
-        ...bookingData,
-        tourId: tour.id,
-        tourName: tour.title || tour.name || '',
-        amount: Number(bookingData.amount) || 0,
-        totalPeople: Number(bookingData.totalPeople) || 0,
-      })
+      // Redirect to payment page; creation will be done in PaymentPage with duplicate checks
+      //const bookingRef = { id: 'temp' } as any
       
       // If user is logged in, update their booking list
       if (user) {
@@ -204,14 +206,16 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
 
       setSuccess(true)
       
-      // Redirect to payment page after 2 seconds
+      // Redirect to payment page after 2 seconds with ticket breakdown so PaymentPage can compute totals
       setTimeout(() => {
         navigate('/payment', { 
           state: { 
             tourId: tour.id,
-            bookingId: bookingRef.id,
-            amount: bookingData.amount
-          } 
+            tickets,
+            includeInsurance,
+            totalAmount: getTotalAmount(),
+            travelDate: new Date(travelDate).toISOString()
+          }
         })
       }, 2000)
 

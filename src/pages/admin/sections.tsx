@@ -144,9 +144,10 @@ export function ToursAdminPage(){
     },
     { 
       key:'rating', 
-      label:'Đánh giá', 
+      label:'Đánh giá (tự tính)', 
       type:'number',
-      tooltip: 'Điểm đánh giá từ 1-10 (chỉ nhập số)'
+      tooltip: 'Được tính từ đánh giá khách, không nhập thủ công',
+      hideInForm: true
     },
     { 
       key:'category', 
@@ -175,22 +176,40 @@ export function ToursAdminPage(){
       type:'boolean',
       tooltip: 'Đánh dấu nếu tour nổi bật cần quảng bá'
     },
-    { 
-      key:'status', 
-      label:'Trạng thái', 
-      type:'select',
-      options: [
-        { value: 'active', label: 'Hoạt động' },
-        { value: 'inactive', label: 'Tạm dừng' },
-        { value: 'draft', label: 'Nháp' }
-      ],
-      tooltip: 'Trạng thái hoạt động của tour'
+    // Status ẩn trong form, mặc định chờ xác nhận (ở onSubmit xử lý)
+    { key:'status', label:'Trạng thái', type:'string', hideInForm: true },
+    {
+      key:'approved',
+      label:'Đã kiểm duyệt',
+      type:'boolean',
+      tooltip:'Chỉ admin/manager được duyệt. Tour mới tạo mặc định chờ duyệt',
+      hideInForm: true
+    },
+    {
+      key:'approvedBy',
+      label:'Người duyệt',
+      type:'string',
+      tooltip:'Tự động lưu khi duyệt',
+      hideInForm: true
+    },
+    {
+      key:'approvedAt',
+      label:'Ngày duyệt',
+      type:'date',
+      tooltip:'Tự động lưu khi duyệt',
+      hideInForm: true
     },
     { 
       key:'imageUrl', 
       label:'Ảnh', 
       type:'string',
       tooltip: 'URL ảnh đại diện cho tour (hỗ trợ jpg, png, gif)'
+    },
+    {
+      key:'images',
+      label:'Thư viện ảnh',
+      type:'array',
+      tooltip:'Danh sách ảnh bổ sung (jpg, png, jpeg)'
     },
     { 
       key:'description', 
@@ -213,20 +232,20 @@ export function ToursAdminPage(){
     { 
       key:'highlights', 
       label:'Điểm nổi bật', 
-      type:'array',
-      tooltip: 'Các điểm nổi bật của tour (phân cách bằng dấu phẩy)'
+      type:'text',
+      tooltip: 'Các điểm nổi bật của tour'
     },
     { 
       key:'included', 
       label:'Bao gồm', 
-      type:'array',
-      tooltip: 'Dịch vụ bao gồm trong tour (phân cách bằng dấu phẩy)'
+      type:'text',
+      tooltip: 'Dịch vụ bao gồm trong tour'
     },
     { 
       key:'excluded', 
       label:'Không bao gồm', 
-      type:'array',
-      tooltip: 'Dịch vụ không bao gồm trong tour (phân cách bằng dấu phẩy)'
+      type:'text',
+      tooltip: 'Dịch vụ không bao gồm trong tour'
     },
     { 
       key:'maxGroupSize', 
@@ -286,29 +305,7 @@ export function PostsPage(){
       type:'string',
       tooltip: 'Thời gian ước tính để đọc hết bài viết (ví dụ: 5 phút)'
     },
-    { 
-      key:'views', 
-      label:'Lượt xem', 
-      type:'number',
-      tooltip: 'Số lượt xem bài viết (tự động tính)'
-    },
-    { 
-      key:'likes', 
-      label:'Lượt thích', 
-      type:'number',
-      tooltip: 'Số lượt thích bài viết (tự động tính)'
-    },
-    { 
-      key:'status', 
-      label:'Trạng thái', 
-      type:'select',
-      options: [
-        { value: 'draft', label: 'Nháp' },
-        { value: 'published', label: 'Đã xuất bản' },
-        { value: 'archived', label: 'Đã lưu trữ' }
-      ],
-      tooltip: 'Trạng thái xuất bản của bài viết'
-    },
+    // Hidden/managed fields: views, likes, status handled by system
     { 
       key:'featured', 
       label:'Nổi bật', 
@@ -378,6 +375,16 @@ export function SettingsPage(){
     { key:'hotline', label:'Hotline', type:'string' },
   ]
   return <CrudTable title="Cấu hình hệ thống" collectionName="settings" columns={cols} createDefaults={{ id:'global' }} />
+}
+
+export function BanksAdminPage(){
+  const cols: CrudColumn[] = [
+    { key:'name', label:'Ngân hàng', type:'string', required:true, tooltip:'Tên ngân hàng (VD: Vietcombank, MB Bank, Techcombank, ...)' },
+    { key:'accountNumber', label:'Số tài khoản', type:'string', required:true },
+    { key:'accountName', label:'Chủ tài khoản', type:'string', required:true },
+    { key:'qrImageUrl', label:'QR Code', type:'string', tooltip:'URL ảnh QR chuyển khoản' },
+  ]
+  return <CrudTable title="Tài khoản ngân hàng" collectionName="banks" columns={cols} />
 }
 
 export function AboutAdminPage(){

@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { collection, getDocs, query, limit } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useApp } from '../context/AppProviders'
@@ -7,6 +8,7 @@ import { Carousel } from '../components/Carousel'
 
 export function HomePage() {
   const { tours } = useApp()
+  const navigate = useNavigate()
   const [firestoreTours, setFirestoreTours] = useState<any[]>([])
   const [firestorePosts, setFirestorePosts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -130,15 +132,14 @@ export function HomePage() {
         </div>
       )}
 
-      {/* Tour Filters - placed under the carousel (apply on submit to avoid hiding carousel while typing) */}
-      <div className="card" style={{margin:'12px 0', padding:'12px'}}>
-        <form onSubmit={(e)=> { e.preventDefault(); setFilter(pendingFilter) }}>
+      {/* Tour Filters - on submit navigate to results page; keep carousel intact */}
+      <div className="card" style={{margin:'12px 0', padding:'12px', perspective:'1000px'}}>
+        <form onSubmit={(e)=> { e.preventDefault(); navigate('/tours', { state: { filter: pendingFilter } }) }} style={{transformStyle:'preserve-3d'}}>
           <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))', gap:12}}>
-            <input placeholder="Địa điểm" value={pendingFilter.location || ''} onChange={e=>setPendingFilter(f=>({...f, location:e.target.value}))} />
-            <input type="number" placeholder="Giá từ" value={pendingFilter.minPrice ?? ''} onChange={e=>setPendingFilter(f=>({...f, minPrice: e.target.value===''? undefined : Number(e.target.value)}))} />
-            <input type="number" placeholder="Giá đến" value={pendingFilter.maxPrice ?? ''} onChange={e=>setPendingFilter(f=>({...f, maxPrice: e.target.value===''? undefined : Number(e.target.value)}))} />
-            <input placeholder="Danh mục" value={pendingFilter.category || ''} onChange={e=>setPendingFilter(f=>({...f, category:e.target.value}))} />
-            <button className="btn primary" type="submit">Lọc</button>
+            <input placeholder="Địa điểm" value={pendingFilter.location || ''} onChange={e=>setPendingFilter(f=>({...f, location:e.target.value}))} style={{transform:'rotateX(6deg)'}} />
+            <input type="number" placeholder="Giá từ" value={pendingFilter.minPrice ?? ''} onChange={e=>setPendingFilter(f=>({...f, minPrice: e.target.value===''? undefined : Number(e.target.value)}))} style={{transform:'rotateY(-6deg)'}} />
+            <input type="number" placeholder="Giá đến" value={pendingFilter.maxPrice ?? ''} onChange={e=>setPendingFilter(f=>({...f, maxPrice: e.target.value===''? undefined : Number(e.target.value)}))} style={{transform:'rotateY(6deg)'}} />
+            <button className="btn primary" type="submit" style={{transform:'translateZ(20px)', boxShadow:'0 10px 20px rgba(0,0,0,.25)'}}>Lọc</button>
             <button type="button" className="btn ghost" onClick={()=>{ setFilter({}); setPendingFilter({}) }}>Xóa lọc</button>
           </div>
         </form>
@@ -157,7 +158,7 @@ export function HomePage() {
       <h3 className="section-title">Bài viết mới nhất ({firestorePosts.length})</h3>
       <div className="posts-grid">
         {firestorePosts.length > 0 ? firestorePosts.map(post => (
-          <div key={post.id} className="post-card">
+          <div key={post.id} className="post-card" onClick={()=> navigate(`/guide/${post.id}`)}>
             {post.imageUrl && (
               <div className="post-image">
                 <img src={post.imageUrl} alt={post.title} />
@@ -223,8 +224,8 @@ export function HomePage() {
         }
         
         .post-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.15);
+          transform: translateY(-4px) rotateX(2deg) rotateY(-2deg);
+          box-shadow: 0 20px 30px -10px rgba(0,0,0,.2);
         }
         
         .post-image {

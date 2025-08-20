@@ -1,11 +1,14 @@
 import { useApp } from '../context/AppProviders'
+import { useState } from 'react'
 
 export function BookingsPage() {
-  const { bookedTourIds, tours } = useApp()
+  const { bookedTourIds, tours, cancelBooking } = useApp()
+  const [error, setError] = useState<string | null>(null)
   const bookedTours = tours.filter(t => bookedTourIds.includes(t.id))
   return (
     <div className="container">
       <h2>Tour đã đặt</h2>
+      {error && <div className="muted" style={{color:'#fca5a5'}}>{error}</div>}
       {bookedTours.length === 0 ? (
         <div className="muted">Chưa có tour nào.</div>
       ) : (
@@ -13,7 +16,13 @@ export function BookingsPage() {
           {bookedTours.map(t => (
             <div key={t.id} className="card">
               <div style={{fontWeight:700}}>{t.title}</div>
-              <div className="muted">{t.location} • {t.price.toLocaleString()} đ</div>
+              <div className="muted">{t.location} • {t.price.toLocaleString('vi-VN')} ₫</div>
+              <div style={{display:'flex', justifyContent:'flex-end', marginTop:8}}>
+                <button className="btn ghost" onClick={async ()=>{
+                  setError(null)
+                  try { await cancelBooking(t.id) } catch(e:any){ setError(e?.message||'Hủy không thành công') }
+                }}>Hủy tour</button>
+              </div>
             </div>
           ))}
         </div>

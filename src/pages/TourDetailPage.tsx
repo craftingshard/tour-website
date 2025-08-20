@@ -65,10 +65,17 @@ export function TourDetailPage() {
           <div style={{position:'relative'}}>
             <img src={tour.imageUrl} alt={tour.title} style={{width:'100%', height:420, objectFit:'cover'}} />
             <div style={{position:'absolute', left:12, bottom:12, display:'flex', gap:8, alignItems:'flex-end'}}>
-              <div style={{background:'#fde047', color:'#06101a', fontWeight:800, padding:'6px 10px', borderRadius:8, fontSize:18}}>{tour.price.toLocaleString()} đ</div>
+              <div style={{background:'#fde047', color:'#06101a', fontWeight:800, padding:'6px 10px', borderRadius:8, fontSize:18}}>{tour.price.toLocaleString('vi-VN')} ₫</div>
               <div style={{fontWeight:800, fontSize:22, textShadow:'0 1px 0 rgba(0,0,0,.4)'}}>{tour.title}</div>
             </div>
           </div>
+          {Array.isArray((tour as any).images) && (tour as any).images.length > 0 && (
+            <div style={{padding:12, display:'flex', gap:8, flexWrap:'wrap'}}>
+              {(tour as any).images.map((url: string, idx: number) => (
+                <img key={idx} src={url} alt={`gallery-${idx}`} style={{width:120, height:90, objectFit:'cover', borderRadius:8, border:'1px solid rgba(0,0,0,.08)'}} />
+              ))}
+            </div>
+          )}
           <div style={{padding:16}}>
             <div className="muted" style={{display:'flex', alignItems:'center', gap:8}}>
               <span>{tour.location}</span>

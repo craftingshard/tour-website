@@ -21,7 +21,7 @@ import { AdminGuard } from './pages/admin/AdminGuard'
 import { AdminLoginPage } from './pages/admin/AdminLoginPage'
 import { Dashboard } from './pages/admin/Dashboard'
 import { StaffDashboard } from './pages/admin/StaffDashboard'
-import { ToursAdminPage, PostsPage as PostsAdminPage, ThemePage, AboutAdminPage, BookingsAdminPage, AffiliatePage, AffiliateReportPage, AffiliatePaymentPage, RevenueReportPage, TourPerformancePage, CustomersAdminPage, StaffAdminPage, SettingsPage } from './pages/admin/sections'
+import { ToursAdminPage, PostsPage as PostsAdminPage, ThemePage, AboutAdminPage, BookingsAdminPage, AffiliatePage, AffiliateReportPage, AffiliatePaymentPage, RevenueReportPage, TourPerformancePage, CustomersAdminPage, StaffAdminPage, SettingsPage, BanksAdminPage } from './pages/admin/sections'
 
 function App() {
   return (
@@ -72,6 +72,7 @@ function App() {
                 <Route path="tour-performance" element={<TourPerformancePage />} />
                 <Route path="themes" element={<ThemePage />} />
                 <Route path="settings" element={<SettingsPage />} />
+                <Route path="banks" element={<BanksAdminPage />} />
                 <Route path="about" element={<AboutAdminPage />} />
               </Route>
             </Route>

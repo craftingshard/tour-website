@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { addDoc, collection, deleteDoc, doc, onSnapshot, updateDoc, getDocs } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, onSnapshot, updateDoc, getDocs, query as fsQuery, where } from 'firebase/firestore'
 import { db } from '../../../firebase'
+import { ImageUpload } from '../../../components/ImageUpload'
+import { RichTextEditor } from '../../../components/RichTextEditor'
 import { useAdmin } from '../../../context/AdminProviders'
 
 type FieldType = 'string' | 'number' | 'boolean' | 'text' | 'date' | 'array' | 'select' | 'select-multiple' | 'color'
@@ -16,6 +18,7 @@ export type CrudColumn = {
   displayField?: string
   valueField?: string
   createDefaults?: Record<string, unknown>
+  hideInForm?: boolean
 }
 
 type CrudTableProps = {
@@ -39,6 +42,12 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
   const { hasPermission, currentUser } = useAdmin()
 
   const colRef = useMemo(() => collection(db, collectionName), [collectionName])
+  const listSource = useMemo(() => {
+    if (collectionName === 'TOURS' && currentUser?.role === 'staff') {
+      return fsQuery(collection(db, collectionName), where('createdBy', '==', currentUser.uid))
+    }
+    return colRef
+  }, [collectionName, currentUser, colRef])
 
   // Calculate pagination
   const filteredItems = useMemo(() => {
@@ -103,9 +112,9 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
   const goToPrevPage = () => goToPage(currentPage - 1)
 
   useEffect(() => {
-    const unsub = onSnapshot(colRef, (snap) => {
+    const unsub = onSnapshot(listSource as any, (snap: any) => {
       const rows: Array<{ id: string; [k: string]: any }> = []
-      snap.forEach((d) => rows.push({ id: d.id, ...d.data() }))
+      snap.forEach((d: any) => rows.push({ id: d.id, ...d.data() }))
       rows.sort((a, b) => {
         const aCreated = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (typeof a.createdAt === 'number' ? a.createdAt : (a.createdAt ? new Date(a.createdAt).getTime() : 0))
         const bCreated = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (typeof b.createdAt === 'number' ? b.createdAt : (b.createdAt ? new Date(b.createdAt).getTime() : 0))
@@ -118,7 +127,7 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
       setLoading(false)
     })
     return () => unsub()
-  }, [colRef])
+  }, [listSource])
 
   const resetForm = () => {
     const init: Record<string, any> = {}
@@ -136,6 +145,11 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
       else init[c.key] = ''
     })
     if (createDefaults) Object.assign(init, createDefaults)
+    // Posts defaults
+    if (collectionName === 'POSTS') {
+      init['status'] = 'draft'
+      init['publishedAt'] = new Date().toISOString().split('T')[0]
+    }
     setForm(init)
     setEditingId(null)
   }
@@ -239,6 +253,50 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
         else payload[c.key] = raw
       }
       if (createDefaults) Object.assign(payload, createDefaults)
+
+      // Auto-approve handling: only admin/manager can set approved
+      if (collectionName === 'TOURS') {
+        if (!editingId) {
+          // Force default hidden fields on create
+          payload['approved'] = false
+          delete payload['approvedBy']
+          delete payload['approvedAt']
+          payload['createdBy'] = currentUser?.uid
+          payload['createdByName'] = currentUser?.name
+        } else {
+          // On edit, if user toggles approved from false->true, stamp approver
+          const prev = items.find(i => i.id === editingId)
+          const prevApproved = Boolean(prev?.approved)
+          const nextApproved = Boolean(payload['approved'])
+          if (!prevApproved && nextApproved && (currentUser?.role === 'admin' || currentUser?.role === 'manager')) {
+            payload['approvedBy'] = currentUser?.uid
+            payload['approvedAt'] = new Date()
+          }
+          if (!(currentUser?.role === 'admin' || currentUser?.role === 'manager')) {
+            // Staff cannot change approval fields
+            delete payload['approved']
+            delete payload['approvedBy']
+            delete payload['approvedAt']
+          }
+        }
+      }
+
+      // POSTS: defaults for SEO and status
+      if (collectionName === 'POSTS') {
+        const title = String(payload['title'] || '').trim()
+        const excerpt = String(payload['excerpt'] || '').trim()
+        const content = String(payload['content'] || '')
+        const plainContent = content.replace(/<img[\s\S]*?>/gi, '').replace(/<[^>]*>/g, '')
+        if (!payload['seoTitle'] && title) payload['seoTitle'] = title
+        if (!payload['seoDescription']) {
+          if (excerpt) payload['seoDescription'] = excerpt
+          else payload['seoDescription'] = plainContent.slice(0, 200)
+        }
+        if (!editingId) {
+          payload['status'] = 'draft'
+          payload['publishedAt'] = new Date()
+        }
+      }
       
       // Auto-set timestamps and creator info
       if (editingId) {
@@ -256,6 +314,9 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
       if (editingId) {
         await updateDoc(doc(db, collectionName, editingId), payload)
       } else {
+        if (collectionName === 'TOURS') {
+          payload['status'] = 'pending'
+        }
         await addDoc(colRef, payload)
       }
       resetForm()
@@ -335,6 +396,15 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
     }
     
     if (col.type === 'text') {
+      // Use RichTextEditor for long content fields
+      if (['description', 'content'].includes(col.key)) {
+        return (
+          <RichTextEditor 
+            value={value || ''} 
+            onChange={(html) => onChange(col.key, html)}
+          />
+        )
+      }
       return (
         <textarea 
           rows={4} 
@@ -429,6 +499,40 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
       }
     }
     
+    // Images support
+    if (col.key === 'imageUrl') {
+      return (
+        <div style={{display:'grid', gap:8}}>
+          <input 
+            type="text" 
+            value={value}
+            onChange={(e)=> onChange(col.key, e.target.value)}
+            placeholder="URL ảnh đại diện" 
+          />
+          <ImageUpload onImageUpload={(url)=> onChange(col.key, url)} currentImage={value} label="Upload ảnh đại diện" accept="image/png, image/jpeg, image/jpg" />
+        </div>
+      )
+    }
+    if (col.key === 'images') {
+      const images: string[] = Array.isArray(value) ? value : []
+      return (
+        <div style={{display:'grid', gap:8}}>
+          <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
+            {images.map((url, idx) => (
+              <div key={idx} style={{position:'relative'}}>
+                <img src={url} alt="img" style={{width:300, height:200, objectFit:'cover', borderRadius:6, border:'1px solid #e5e7eb'}} />
+                <button type="button" className="btn small danger" style={{position:'absolute', top:2, right:2}} onClick={()=>{
+                  const next = images.filter((_,i)=> i!==idx)
+                  onChange(col.key, next)
+                }}>✕</button>
+              </div>
+            ))}
+          </div>
+          <ImageUpload onImageUpload={(url)=> onChange(col.key, [...images, url])} label="Thêm ảnh" accept="image/png, image/jpeg, image/jpg" />
+        </div>
+      )
+    }
+
     // Default input field
     return (
       <input 
@@ -463,7 +567,7 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
         <div className="form-section">
           <form onSubmit={onSubmit} className="crud-form">
             <div className="form-grid">
-              {columns.map((c) => (
+              {columns.filter(c => !c.hideInForm).map((c) => (
                 <div key={c.key} className="form-field">
                   <label>
                     <span className="field-label">

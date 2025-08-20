@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { signOut } from 'firebase/auth'
 import { auth } from '../firebase'
 import { useApp } from '../context/AppProviders'
@@ -9,6 +9,7 @@ import { db } from '../firebase'
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, bookedTourIds } = useApp()
   const [settings, setSettings] = useState<any | null>(null)
 
@@ -27,6 +28,9 @@ export function Header() {
     navigate('/')
     setIsMobileMenuOpen(false)
   }
+
+  // Hide header on admin routes
+  if (location.pathname.startsWith('/admin')) return null
 
   return (
     <header className="header">
@@ -50,7 +54,7 @@ export function Header() {
           <NavLink to="/viewed">Đã xem</NavLink>
           {user ? (
             <>
-              <span className="muted">{user.displayName || user.email}</span>
+              <span className="muted" style={{padding:'4px 8px', border:'1px solid rgba(255,255,255,.2)', borderRadius:6}}>{user.displayName || user.email}</span>
               <button className="btn ghost" onClick={handleLogout}>Đăng xuất</button>
             </>
           ) : (
@@ -73,7 +77,7 @@ export function Header() {
         <div className="mobile-nav-overlay" onClick={() => setIsMobileMenuOpen(false)}>
           <nav className="mobile-nav" onClick={e => e.stopPropagation()} aria-label="Mobile Navigation">
             <div className="mobile-nav-header">
-              <div className="brand">VN Tour</div>
+              <div className="brand">{settings?.siteName || 'VN Tour'}</div>
               <button className="mobile-close-btn" aria-label="Đóng menu" onClick={() => setIsMobileMenuOpen(false)}>✕</button>
             </div>
             <div className="mobile-nav-section">
