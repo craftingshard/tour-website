@@ -513,6 +513,19 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
         </div>
       )
     }
+    if (col.key === 'qrImageUrl') {
+      return (
+        <div style={{display:'grid', gap:8}}>
+          <input 
+            type="text" 
+            value={value}
+            onChange={(e)=> onChange(col.key, e.target.value)}
+            placeholder="URL ảnh QR chuyển khoản" 
+          />
+          <ImageUpload onImageUpload={(url)=> onChange(col.key, url)} currentImage={value} label="Upload ảnh QR ngân hàng" accept="image/png, image/jpeg, image/jpg" />
+        </div>
+      )
+    }
     if (col.key === 'images') {
       const images: string[] = Array.isArray(value) ? value : []
       return (
