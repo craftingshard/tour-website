@@ -1,6 +1,4 @@
 import { useState, useRef } from 'react'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { storage } from '../firebase'
 
 interface ImageUploadProps {
   onImageUpload: (url: string) => void
@@ -21,6 +19,8 @@ export function ImageUpload({
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(currentImage || null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const IMGBB_API_KEY = (import.meta as any)?.env?.VITE_IMGBB_API_KEY || '991bfc88768b3fcccf33fdffa1ca84b3'
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -55,28 +55,32 @@ export function ImageUpload({
     try {
       setUploading(true)
       setError(null)
-
-      // Create unique filename
-      const timestamp = Date.now()
-      const filename = `images/${timestamp}_${file.name}`
-      const storageRef = ref(storage, filename)
-
-      // Upload file
-      const snapshot = await uploadBytes(storageRef, file)
-      
-      // Get download URL
-      const downloadURL = await getDownloadURL(snapshot.ref)
-      
-      // Call parent callback
-      onImageUpload(downloadURL)
-      
+      const url = await uploadToImgBB(file)
+      onImageUpload(url)
       setError(null)
     } catch (err: any) {
-      setError('Lỗi upload: ' + err.message)
+      setError('Lỗi upload: ' + (err?.message || 'Không xác định'))
       setPreview(null)
     } finally {
       setUploading(false)
     }
+  }
+
+  const uploadToImgBB = async (file: File): Promise<string> => {
+    if (!IMGBB_API_KEY) throw new Error('Thiếu IMGBB API key')
+    const form = new FormData()
+    form.append('image', file)
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+      method: 'POST',
+      body: form,
+    })
+    if (!res.ok) {
+      throw new Error(`ImgBB upload failed (${res.status})`)
+    }
+    const data = await res.json()
+    const url: string = data?.data?.url || data?.data?.display_url
+    if (!url) throw new Error('Không nhận được URL từ ImgBB')
+    return url
   }
 
   const handleDrop = (event: React.DragEvent) => {

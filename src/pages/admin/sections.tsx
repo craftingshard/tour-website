@@ -448,6 +448,25 @@ export function BookingsAdminPage(){
       ],
       tooltip: 'Trạng thái đặt tour: Chờ xác nhận, Đã xác nhận, Đã hủy, Hoàn thành'
     },
+    {
+      key:'paymentMethod',
+      label:'Hình thức nhận tiền',
+      type:'select',
+      options: [
+        { value: 'cash', label: 'Tiền mặt' },
+        { value: 'bank_transfer', label: 'Chuyển khoản' }
+      ],
+      tooltip:'Chọn hình thức nhận tiền khi duyệt/ghi nhận',
+    },
+    {
+      key:'bankId',
+      label:'Ngân hàng (nếu chuyển khoản)',
+      type:'select',
+      collection: 'banks',
+      displayField: 'name',
+      valueField: 'id',
+      tooltip:'Chọn ngân hàng đã nhận tiền'
+    },
     { 
       key:'paid', 
       label:'Đã thanh toán', 
@@ -503,11 +522,16 @@ export function BookingsAdminPage(){
       type:'select',
       options: [
         { value: 'cash', label: 'Tiền mặt' },
-        { value: 'bank_transfer', label: 'Chuyển khoản' },
-        { value: 'credit_card', label: 'Thẻ tín dụng' },
-        { value: 'online_payment', label: 'Thanh toán online' }
+        { value: 'bank_transfer', label: 'Chuyển khoản' }
       ],
       tooltip: 'Phương thức thanh toán khách hàng sử dụng'
+    },
+    {
+      key:'bankName',
+      label:'Tên ngân hàng',
+      type:'string',
+      tooltip:'Tự động lưu theo lựa chọn của khách, có thể chỉnh khi duyệt',
+      hideInForm: true
     },
     { 
       key:'notes', 

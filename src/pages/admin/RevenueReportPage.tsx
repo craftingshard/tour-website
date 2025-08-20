@@ -8,6 +8,7 @@ export function RevenueReportPage() {
   const [dateRange, setDateRange] = useState('month')
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
+  const [bankSummary, setBankSummary] = useState<Array<{ bankId: string | null; bankName: string; totalAmount: number; count: number }>>([])
 
   useEffect(() => {
     loadData()
@@ -80,7 +81,7 @@ export function RevenueReportPage() {
         })
         .map((booking: any) => ({
           id: booking.id,
-          description: `Đặt tour: ${booking.tourName}`,
+          description: `Đặt tour: ${booking.tourName || booking.tourId} • ${booking.paymentMethod === 'bank_transfer' ? (booking.bankName || 'Chuyển khoản') : 'Tiền mặt'}`,
           amount: booking.amount,
           category: 'Doanh thu tour',
           date: new Date(booking.bookingDate?.toDate?.() || booking.bookingDate),
@@ -90,6 +91,34 @@ export function RevenueReportPage() {
         }))
       
       setRevenue(revenueData)
+      // Summary by bank for received payments (bank transfer only)
+      const filteredPaid = bookingsData.filter((booking: any) => {
+        if (!booking.amount || !booking.paid) return false
+        if (booking.paymentMethod !== 'bank_transfer') return false
+        const bookingDate = new Date(booking.bookingDate?.toDate?.() || booking.bookingDate)
+        if (dateRange === 'month') {
+          return bookingDate.getFullYear() === selectedYear && bookingDate.getMonth() === selectedMonth - 1
+        } else if (dateRange === 'quarter') {
+          const quarter = Math.floor(selectedMonth / 3) + 1
+          const bookingQuarter = Math.floor(bookingDate.getMonth() / 3) + 1
+          return bookingDate.getFullYear() === selectedYear && bookingQuarter === quarter
+        } else if (dateRange === 'year') {
+          return bookingDate.getFullYear() === selectedYear
+        }
+        return true
+      })
+
+      const byBank: Record<string, { bankId: string | null; bankName: string; totalAmount: number; count: number }> = {}
+      for (const b of filteredPaid) {
+        const key: string = String(b.bankId || b.bankName || 'Khác')
+        if (!byBank[key]) {
+          byBank[key] = { bankId: b.bankId || null, bankName: b.bankName || 'Khác', totalAmount: 0, count: 0 }
+        }
+        byBank[key].totalAmount += Number(b.amount) || 0
+        byBank[key].count += 1
+      }
+      const summary = Object.values(byBank).sort((a, b) => b.totalAmount - a.totalAmount)
+      setBankSummary(summary)
 
     } catch (error) {
       console.error('Error loading data:', error)
@@ -311,6 +340,40 @@ export function RevenueReportPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Revenue by Bank */}
+      <div className="revenue-section">
+        <h2>🏦 Doanh Thu Theo Ngân Hàng (Chuyển khoản)</h2>
+        {bankSummary.length === 0 ? (
+          <div className="muted">Chưa có dữ liệu chuyển khoản trong giai đoạn đã chọn.</div>
+        ) : (
+          <div className="table-container">
+            <table className="revenue-table">
+              <thead>
+                <tr>
+                  <th>Ngân hàng</th>
+                  <th>Số giao dịch</th>
+                  <th>Tổng tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bankSummary.map((row, idx) => (
+                  <tr key={row.bankId || row.bankName || idx} className="revenue-row">
+                    <td className="description">{row.bankName}</td>
+                    <td className="category">{row.count}</td>
+                    <td className="amount">{(row.totalAmount || 0).toLocaleString('vi-VN')}đ</td>
+                  </tr>
+                ))}
+                <tr>
+                  <td style={{fontWeight:600}}>Tổng</td>
+                  <td style={{fontWeight:600}}>{bankSummary.reduce((s, r) => s + r.count, 0)}</td>
+                  <td className="amount" style={{fontWeight:700}}>{bankSummary.reduce((s, r) => s + (r.totalAmount || 0), 0).toLocaleString('vi-VN')}đ</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Revenue Details */}

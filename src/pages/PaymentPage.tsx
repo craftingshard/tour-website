@@ -13,7 +13,8 @@ export function PaymentPage() {
   const { tours, createBooking, user } = useApp()
   const tourId: string | undefined = location?.state?.tourId
   const tour = tours.find(t => t.id === tourId)
-  const [method, setMethod] = useState<'card' | 'cash' | 'bank_transfer'>('bank_transfer')
+  const [method, setMethod] = useState<'cash' | 'bank_transfer'>('bank_transfer')
+  const [selectedBankId, setSelectedBankId] = useState<string>('')
   const [startDate, setStartDate] = useState<string>(location?.state?.travelDate ? String(location.state.travelDate).slice(0,10) : '')
   const [notes, setNotes] = useState('')
   const [endDate, setEndDate] = useState<string>('')
@@ -64,6 +65,9 @@ export function PaymentPage() {
       if (!endMs || endMs <= startMs) { setError('Ngày về phải sau ngày đi'); return }
     }
     try {
+      if (method === 'bank_transfer') {
+        if (!selectedBankId) { setError('Vui lòng chọn ngân hàng để chuyển khoản'); return }
+      }
       await createBooking({
         tourId: tour.id,
         amount: computedAmount,
@@ -72,7 +76,9 @@ export function PaymentPage() {
         startDate: startMs,
         endDate: endMs,
         notes: notes.trim() || undefined,
-        paid: method === 'card',
+        paid: false,
+        bankId: method === 'bank_transfer' ? selectedBankId : undefined,
+        bankName: method === 'bank_transfer' ? (banks.find(b=>b.id===selectedBankId)?.name || undefined) : undefined,
       })
       alert('Đặt tour thành công!')
       navigate('/bookings')
@@ -122,11 +128,21 @@ export function PaymentPage() {
           <label style={{display:'grid', gap:6}}>
             <span>Phương thức</span>
             <select value={method} onChange={e=>setMethod(e.target.value as any)}>
-              <option value="card">Thẻ/Online</option>
               <option value="cash">Tiền mặt</option>
               <option value="bank_transfer">Chuyển khoản ngân hàng</option>
             </select>
           </label>
+          {method === 'bank_transfer' && banks.length > 0 && (
+            <label style={{display:'grid', gap:6}}>
+              <span>Chọn ngân hàng để chuyển khoản</span>
+              <select value={selectedBankId} onChange={e=>setSelectedBankId(e.target.value)}>
+                <option value="">-- Chọn ngân hàng --</option>
+                {banks.map(b => (
+                  <option key={b.id} value={b.id}>{b.name} • {b.accountNumber}</option>
+                ))}
+              </select>
+            </label>
+          )}
         </div>
         <div style={{fontSize:18, fontWeight:700}}>Tổng tiền: {computedAmount.toLocaleString('vi-VN')} ₫</div>
         {banks.length > 0 && (
@@ -147,7 +163,7 @@ export function PaymentPage() {
           </div>
         )}
         {error && <div className="muted" style={{color:'#fca5a5'}}>{error}</div>}
-        <button className="btn primary" onClick={handlePay}>{method==='card' ? 'Thanh toán' : 'Đặt tour'}</button>
+        <button className="btn primary" onClick={handlePay}>Đặt tour</button>
       </div>
     </div>
   )

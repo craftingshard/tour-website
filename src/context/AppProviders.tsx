@@ -50,7 +50,7 @@ type AppContextType = {
   bookTour: (id: string) => void
   addReview: (tourId: string, rating: number, comment: string) => void
   saveCustomerProfile: (data: Partial<Customer>) => Promise<void>
-  createBooking: (payload: { tourId: string; amount: number; method: 'card' | 'cash' | 'bank_transfer'; people: number; startDate: number; endDate?: number; notes?: string; paid: boolean }) => Promise<string>
+  createBooking: (payload: { tourId: string; amount: number; method: 'cash' | 'bank_transfer'; people: number; startDate: number; endDate?: number; notes?: string; paid: boolean; bankId?: string; bankName?: string }) => Promise<string>
   cancelBooking: (tourId: string) => Promise<void>
 }
 
@@ -254,7 +254,7 @@ export function AppProviders({ children }: PropsWithChildren) {
     await addDoc(collection(db, 'reviews'), newReview)
   }
 
-  const createBooking = async (payload: { tourId: string; amount: number; method: 'card' | 'cash' | 'bank_transfer'; people: number; startDate: number; endDate?: number; notes?: string; paid: boolean }) => {
+  const createBooking = async (payload: { tourId: string; amount: number; method: 'cash' | 'bank_transfer'; people: number; startDate: number; endDate?: number; notes?: string; paid: boolean; bankId?: string; bankName?: string }) => {
     if (!user) throw new Error('Bạn cần đăng nhập')
     // Validate dates
     const start = Number(payload.startDate)
@@ -286,6 +286,8 @@ export function AppProviders({ children }: PropsWithChildren) {
       endDate: payload.endDate ? Number(payload.endDate) : undefined,
       notes: payload.notes || '',
       paid: Boolean(payload.paid),
+      bankId: payload.bankId || null,
+      bankName: payload.bankName || null,
     }
     const docRef = await addDoc(collection(db, 'bookings'), {
       userId: user.uid,
