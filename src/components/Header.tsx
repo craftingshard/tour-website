@@ -24,14 +24,12 @@ export function Header() {
     load()
   }, [])
   
-// useEffect để cập nhật favicon khi settings thay đổi
   useEffect(() => {
     if (settings?.logoUrl) {
       const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
       if (link) {
         link.href = settings.logoUrl;
       } else {
-        // Tạo thẻ link mới nếu chưa tồn tại
         const newLink = document.createElement('link');
         newLink.rel = 'icon';
         newLink.type = 'image/svg+xml';
@@ -62,13 +60,34 @@ export function Header() {
     checkPartnerStatus()
   }, [user?.uid])
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [])
+
   const handleLogout = async () => {
     await signOut(auth)
     navigate('/')
     setIsMobileMenuOpen(false)
+    bookedTourIds.length = 0 
   }
 
-  // Hide header on admin routes
   if (location.pathname.startsWith('/admin')) return null
 
   return (

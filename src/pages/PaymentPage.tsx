@@ -8,11 +8,12 @@ import { db } from '../firebase'
 type Ticket = { type: 'adult' | 'child' | 'senior'; label: string; price: number; count: number }
 
 export function PaymentPage() {
-  const location = useLocation() as Location & { state?: { tourId?: string; tickets?: Ticket[]; includeInsurance?: boolean; totalAmount?: number; travelDate?: string } }
+  const location = useLocation() as Location & { state?: { tourId?: string; tickets?: Ticket[]; includeInsurance?: boolean; totalAmount?: number; travelDate?: string; } }
   const navigate = useNavigate()
   const { tours, createBooking, user } = useApp()
   const tourId: string | undefined = location?.state?.tourId
   const tour = tours.find(t => t.id === tourId)
+  const customerPhone = location?.state?.customerPhone ||  ''
   const [method, setMethod] = useState<'cash' | 'bank_transfer' | 'pay_later'>('bank_transfer')
   const [selectedBankId, setSelectedBankId] = useState<string>('')
   const [startDate, setStartDate] = useState<string>(location?.state?.travelDate ? String(location.state.travelDate).slice(0,10) : '')
@@ -64,6 +65,7 @@ export function PaymentPage() {
       }
       await createBooking({
         tourId: tour.id,
+        customerPhone: customerPhone,
         amount: computedAmount,
         method: method === 'pay_later' ? 'cash' : method,
         people: totalPeople,
@@ -107,6 +109,14 @@ export function PaymentPage() {
           </div>
         )}
         <div style={{display:'grid', gap:10}}>
+          <label style={{display:'grid', gap:6}}>
+            <span>Số người tham gia</span>
+            <input type="number" value={totalPeople} readOnly />
+          </label>
+          <label style={{display:'grid', gap:6}}>
+            <span>Số điện thoại liên hệ</span>
+            <input type="tel" value={customerPhone} readOnly />
+          </label>
           <label style={{display:'grid', gap:6}}>
             <span>Ngày khởi hành</span>
             <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} />

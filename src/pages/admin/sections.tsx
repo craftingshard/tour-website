@@ -443,7 +443,8 @@ export function BookingsAdminPage(){
       key:'tourName',
       label:'Tên tour',
       type:'string',
-      tooltip:'Tên tour tại thời điểm đặt (tự động điền khi tạo)'
+      tooltip:'Tên tour tại thời điểm đặt (tự động điền khi tạo)',
+      hideInTable: true, hideInForm: true
     },
     { 
       key:'customerName', 
@@ -477,16 +478,7 @@ export function BookingsAdminPage(){
       ],
       tooltip: 'Trạng thái đặt tour: Chờ xác nhận, Đã xác nhận, Đã hủy, Hoàn thành'
     },
-    {
-      key:'paymentMethod',
-      label:'Hình thức nhận tiền',
-      type:'select',
-      options: [
-        { value: 'cash', label: 'Tiền mặt' },
-        { value: 'bank_transfer', label: 'Chuyển khoản' }
-      ],
-      tooltip:'Chọn hình thức nhận tiền khi duyệt/ghi nhận',
-    },
+   
     {
       key:'bankId',
       label:'Ngân hàng',

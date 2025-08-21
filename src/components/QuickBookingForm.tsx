@@ -56,13 +56,25 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
 
   // Prefill customer info for logged-in users
   useEffect(() => {
-    if (user) {
-      setCustomerName(prev => prev || currentCustomer?.name || user.displayName || '')
-      setCustomerEmail(prev => prev || user.email || '')
-      setCustomerPhone(prev => prev || currentCustomer?.phone || '')
-      setCustomerAddress(prev => prev || (currentCustomer as any)?.address || '')
+  if (user && currentCustomer) {
+    if (!customerName) {
+      setCustomerName(currentCustomer.name || user.displayName || '');
     }
-  }, [user, currentCustomer])
+    if (!customerEmail) {
+      setCustomerEmail(user.email || '');
+    }
+    if (!customerPhone) {
+      setCustomerPhone(currentCustomer.phone || '');
+    }
+    if (!customerAddress) {
+      setCustomerAddress((currentCustomer as any).address || '');
+    }
+
+  } else if (user) {
+    if (!customerName) setCustomerName(user.displayName || '');
+    if (!customerEmail) setCustomerEmail(user.email || '');
+  }
+}, [user, currentCustomer, customerName, customerEmail, customerPhone, customerAddress]);
 
   const checkExistingCustomer = async () => {
     if (!customerEmail && !customerPhone) return
@@ -85,7 +97,6 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
             id: snapshot.docs[0].id,
             ...customerData
           })
-          // Auto-fill customer info
           setCustomerName(customerData.name || '')
           setCustomerAddress(customerData.address || '')
           setCustomerPhone(customerData.phone || customerPhone)
@@ -160,6 +171,7 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
             email: customerEmail,
             phone: customerPhone,
             address: customerAddress,
+            role: 'customer',
             createdAt: new Date(),
             updatedAt: new Date()
           }
@@ -189,15 +201,11 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
       //   updatedAt: new Date()
       // }
 
-      // Validate date is not in the past
       const startMs = new Date(travelDate).setHours(0,0,0,0)
       const today = new Date(); today.setHours(0,0,0,0)
       if (startMs < today.getTime()) {
         throw new Error('Ngày khởi hành không thể ở quá khứ')
       }
-
-      // Redirect to payment page; creation will be done in PaymentPage with duplicate checks
-      //const bookingRef = { id: 'temp' } as any
       
       // If user is logged in, update their booking list
       if (user) {
@@ -214,7 +222,8 @@ export function QuickBookingForm({ tour, onClose }: QuickBookingFormProps) {
             tickets,
             includeInsurance,
             totalAmount: getTotalAmount(),
-            travelDate: new Date(travelDate).toISOString()
+            travelDate: new Date(travelDate).toISOString(),
+            customerPhone: customerPhone
           }
         })
       }, 2000)

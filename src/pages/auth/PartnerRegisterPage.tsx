@@ -73,7 +73,7 @@ export function PartnerRegisterPage() {
         taxCode: formData.taxCode || null,
         website: formData.website || null,
         description: formData.description || null,
-        status: 'pending', // Chờ admin duyệt
+        status: 'pending', 
         role: 'partner',
         createdAt: new Date(),
         updatedAt: new Date()

@@ -231,8 +231,6 @@ export function BookingsPage() {
                             onClick={async () => {
                               setError(null)
                               try {
-                                // Here you would implement the cancel booking logic
-                                // For now, just show a message
                                 alert('Chức năng hủy tour sẽ được cập nhật sớm')
                               } catch(e: any) {
                                 setError(e?.message || 'Hủy không thành công')

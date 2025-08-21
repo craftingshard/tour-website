@@ -10,6 +10,7 @@ export function RegisterPage() {
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
+  const [address, setAddress] = useState('')
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
   const location = useLocation() as Location & { state?: { redirectTo?: string; tourId?: string } }
@@ -23,7 +24,7 @@ export function RegisterPage() {
       if (name) {
         await updateProfile(cred.user, { displayName: name })
       }
-      await saveCustomerProfile({ name, phone })
+      await saveCustomerProfile({ name, phone, email, role: 'customer',address })
       const redirectTo = location?.state?.redirectTo || '/'
       navigate(redirectTo, { state: location?.state })
     } catch (err: unknown) {
@@ -44,6 +45,8 @@ export function RegisterPage() {
                style={{padding:10, borderRadius:8, border:'1px solid rgba(255,255,255,.16)', background:'transparent', color:'white'}} />
         <input placeholder="Mật khẩu" value={password} onChange={e=>setPassword(e.target.value)}
                type="password" required style={{padding:10, borderRadius:8, border:'1px solid rgba(255,255,255,.16)', background:'transparent', color:'white'}} />
+        <input placeholder="Họ tên" value={address} onChange={e=>setAddress(e.target.value)}
+               required style={{padding:10, borderRadius:8, border:'1px solid rgba(255,255,255,.16)', background:'transparent', color:'white'}} />
         {error && <div className="muted" style={{color:'#fca5a5'}}>{error}</div>}
         <button className="btn primary" type="submit">Tạo tài khoản</button>
         <div className="muted">Đã có tài khoản? <Link to='/login'>Đăng nhập</Link></div>
