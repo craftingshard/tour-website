@@ -24,6 +24,14 @@ export function RevenueReportPage() {
       const bookingsSnapshot = await getDocs(bookingsQuery)
       const bookingsData = bookingsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
 
+      // Load refund payments
+      const refundsQuery = query(
+        collection(db, 'refundPayments'),
+        orderBy('refundDate', 'desc')
+      )
+      const refundsSnapshot = await getDocs(refundsQuery)
+      const refundsRawData = refundsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+
       // Load expenses (mock data for now - you can create an expenses collection)
       const mockExpenses = [
         {
@@ -81,7 +89,7 @@ export function RevenueReportPage() {
         })
         .map((booking: any) => ({
           id: booking.id,
-          description: `Đặt tour: ${booking.tourName || booking.tourId} • ${booking.paymentMethod === 'bank_transfer' ? (booking.bankName || 'Chuyển khoản') : 'Tiền mặt'}`,
+          description: `Đặt tour: ${booking.tourName || booking.tourId} • ${booking.method === 'bank_transfer' ? (booking.bankName || 'Chuyển khoản') : 'Tiền mặt'}`,
           amount: booking.amount,
           category: 'Doanh thu tour',
           date: new Date(booking.bookingDate?.toDate?.() || booking.bookingDate),
@@ -90,11 +98,44 @@ export function RevenueReportPage() {
           affiliate: booking.affiliateName
         }))
       
-      setRevenue(revenueData)
+      // Add refunds as negative revenue
+      const refundsData = refundsRawData
+        .filter((refund: any) => {
+          const refundDate = new Date(refund.refundDate?.toDate?.() || refund.refundDate)
+          if (dateRange === 'month') {
+            return refundDate.getFullYear() === selectedYear && 
+                   refundDate.getMonth() === selectedMonth - 1
+          } else if (dateRange === 'quarter') {
+            const quarter = Math.floor(selectedMonth / 3) + 1
+            const refundQuarter = Math.floor(refundDate.getMonth() / 3) + 1
+            return refundDate.getFullYear() === selectedYear && refundQuarter === quarter
+          } else if (dateRange === 'year') {
+            return refundDate.getFullYear() === selectedYear
+          }
+          return true
+        })
+        .map((refund: any) => ({
+          id: refund.id,
+          description: `Hoàn tiền: ${refund.customerName} • ${refund.reason === 'customer_request' ? 'Khách yêu cầu hủy' : 'Lý do khác'}`,
+          amount: -refund.amount, // Negative amount for refunds
+          category: 'Hoàn tiền',
+          date: new Date(refund.refundDate?.toDate?.() || refund.refundDate),
+          type: 'refund',
+          customer: refund.customerName,
+          reason: refund.reason
+        }))
+
+      // Combine revenue and refunds
+      const combinedRevenue = [...revenueData, ...refundsData].sort((a, b) => {
+        const dateA = a.date instanceof Date ? a.date.getTime() : new Date(a.date).getTime()
+        const dateB = b.date instanceof Date ? b.date.getTime() : new Date(b.date).getTime()
+        return dateB - dateA
+      })
+      setRevenue(combinedRevenue)
       // Summary by bank for received payments (bank transfer only)
       const filteredPaid = bookingsData.filter((booking: any) => {
         if (!booking.amount || !booking.paid) return false
-        if (booking.paymentMethod !== 'bank_transfer') return false
+        if (booking.method !== 'bank_transfer') return false
         const bookingDate = new Date(booking.bookingDate?.toDate?.() || booking.bookingDate)
         if (dateRange === 'month') {
           return bookingDate.getFullYear() === selectedYear && bookingDate.getMonth() === selectedMonth - 1
@@ -109,7 +150,7 @@ export function RevenueReportPage() {
       })
 
       const byBank: Record<string, { bankId: string | null; bankName: string; totalAmount: number; count: number }> = {}
-      for (const b of filteredPaid) {
+      for (const b of filteredPaid as any[]) {
         const key: string = String(b.bankId || b.bankName || 'Khác')
         if (!byBank[key]) {
           byBank[key] = { bankId: b.bankId || null, bankName: b.bankName || 'Khác', totalAmount: 0, count: 0 }

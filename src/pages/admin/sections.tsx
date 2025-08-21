@@ -322,13 +322,15 @@ export function PostsPage(){
       key:'excerpt', 
       label:'Tóm tắt', 
       type:'text',
-      tooltip: 'Đoạn tóm tắt ngắn gọn nội dung bài viết'
+      tooltip: 'Đoạn tóm tắt ngắn gọn nội dung bài viết',
+      hideInForm: false
     },
     { 
       key:'content', 
       label:'Nội dung', 
       type:'text',
-      tooltip: 'Nội dung chính của bài viết (có thể sử dụng HTML)'
+      tooltip: 'Nội dung chính của bài viết (có thể sử dụng HTML)',
+      hideInForm: false
     },
     { 
       key:'imageUrl', 

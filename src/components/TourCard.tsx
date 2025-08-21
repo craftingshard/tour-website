@@ -38,7 +38,7 @@ export function TourCard({ id, tour: tourProp }: { id?: string; tour?: any }) {
         {tour.approved ? (
           <div style={{position:'absolute', top:8, left:8, background:'rgba(16,185,129,.95)', color:'white', padding:'2px 6px', borderRadius:6, fontSize:12, fontWeight:700, display:'flex', alignItems:'center', gap:6}}>✔ Đã xác nhận</div>
         ) : (
-          <div style={{position:'absolute', top:8, left:8, background:'rgba(234,179,8,.95)', color:'#0b1220', padding:'2px 6px', borderRadius:6, fontSize:12, fontWeight:700}}>Đang chờ xác nhận</div>
+          <div style={{position:'absolute', top:8, left:8, background:'rgba(234,179,8,.95)', color:'#0b1220', padding:'2px 6px', borderRadius:6, fontSize:12, fontWeight:700}}>⏳ Chờ duyệt</div>
         )}
       </div>
       <div className="tour-meta">

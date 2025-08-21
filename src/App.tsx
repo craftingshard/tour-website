@@ -22,6 +22,10 @@ import { AdminLoginPage } from './pages/admin/AdminLoginPage'
 import { Dashboard } from './pages/admin/Dashboard'
 import { StaffDashboard } from './pages/admin/StaffDashboard'
 import { ToursAdminPage, PostsPage as PostsAdminPage, ThemePage, AboutAdminPage, BookingsAdminPage, AffiliatePage, AffiliateReportPage, AffiliatePaymentPage, RevenueReportPage, TourPerformancePage, CustomersAdminPage, StaffAdminPage, SettingsPage, BanksAdminPage } from './pages/admin/sections'
+import { PartnersPage } from './pages/admin/PartnersPage'
+import { RefundPaymentPage } from './pages/admin/RefundPaymentPage'
+import { PartnerRegisterPage } from './pages/auth/PartnerRegisterPage'
+import { PartnerDashboard } from './pages/PartnerDashboard'
 
 function App() {
   return (
@@ -39,6 +43,8 @@ function App() {
             <Route path="/guide/:id" element={<PostDetailPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/partner-register" element={<PartnerRegisterPage />} />
+            <Route path="/partner-dashboard" element={<PartnerDashboard />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/payment" element={<PaymentPage />} />
             <Route path="/bookings" element={<BookingsPage />} />
@@ -68,6 +74,8 @@ function App() {
                 <Route path="affiliates" element={<AffiliatePage />} />
                 <Route path="affiliate-report" element={<AffiliateReportPage />} />
                 <Route path="affiliate-payment" element={<AffiliatePaymentPage />} />
+                <Route path="refund-payment" element={<RefundPaymentPage />} />
+                <Route path="partners" element={<PartnersPage />} />
                 <Route path="revenue-report" element={<RevenueReportPage />} />
                 <Route path="tour-performance" element={<TourPerformancePage />} />
                 <Route path="themes" element={<ThemePage />} />

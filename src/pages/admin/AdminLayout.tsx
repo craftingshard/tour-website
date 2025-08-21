@@ -133,6 +133,12 @@ export function AdminLayout() {
               </NavLink>
             )}
             
+            {hasPermission('read', 'partners') && (
+              <NavLink to="/admin/partners" className="nav-item">
+                🤝 Đối tác
+              </NavLink>
+            )}
+            
             {/* Reports - Admin and Manager only */}
             {hasPermission('read', 'reports') && (
               <>
@@ -141,6 +147,9 @@ export function AdminLayout() {
                 </NavLink>
                 <NavLink to="/admin/affiliate-payment" className="nav-item">
                   💰 Thanh toán Affiliate
+                </NavLink>
+                <NavLink to="/admin/refund-payment" className="nav-item">
+                  💸 Hoàn tiền
                 </NavLink>
                 <NavLink to="/admin/revenue-report" className="nav-item">
                   💵 Báo cáo Doanh thu

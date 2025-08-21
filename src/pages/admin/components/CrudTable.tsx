@@ -31,6 +31,11 @@ type CrudTableProps = {
 export function CrudTable({ collectionName, columns, title, createDefaults }: CrudTableProps) {
   const [items, setItems] = useState<Array<{ id: string; [k: string]: any }>>([])
   const [queryText, setQueryText] = useState<string>('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [featuredFilter, setFeaturedFilter] = useState<boolean | null>(null)
+  const [bookingStatusFilter, setBookingStatusFilter] = useState<string>('all')
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('all')
+  const [tourFilter, setTourFilter] = useState<string>('all')
   const [form, setForm] = useState<Record<string, any>>({})
   const [editingId, setEditingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -51,9 +56,39 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
 
   // Calculate pagination
   const filteredItems = useMemo(() => {
-    if (!queryText.trim()) return items
+    let filtered = items
+
+    // Apply status filter for TOURS collection
+    if (collectionName === 'TOURS' && statusFilter !== 'all') {
+      if (statusFilter === 'approved') {
+        filtered = filtered.filter(item => item.approved === true)
+      } else if (statusFilter === 'pending') {
+        filtered = filtered.filter(item => item.approved === false)
+      }
+    }
+
+    // Apply featured filter for TOURS and POSTS collections
+    if ((collectionName === 'TOURS' || collectionName === 'POSTS') && featuredFilter !== null) {
+      filtered = filtered.filter(item => item.featured === featuredFilter)
+    }
+
+    // Apply booking-specific filters
+    if (collectionName === 'bookings') {
+      if (bookingStatusFilter !== 'all') {
+        filtered = filtered.filter(item => item.status === bookingStatusFilter)
+      }
+      if (paymentMethodFilter !== 'all') {
+        filtered = filtered.filter(item => item.method === paymentMethodFilter)
+      }
+      if (tourFilter !== 'all') {
+        filtered = filtered.filter(item => item.tourId === tourFilter)
+      }
+    }
+
+    // Apply text search filter
+    if (!queryText.trim()) return filtered
     const q = queryText.trim().toLowerCase()
-    return items.filter((row) => {
+    return filtered.filter((row) => {
       return columns.some((c) => {
         const v = row[c.key]
         if (v == null) return false
@@ -64,7 +99,7 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
         return String(v).toLowerCase().includes(q)
       })
     })
-  }, [items, columns, queryText])
+  }, [items, columns, queryText, statusFilter, featuredFilter, bookingStatusFilter, paymentMethodFilter, tourFilter, collectionName])
 
   const totalPages = Math.ceil(filteredItems.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
@@ -74,6 +109,11 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
   // Reset to first page when collection changes
   useEffect(() => { 
     setCurrentPage(1)
+    setStatusFilter('all')
+    setFeaturedFilter(null)
+    setBookingStatusFilter('all')
+    setPaymentMethodFilter('all')
+    setTourFilter('all')
     resetForm() 
   }, [collectionName])
 
@@ -196,6 +236,75 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
     }
   }
 
+  const deleteAllItems = async () => {
+    if (!hasPermission('delete', collectionName)) {
+      setError('Bạn không có quyền xóa dữ liệu này')
+      return
+    }
+    
+    if (currentUser?.role !== 'admin') {
+      setError('Chỉ admin mới có quyền xóa tất cả dữ liệu')
+      return
+    }
+    
+    try {
+      setLoading(true)
+      const batch = items.map(item => deleteDoc(doc(db, collectionName, item.id)))
+      await Promise.all(batch)
+      setItems([])
+    } catch (error) {
+      console.error('Error deleting all documents:', error)
+      setError('Lỗi khi xóa tất cả bản ghi')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const approveTour = async (tourId: string) => {
+    if (!hasPermission('update', collectionName)) {
+      setError('Bạn không có quyền duyệt tour')
+      return
+    }
+    try {
+      setLoading(true)
+      await updateDoc(doc(db, collectionName, tourId), {
+        approved: true,
+        approvedBy: currentUser?.email,
+        approvedAt: new Date()
+      })
+      // Reload data
+      window.location.reload()
+    } catch (error) {
+      console.error('Error approving tour:', error)
+      setError('Lỗi khi duyệt tour')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const confirmPayment = async (bookingId: string) => {
+    if (!hasPermission('update', collectionName)) {
+      setError('Bạn không có quyền xác nhận thanh toán')
+      return
+    }
+    try {
+      setLoading(true)
+      await updateDoc(doc(db, collectionName, bookingId), {
+        paid: true,
+        status: 'confirmed',
+        confirmedAt: new Date(),
+        confirmedBy: currentUser?.email
+      })
+      // Reload data
+      window.location.reload()
+    } catch (error) {
+      console.error('Error confirming payment:', error)
+      setError('Lỗi khi xác nhận thanh toán')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -253,6 +362,11 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
         else payload[c.key] = raw
       }
       if (createDefaults) Object.assign(payload, createDefaults)
+
+      // Auto-set createdAt to current date for new records
+      if (!editingId) {
+        payload.createdAt = new Date()
+      }
 
       // Auto-approve handling: only admin/manager can set approved
       if (collectionName === 'TOURS') {
@@ -580,7 +694,7 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
         <div className="form-section">
           <form onSubmit={onSubmit} className="crud-form">
             <div className="form-grid">
-              {columns.filter(c => !c.hideInForm).map((c) => (
+              {columns.filter(c => !c.hideInForm && c.key !== 'createdAt').map((c) => (
                 <div key={c.key} className="form-field">
                   <label>
                     <span className="field-label">
@@ -628,6 +742,80 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
               onChange={(e)=> setQueryText(e.target.value)}
               className="search-input"
             />
+            {collectionName === 'TOURS' && (
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="status-filter"
+              >
+                <option value="all">Tất cả trạng thái</option>
+                <option value="approved">Đã duyệt</option>
+                <option value="pending">Chờ duyệt</option>
+              </select>
+            )}
+            {(collectionName === 'TOURS' || collectionName === 'POSTS') && (
+              <select
+                value={featuredFilter === null ? 'all' : featuredFilter ? 'true' : 'false'}
+                onChange={(e) => {
+                  const value = e.target.value
+                  setFeaturedFilter(value === 'all' ? null : value === 'true')
+                }}
+                className="status-filter"
+              >
+                <option value="all">Tất cả {collectionName === 'TOURS' ? 'tour' : 'bài viết'}</option>
+                <option value="true">Chỉ {collectionName === 'TOURS' ? 'tour' : 'bài viết'} nổi bật</option>
+                <option value="false">Chỉ {collectionName === 'TOURS' ? 'tour' : 'bài viết'} thường</option>
+              </select>
+            )}
+            {collectionName === 'bookings' && (
+              <select
+                value={bookingStatusFilter}
+                onChange={(e) => setBookingStatusFilter(e.target.value)}
+                className="status-filter"
+              >
+                <option value="all">Tất cả trạng thái</option>
+                <option value="pending">Chờ xác nhận</option>
+                <option value="confirmed">Đã xác nhận</option>
+                <option value="cancelled">Đã hủy</option>
+                <option value="completed">Hoàn thành</option>
+              </select>
+            )}
+            {collectionName === 'bookings' && (
+              <select
+                value={paymentMethodFilter}
+                onChange={(e) => setPaymentMethodFilter(e.target.value)}
+                className="status-filter"
+              >
+                <option value="all">Tất cả hình thức</option>
+                <option value="cash">Tiền mặt</option>
+                <option value="bank_transfer">Chuyển khoản</option>
+              </select>
+            )}
+            {collectionName === 'bookings' && referenceData.TOURS && (
+              <select
+                value={tourFilter}
+                onChange={(e) => setTourFilter(e.target.value)}
+                className="status-filter"
+              >
+                <option value="all">Tất cả tour</option>
+                {referenceData.TOURS.map((tour: any) => (
+                  <option key={tour.id} value={tour.id}>{tour.name}</option>
+                ))}
+              </select>
+            )}
+            {hasPermission('delete', collectionName) && currentUser?.role === 'admin' && items.length > 0 && (
+              <button 
+                className="btn danger"
+                onClick={() => {
+                  if (confirm(`Bạn có chắc chắn muốn xóa TẤT CẢ ${items.length} bản ghi trong ${collectionName}? Hành động này không thể hoàn tác!`)) {
+                    deleteAllItems()
+                  }
+                }}
+                style={{whiteSpace: 'nowrap'}}
+              >
+                🗑️ Xóa tất cả
+              </button>
+            )}
           </div>
         </div>
         
@@ -664,6 +852,16 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
                       </td>
                     ))}
                     <td className="actions-cell">
+                      {collectionName === 'TOURS' && !row.approved && hasPermission('update', collectionName) && (
+                        <button className="btn small success" onClick={() => approveTour(row.id)}>
+                          ✅ Duyệt
+                        </button>
+                      )}
+                      {collectionName === 'bookings' && !row.paid && hasPermission('update', collectionName) && (
+                        <button className="btn small success" onClick={() => confirmPayment(row.id)}>
+                          💰 Xác nhận tiền
+                        </button>
+                      )}
                       {hasPermission('update', collectionName) && (
                         <button className="btn small primary" onClick={() => onEdit(row)}>
                           ✏️ Sửa
@@ -840,6 +1038,15 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
           min-width: 220px;
         }
         
+        .status-filter {
+          padding: 8px 12px;
+          border: 1px solid #d1d5db;
+          border-radius: 8px;
+          font-size: 14px;
+          min-width: 150px;
+          background: white;
+        }
+        
         .table-container {
           background: white;
           border-radius: 8px;
@@ -907,6 +1114,21 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
         
         .actions-cell .btn {
           margin: 0 4px;
+        }
+        
+        .btn.small.success {
+          background: #10b981;
+          color: white;
+          padding: 4px 8px;
+          font-size: 12px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        
+        .btn.small.success:hover {
+          background: #059669;
         }
         
         .pagination-controls {

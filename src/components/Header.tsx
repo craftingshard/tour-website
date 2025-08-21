@@ -3,7 +3,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { signOut } from 'firebase/auth'
 import { auth } from '../firebase'
 import { useApp } from '../context/AppProviders'
-import { collection, getDocs, limit, query } from 'firebase/firestore'
+import { collection, getDocs, limit, query, where } from 'firebase/firestore'
 import { db } from '../firebase'
 
 export function Header() {
@@ -12,6 +12,7 @@ export function Header() {
   const location = useLocation()
   const { user, bookedTourIds } = useApp()
   const [settings, setSettings] = useState<any | null>(null)
+  const [isPartner, setIsPartner] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -22,6 +23,27 @@ export function Header() {
     }
     load()
   }, [])
+
+  useEffect(() => {
+    const checkPartnerStatus = async () => {
+      if (!user?.uid) {
+        setIsPartner(false)
+        return
+      }
+      try {
+        const partnerQuery = query(
+          collection(db, 'partners'),
+          where('userId', '==', user.uid),
+          where('status', '==', 'approved')
+        )
+        const partnerSnap = await getDocs(partnerQuery)
+        setIsPartner(!partnerSnap.empty)
+      } catch {
+        setIsPartner(false)
+      }
+    }
+    checkPartnerStatus()
+  }, [user?.uid])
 
   const handleLogout = async () => {
     await signOut(auth)
@@ -54,15 +76,19 @@ export function Header() {
           <NavLink to="/viewed">Đã xem</NavLink>
           {user ? (
             <>
+              {isPartner && (
+                <NavLink to="/partner-dashboard" style={{background:'rgba(255,255,255,.1)', padding:'4px 8px', borderRadius:6}}>🤝 Bảng điều khiển</NavLink>
+              )}
               <span className="muted" style={{padding:'4px 8px', border:'1px solid rgba(255,255,255,.2)', borderRadius:6}}>{user.displayName || user.email}</span>
               <button className="btn ghost" onClick={handleLogout}>Đăng xuất</button>
             </>
-          ) : (
-            <>
-              <NavLink to="/login">Đăng nhập</NavLink>
-              <NavLink to="/register">Đăng ký</NavLink>
-            </>
-          )}
+                      ) : (
+              <>
+                <NavLink to="/login">Đăng nhập</NavLink>
+                <NavLink to="/register">Đăng ký</NavLink>
+                <NavLink to="/partner-register" style={{background:'rgba(255,255,255,.1)', padding:'4px 8px', borderRadius:6}}>🤝 Đối tác</NavLink>
+              </>
+            )}
         </nav>
         <button
           className="mobile-menu-btn"
@@ -91,11 +117,17 @@ export function Header() {
               <NavLink to="/bookings" onClick={() => setIsMobileMenuOpen(false)}>Đã đặt ({bookedTourIds.length})</NavLink>
               <NavLink to="/viewed" onClick={() => setIsMobileMenuOpen(false)}>Đã xem</NavLink>
               {user ? (
-                <button className="btn ghost" onClick={handleLogout} style={{width:'100%', textAlign:'left'}}>Đăng xuất ({user.displayName || user.email})</button>
+                <>
+                  {isPartner && (
+                    <NavLink to="/partner-dashboard" onClick={() => setIsMobileMenuOpen(false)} style={{background:'rgba(255,255,255,.1)', padding:'4px 8px', borderRadius:6}}>🤝 Bảng điều khiển</NavLink>
+                  )}
+                  <button className="btn ghost" onClick={handleLogout} style={{width:'100%', textAlign:'left'}}>Đăng xuất ({user.displayName || user.email})</button>
+                </>
               ) : (
                 <>
                   <NavLink to="/login" onClick={() => setIsMobileMenuOpen(false)}>Đăng nhập</NavLink>
                   <NavLink to="/register" onClick={() => setIsMobileMenuOpen(false)}>Đăng ký</NavLink>
+                  <NavLink to="/partner-register" onClick={() => setIsMobileMenuOpen(false)} style={{background:'rgba(255,255,255,.1)', padding:'4px 8px', borderRadius:6}}>🤝 Đối tác</NavLink>
                 </>
               )}
             </div>

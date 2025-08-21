@@ -50,7 +50,7 @@ type AppContextType = {
   bookTour: (id: string) => void
   addReview: (tourId: string, rating: number, comment: string) => void
   saveCustomerProfile: (data: Partial<Customer>) => Promise<void>
-  createBooking: (payload: { tourId: string; amount: number; method: 'cash' | 'bank_transfer'; people: number; startDate: number; endDate?: number; notes?: string; paid: boolean; bankId?: string; bankName?: string }) => Promise<string>
+  createBooking: (payload: { tourId: string; amount: number; method: 'cash' | 'bank_transfer'; people: number; startDate: number; endDate?: number; notes?: string; paid: boolean; bankId?: string; bankName?: string; payLater?: boolean }) => Promise<string>
   cancelBooking: (tourId: string) => Promise<void>
 }
 
@@ -254,7 +254,7 @@ export function AppProviders({ children }: PropsWithChildren) {
     await addDoc(collection(db, 'reviews'), newReview)
   }
 
-  const createBooking = async (payload: { tourId: string; amount: number; method: 'cash' | 'bank_transfer'; people: number; startDate: number; endDate?: number; notes?: string; paid: boolean; bankId?: string; bankName?: string }) => {
+  const createBooking = async (payload: { tourId: string; amount: number; method: 'cash' | 'bank_transfer'; people: number; startDate: number; endDate?: number; notes?: string; paid: boolean; bankId?: string; bankName?: string; payLater?: boolean }) => {
     if (!user) throw new Error('Bạn cần đăng nhập')
     // Validate dates
     const start = Number(payload.startDate)
@@ -288,10 +288,15 @@ export function AppProviders({ children }: PropsWithChildren) {
       paid: Boolean(payload.paid),
       bankId: payload.bankId || null,
       bankName: payload.bankName || null,
+      payLater: Boolean(payload.payLater),
     }
     const docRef = await addDoc(collection(db, 'bookings'), {
       userId: user.uid,
+      customerName: user.displayName || user.email || 'Khách hàng',
+      customerEmail: user.email || '',
+      customerPhone: user.phoneNumber || '',
       ...safePayload,
+      bookingDate: new Date(), // Ngày đặt tour luôn là hôm nay
       status: safePayload.paid ? 'paid' : 'pending',
       createdAt: Date.now(),
     })

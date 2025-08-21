@@ -13,11 +13,10 @@ export function PaymentPage() {
   const { tours, createBooking, user } = useApp()
   const tourId: string | undefined = location?.state?.tourId
   const tour = tours.find(t => t.id === tourId)
-  const [method, setMethod] = useState<'cash' | 'bank_transfer'>('bank_transfer')
+  const [method, setMethod] = useState<'cash' | 'bank_transfer' | 'pay_later'>('bank_transfer')
   const [selectedBankId, setSelectedBankId] = useState<string>('')
   const [startDate, setStartDate] = useState<string>(location?.state?.travelDate ? String(location.state.travelDate).slice(0,10) : '')
   const [notes, setNotes] = useState('')
-  const [endDate, setEndDate] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
   const tickets: Ticket[] = Array.isArray(location?.state?.tickets) ? location.state!.tickets! : []
   const includeInsurance = Boolean(location?.state?.includeInsurance)
@@ -59,11 +58,6 @@ export function PaymentPage() {
     const startMs = new Date(startDate).getTime()
     const today = new Date(); today.setHours(0,0,0,0)
     if (startMs < today.getTime()) { setError('Ngày khởi hành không thể ở quá khứ'); return }
-    let endMs: number | undefined = undefined
-    if (endDate) {
-      endMs = new Date(endDate).getTime()
-      if (!endMs || endMs <= startMs) { setError('Ngày về phải sau ngày đi'); return }
-    }
     try {
       if (method === 'bank_transfer') {
         if (!selectedBankId) { setError('Vui lòng chọn ngân hàng để chuyển khoản'); return }
@@ -71,14 +65,14 @@ export function PaymentPage() {
       await createBooking({
         tourId: tour.id,
         amount: computedAmount,
-        method,
+        method: method === 'pay_later' ? 'cash' : method,
         people: totalPeople,
         startDate: startMs,
-        endDate: endMs,
         notes: notes.trim() || undefined,
-        paid: false,
+        paid: method !== 'pay_later',
         bankId: method === 'bank_transfer' ? selectedBankId : undefined,
         bankName: method === 'bank_transfer' ? (banks.find(b=>b.id===selectedBankId)?.name || undefined) : undefined,
+        payLater: method === 'pay_later',
       })
       alert('Đặt tour thành công!')
       navigate('/bookings')
@@ -118,24 +112,21 @@ export function PaymentPage() {
             <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} />
           </label>
           <label style={{display:'grid', gap:6}}>
-            <span>Ngày về</span>
-            <input type="date" value={endDate} onChange={e=>setEndDate(e.target.value)} />
-          </label>
-          <label style={{display:'grid', gap:6}}>
             <span>Ghi chú</span>
             <textarea rows={3} value={notes} onChange={e=>setNotes(e.target.value)} />
           </label>
           <label style={{display:'grid', gap:6}}>
-            <span>Phương thức</span>
+            <span>Phương thức thanh toán</span>
             <select value={method} onChange={e=>setMethod(e.target.value as any)}>
               <option value="cash">Tiền mặt</option>
               <option value="bank_transfer">Chuyển khoản ngân hàng</option>
+              <option value="pay_later">Thanh toán sau (có thể hủy)</option>
             </select>
           </label>
           {method === 'bank_transfer' && banks.length > 0 && (
             <label style={{display:'grid', gap:6}}>
-              <span>Chọn ngân hàng để chuyển khoản</span>
-              <select value={selectedBankId} onChange={e=>setSelectedBankId(e.target.value)}>
+              <span>Chọn ngân hàng để chuyển khoản *</span>
+              <select value={selectedBankId} onChange={e=>setSelectedBankId(e.target.value)} required>
                 <option value="">-- Chọn ngân hàng --</option>
                 {banks.map(b => (
                   <option key={b.id} value={b.id}>{b.name} • {b.accountNumber}</option>
@@ -143,27 +134,40 @@ export function PaymentPage() {
               </select>
             </label>
           )}
+          {method === 'pay_later' && (
+            <div className="card" style={{background:'rgba(255,255,255,.04)', padding:12}}>
+              <div style={{fontWeight:600, color:'#fbbf24', marginBottom:8}}>⚠️ Lưu ý</div>
+              <div style={{fontSize:14, lineHeight:1.4}}>
+                Với phương thức thanh toán sau, bạn có thể hủy tour bất cứ lúc nào trước khi thanh toán. 
+                Sau khi thanh toán, tour sẽ không thể hủy trừ khi có yêu cầu đặc biệt và được admin chấp thuận.
+              </div>
+            </div>
+          )}
         </div>
         <div style={{fontSize:18, fontWeight:700}}>Tổng tiền: {computedAmount.toLocaleString('vi-VN')} ₫</div>
-        {banks.length > 0 && (
+        {method === 'bank_transfer' && selectedBankId && banks.length > 0 && (
           <div className="card" style={{background:'rgba(255,255,255,.04)'}}>
-            <div style={{fontWeight:600, marginBottom:8}}>Tài khoản ngân hàng</div>
-            <div className="grid" style={{gridTemplateColumns:'repeat(auto-fit, minmax(240px, 1fr))', gap:12}}>
-              {banks.map(b => (
-                <div key={b.id} className="card" style={{display:'grid', gap:8}}>
-                  <div style={{fontWeight:700}}>{b.name}</div>
-                  <div className="muted">{b.accountName}</div>
-                  <div style={{fontFamily:'monospace', fontWeight:700}}>{b.accountNumber}</div>
-                  {b.qrImageUrl && (
-                    <img src={b.qrImageUrl} alt={`QR ${b.name}`} style={{width:'100%', height:200, objectFit:'contain', background:'#fff', borderRadius:8}} />
+            <div style={{fontWeight:600, marginBottom:8}}>Thông tin chuyển khoản</div>
+            {(() => {
+              const selectedBank = banks.find(b => b.id === selectedBankId)
+              if (!selectedBank) return null
+              return (
+                <div className="card" style={{display:'grid', gap:8}}>
+                  <div style={{fontWeight:700}}>{selectedBank.name}</div>
+                  <div className="muted">Chủ tài khoản: {selectedBank.accountName}</div>
+                  <div style={{fontFamily:'monospace', fontWeight:700}}>Số tài khoản: {selectedBank.accountNumber}</div>
+                  {selectedBank.qrImageUrl && (
+                    <img src={selectedBank.qrImageUrl} alt={`QR ${selectedBank.name}`} style={{width:'100%', height:200, objectFit:'contain', background:'#fff', borderRadius:8}} />
                   )}
                 </div>
-              ))}
-            </div>
+              )
+            })()}
           </div>
         )}
         {error && <div className="muted" style={{color:'#fca5a5'}}>{error}</div>}
-        <button className="btn primary" onClick={handlePay}>Đặt tour</button>
+        <button className="btn primary" onClick={handlePay}>
+          {method === 'pay_later' ? 'Đặt tour (thanh toán sau)' : 'Đặt tour'}
+        </button>
       </div>
     </div>
   )

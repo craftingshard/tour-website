@@ -83,7 +83,18 @@ export function TourDetailPage() {
               <StarRating value={avg10} />
               <span style={{fontWeight:600}}>{avg10.toFixed(1)}/10</span>
             </div>
-            <p style={{marginTop:12}}>Trải nghiệm hành trình {tour.title} tại {tour.location}. Lịch trình hấp dẫn, dịch vụ chu đáo.</p>
+            <p style={{marginTop:12}}>
+              {tour.approved ? (
+                `Trải nghiệm hành trình ${tour.title} tại ${tour.location}. Lịch trình hấp dẫn, dịch vụ chu đáo.`
+              ) : (
+                <>
+                  {`Trải nghiệm hành trình ${tour.title} tại ${tour.location}. Lịch trình hấp dẫn, dịch vụ chu đáo.`}
+                  <div style={{marginTop:8, padding:8, background:'rgba(234,179,8,.1)', borderRadius:6, fontSize:14, color:'#92400e'}}>
+                    ⏳ Tour đang chờ admin duyệt. Mô tả đầy đủ sẽ được hiển thị sau khi duyệt.
+                  </div>
+                </>
+              )}
+            </p>
             <div style={{display:'flex', justifyContent:'center', marginTop:16}}>
               <button className="btn primary" onClick={handleBook}>Đặt tour nhanh</button>
             </div>
@@ -92,20 +103,28 @@ export function TourDetailPage() {
 
         <div className="card">
           <h3 style={{marginTop:0}}>Đánh giá</h3>
-          <form onSubmit={submitReview} style={{display:'grid', gap:12}}>
-            <label style={{display:'grid', gap:6}}>
-              <span>Đánh giá: <b>{rating.toFixed(1)}/10</b></span>
-              <div style={{display:'flex', alignItems:'center', gap:12}}>
-                <input type="range" min={1} max={10} step={0.5} value={rating} onChange={e => setRating(Number(e.target.value))} style={{flex:1}} />
-                <StarRating value={rating} />
-              </div>
-            </label>
-            <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Chia sẻ cảm nhận của bạn..." rows={4} />
-            {error && <div className="muted" style={{color:'#fca5a5'}}>{error}</div>}
-            <div style={{display:'flex', justifyContent:'center'}}>
-              <button className="btn" type="submit">Gửi đánh giá</button>
+          {tour.approved ? (
+            <>
+              <form onSubmit={submitReview} style={{display:'grid', gap:12}}>
+                <label style={{display:'grid', gap:6}}>
+                  <span>Đánh giá: <b>{rating.toFixed(1)}/10</b></span>
+                  <div style={{display:'flex', alignItems:'center', gap:12}}>
+                    <input type="range" min={1} max={10} step={0.5} value={rating} onChange={e => setRating(Number(e.target.value))} style={{flex:1}} />
+                    <StarRating value={rating} />
+                  </div>
+                </label>
+                <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Chia sẻ cảm nhận của bạn..." rows={4} />
+                {error && <div className="muted" style={{color:'#fca5a5'}}>{error}</div>}
+                <div style={{display:'flex', justifyContent:'center'}}>
+                  <button className="btn" type="submit">Gửi đánh giá</button>
+                </div>
+              </form>
+            </>
+          ) : (
+            <div style={{padding:16, background:'rgba(234,179,8,.1)', borderRadius:8, textAlign:'center', color:'#92400e'}}>
+              ⏳ Chức năng đánh giá và bình luận sẽ được mở sau khi tour được admin duyệt.
             </div>
-          </form>
+          )}
           <div style={{marginTop:16, display:'grid', gap:8}}>
             {reviews.length === 0 && <div className="muted">Chưa có đánh giá nào.</div>}
             {reviews.map(rv => (
