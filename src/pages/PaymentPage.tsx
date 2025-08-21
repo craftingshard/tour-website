@@ -120,7 +120,7 @@ export function PaymentPage() {
             <select value={method} onChange={e=>setMethod(e.target.value as any)}>
               <option value="cash">Tiền mặt</option>
               <option value="bank_transfer">Chuyển khoản ngân hàng</option>
-              <option value="pay_later">Thanh toán sau (có thể hủy)</option>
+              <option value="pay_later">Thanh toán sau</option>
             </select>
           </label>
           {method === 'bank_transfer' && banks.length > 0 && (

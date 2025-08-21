@@ -83,7 +83,7 @@ export function StaffAdminPage(){
       key:'salary', 
       label:'Lương cơ bản', 
       type:'number',
-      tooltip: 'Mức lương cơ bản của nhân viên (VNĐ)'
+      tooltip: 'Mức lương cơ bản của nhân viên'
     },
     { 
       key:'active', 
@@ -462,7 +462,7 @@ export function BookingsAdminPage(){
     },
     {
       key:'bankId',
-      label:'Ngân hàng (nếu chuyển khoản)',
+      label:'Ngân hàng',
       type:'select',
       collection: 'banks',
       displayField: 'name',

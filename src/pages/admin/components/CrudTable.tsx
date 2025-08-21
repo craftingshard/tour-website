@@ -859,7 +859,7 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
                       )}
                       {collectionName === 'bookings' && !row.paid && hasPermission('update', collectionName) && (
                         <button className="btn small success" onClick={() => confirmPayment(row.id)}>
-                          💰 Xác nhận tiền
+                          💰 Đã nhận tiền
                         </button>
                       )}
                       {hasPermission('update', collectionName) && (

@@ -305,7 +305,7 @@ export function RefundPaymentPage() {
               </div>
               
               <div className="form-field">
-                <label>Số tiền hoàn (VNĐ) *</label>
+                <label>Số tiền hoàn *</label>
                 <input 
                   type="number" 
                   value={refundForm.amount} 

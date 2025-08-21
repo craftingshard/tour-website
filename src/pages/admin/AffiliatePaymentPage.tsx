@@ -193,7 +193,7 @@ export function AffiliatePaymentPage() {
               </div>
               
               <div className="form-field">
-                <label>Số tiền (VNĐ) *</label>
+                <label>Số tiền *</label>
                 <input 
                   type="number" 
                   value={paymentForm.amount} 
@@ -221,7 +221,6 @@ export function AffiliatePaymentPage() {
                 >
                   <option value="bank_transfer">Chuyển khoản ngân hàng</option>
                   <option value="cash">Tiền mặt</option>
-                  <option value="check">Séc</option>
                   <option value="other">Khác</option>
                 </select>
               </div>
