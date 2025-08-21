@@ -62,7 +62,8 @@ export function PartnerRegisterPage() {
 
       // Create partner document
       const partnerData = {
-        uid: cred.user.uid,
+        userId: cred.user.uid,
+        fullName: formData.name,
         name: formData.name,
         email: formData.email,
         phone: formData.phone,

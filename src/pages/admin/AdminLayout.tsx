@@ -32,6 +32,7 @@ export function AdminLayout() {
       case 'admin': return 'Quản trị viên'
       case 'manager': return 'Quản lý'
       case 'staff': return 'Nhân viên'
+      case 'partner': return 'Đối tác'
       default: return 'Người dùng'
     }
   }
@@ -41,6 +42,7 @@ export function AdminLayout() {
       case 'admin': return '#dc2626'
       case 'manager': return '#ea580c'
       case 'staff': return '#059669'
+      case 'partner': return '#7c3aed'
       default: return '#6b7280'
     }
   }

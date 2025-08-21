@@ -3,9 +3,9 @@ import type { PropsWithChildren } from 'react'
 import { onAuthStateChanged, signOut, signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '../firebase'
 import { db } from '../firebase'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore'
 
-export type UserRole = 'admin' | 'manager' | 'staff'
+export type UserRole = 'admin' | 'manager' | 'staff' | 'partner'
 
 export type AdminUser = {
   uid: string
@@ -42,7 +42,7 @@ export function AdminProviders({ children }: PropsWithChildren) {
       try {
         if (user) {
           setUid(user.uid)
-          // Check if user exists in admins collection and get their role
+          // Check if user exists in admins collection first
           const adminDoc = await getDoc(doc(db, 'admins', user.uid))
           
           if (adminDoc.exists()) {
@@ -58,7 +58,29 @@ export function AdminProviders({ children }: PropsWithChildren) {
             }
             setCurrentUser(adminUser)
           } else {
-            setCurrentUser(null)
+            // Check if user is an approved partner
+            const partnerQuery = query(
+              collection(db, 'partners'),
+              where('userId', '==', user.uid),
+              where('status', '==', 'approved')
+            )
+            const partnerSnapshot = await getDocs(partnerQuery)
+            
+            if (!partnerSnapshot.empty) {
+              const partnerData = partnerSnapshot.docs[0].data()
+              const partnerUser: AdminUser = {
+                uid: user.uid,
+                name: partnerData.fullName || partnerData.name || user.displayName || 'Partner',
+                email: user.email || '',
+                role: 'partner',
+                active: true,
+                department: 'Partner',
+                position: 'Tour Partner'
+              }
+              setCurrentUser(partnerUser)
+            } else {
+              setCurrentUser(null)
+            }
           }
         } else {
           setUid(null)
@@ -74,12 +96,12 @@ export function AdminProviders({ children }: PropsWithChildren) {
   const login = async (email: string, password: string) => {
     const cred = await signInWithEmailAndPassword(auth, email, password)
     
-    // Check if user exists in admins collection
+    // Check if user exists in admins collection first
     const adminDocRef = doc(db, 'admins', cred.user.uid)
-    const snapshot = await getDoc(adminDocRef)
+    const adminSnapshot = await getDoc(adminDocRef)
     
-    if (snapshot.exists()) {
-      const userData = snapshot.data()
+    if (adminSnapshot.exists()) {
+      const userData = adminSnapshot.data()
       
       // Check if user is active
       if (userData.active === false) {
@@ -101,8 +123,33 @@ export function AdminProviders({ children }: PropsWithChildren) {
       setUid(cred.user.uid)
       setCurrentUser(adminUser)
     } else {
-      await signOut(auth)
-      throw new Error('Tài khoản không có quyền truy cập hệ thống')
+      // Check if user is an approved partner
+      const partnerQuery = query(
+        collection(db, 'partners'),
+        where('userId', '==', cred.user.uid),
+        where('status', '==', 'approved')
+      )
+      const partnerSnapshot = await getDocs(partnerQuery)
+      
+      if (!partnerSnapshot.empty) {
+        const partnerData = partnerSnapshot.docs[0].data()
+        const partnerUser: AdminUser = {
+          uid: cred.user.uid,
+          name: partnerData.fullName || partnerData.name || cred.user.displayName || 'Partner',
+          email: cred.user.email || '',
+          role: 'partner',
+          active: true,
+          department: 'Partner',
+          position: 'Tour Partner'
+        }
+        
+        // Update state immediately for better UX
+        setUid(cred.user.uid)
+        setCurrentUser(partnerUser)
+      } else {
+        await signOut(auth)
+        throw new Error('Tài khoản không có quyền truy cập hệ thống hoặc chưa được duyệt')
+      }
     }
   }
 
@@ -137,6 +184,17 @@ export function AdminProviders({ children }: PropsWithChildren) {
         
         return action === 'create' || action === 'update' || action === 'read'
 
+      case 'partner':
+        // Partners can only work with TOURS and view bookings for their tours
+        if (action === 'delete') return false
+        
+        // Partners can only work with TOURS and bookings
+        if (resource && !['TOURS', 'tours', 'bookings'].includes(resource)) {
+          return false
+        }
+        
+        return action === 'create' || action === 'update' || action === 'read'
+
       default:
         return false
     }
@@ -144,7 +202,7 @@ export function AdminProviders({ children }: PropsWithChildren) {
 
   const canAccessDashboard = (): boolean => {
     if (!currentUser) return false
-    return currentUser.role === 'admin' || currentUser.role === 'manager'
+    return currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.role === 'partner'
   }
 
   const value = useMemo(() => ({
