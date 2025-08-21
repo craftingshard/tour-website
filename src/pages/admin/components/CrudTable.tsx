@@ -19,6 +19,7 @@ export type CrudColumn = {
   valueField?: string
   createDefaults?: Record<string, unknown>
   hideInForm?: boolean
+  hideInTable?: boolean
 }
 
 type CrudTableProps = {
@@ -837,7 +838,7 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
             <table className="data-table">
               <thead>
                 <tr>
-                  {columns.map(c => (
+                  {columns.filter(c => !c.hideInTable).map(c => (
                     <th key={c.key}>{c.label}</th>
                   ))}
                   <th className="actions-header">Thao tác</th>
@@ -846,7 +847,7 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
               <tbody>
                 {currentItems.map(row => (
                   <tr key={row.id} className="data-row">
-                    {columns.map(c => (
+                     {columns.filter(c => !c.hideInTable).map(c => (
                       <td key={c.key} className="data-cell">
                         {formatValue(row[c.key], c.type, c)}
                       </td>

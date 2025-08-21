@@ -215,7 +215,8 @@ export function ToursAdminPage(){
       key:'description', 
       label:'Mô tả', 
       type:'text',
-      tooltip: 'Mô tả chi tiết về tour du lịch'
+      tooltip: 'Mô tả chi tiết về tour du lịch',
+      hideInTable: true
     },
     {
       key:'insuranceIncluded',
@@ -227,7 +228,8 @@ export function ToursAdminPage(){
       key:'insuranceDetails',
       label:'Chi tiết bảo hiểm',
       type:'text',
-      tooltip:'Mô tả quyền lợi bảo hiểm, phạm vi, điều kiện'
+      tooltip:'Mô tả quyền lợi bảo hiểm, phạm vi, điều kiện',
+      hideInTable: true
     },
     { 
       key:'highlights', 
@@ -239,13 +241,15 @@ export function ToursAdminPage(){
       key:'included', 
       label:'Bao gồm', 
       type:'text',
-      tooltip: 'Dịch vụ bao gồm trong tour'
+      tooltip: 'Dịch vụ bao gồm trong tour',
+      hideInTable: true
     },
     { 
       key:'excluded', 
       label:'Không bao gồm', 
       type:'text',
-      tooltip: 'Dịch vụ không bao gồm trong tour'
+      tooltip: 'Dịch vụ không bao gồm trong tour',
+      hideInTable: true
     },
     { 
       key:'maxGroupSize', 
@@ -257,7 +261,8 @@ export function ToursAdminPage(){
       key:'bestTime', 
       label:'Thời gian tốt nhất', 
       type:'string',
-      tooltip: 'Thời gian trong năm phù hợp nhất để đi tour'
+      tooltip: 'Thời gian trong năm phù hợp nhất để đi tour',
+      hideInTable: true
     }
   ]
   return <CrudTable title="Quản lý tour" collectionName="TOURS" columns={cols} />
@@ -303,7 +308,8 @@ export function PostsPage(){
       key:'readTime', 
       label:'Thời gian đọc', 
       type:'string',
-      tooltip: 'Thời gian ước tính để đọc hết bài viết (ví dụ: 5 phút)'
+      tooltip: 'Thời gian ước tính để đọc hết bài viết (ví dụ: 5 phút)',
+      hideInTable: true
     },
     // Hidden/managed fields: views, likes, status handled by system
     { 
@@ -323,14 +329,16 @@ export function PostsPage(){
       label:'Tóm tắt', 
       type:'text',
       tooltip: 'Đoạn tóm tắt ngắn gọn nội dung bài viết',
-      hideInForm: false
+      hideInForm: false,
+      hideInTable: true
     },
     { 
       key:'content', 
       label:'Nội dung', 
       type:'text',
       tooltip: 'Nội dung chính của bài viết (có thể sử dụng HTML)',
-      hideInForm: false
+      hideInForm: false,
+      hideInTable: true
     },
     { 
       key:'imageUrl', 
@@ -342,13 +350,15 @@ export function PostsPage(){
       key:'seoTitle', 
       label:'SEO Title', 
       type:'string',
-      tooltip: 'Tiêu đề tối ưu cho SEO (khác với tiêu đề hiển thị)'
+      tooltip: 'Tiêu đề tối ưu cho SEO',
+      hideInTable: true
     },
     { 
       key:'seoDescription', 
       label:'SEO Description', 
       type:'text',
-      tooltip: 'Mô tả tối ưu cho SEO (hiển thị trong kết quả tìm kiếm)'
+      tooltip: 'Mô tả tối ưu cho SEO',
+      hideInTable: true
     }
   ]
   return <CrudTable title="Quản lý bài viết" collectionName="POSTS" columns={cols} />

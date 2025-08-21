@@ -23,6 +23,23 @@ export function Header() {
     }
     load()
   }, [])
+  
+// useEffect để cập nhật favicon khi settings thay đổi
+  useEffect(() => {
+    if (settings?.logoUrl) {
+      const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (link) {
+        link.href = settings.logoUrl;
+      } else {
+        // Tạo thẻ link mới nếu chưa tồn tại
+        const newLink = document.createElement('link');
+        newLink.rel = 'icon';
+        newLink.type = 'image/svg+xml';
+        newLink.href = settings.logoUrl;
+        document.head.appendChild(newLink);
+      }
+    }
+  }, [settings?.logoUrl]); // Phụ thuộc vào settings.logoUrl để chạy lại khi có thay đổi
 
   useEffect(() => {
     const checkPartnerStatus = async () => {

@@ -216,7 +216,7 @@ const sampleBookings = [
 // Function to seed tours data
 export const seedToursData = async () => {
   try {
-    console.log('🌱 Bắt đầu thêm dữ liệu tours...')
+    // console.log('🌱 Bắt đầu thêm dữ liệu tours...')
     
     for (let i = 0; i < sampleTours.length; i++) {
       const tour = sampleTours[i]
@@ -228,10 +228,10 @@ export const seedToursData = async () => {
         featured: i < 5,
         slug: tour.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]/g, '')
       })
-      console.log(`✅ Đã thêm tour: ${tour.name}`)
+      // console.log(`✅ Đã thêm tour: ${tour.name}`)
     }
     
-    console.log(`🎉 Hoàn thành! Đã thêm ${sampleTours.length} tours`)
+    // console.log(`🎉 Hoàn thành! Đã thêm ${sampleTours.length} tours`)
     return { success: true, count: sampleTours.length }
   } catch (error) {
     console.error('❌ Lỗi khi thêm tours:', error)
@@ -242,7 +242,7 @@ export const seedToursData = async () => {
 // Function to seed posts data
 export const seedPostsData = async () => {
   try {
-    console.log('🌱 Bắt đầu thêm dữ liệu posts...')
+    // console.log('🌱 Bắt đầu thêm dữ liệu posts...')
     
     for (let i = 0; i < samplePosts.length; i++) {
       const post = samplePosts[i]
@@ -254,10 +254,10 @@ export const seedPostsData = async () => {
         featured: i < 3,
         slug: post.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]/g, '')
       })
-      console.log(`✅ Đã thêm post: ${post.title}`)
+      // console.log(`✅ Đã thêm post: ${post.title}`)
     }
     
-    console.log(`🎉 Hoàn thành! Đã thêm ${samplePosts.length} posts`)
+    // console.log(`🎉 Hoàn thành! Đã thêm ${samplePosts.length} posts`)
     return { success: true, count: samplePosts.length }
   } catch (error) {
     console.error('❌ Lỗi khi thêm posts:', error)
@@ -268,7 +268,7 @@ export const seedPostsData = async () => {
 // Function to seed customers data
 export const seedCustomersData = async () => {
   try {
-    console.log('🌱 Bắt đầu thêm dữ liệu khách hàng...')
+    // console.log('🌱 Bắt đầu thêm dữ liệu khách hàng...')
     
     for (let i = 0; i < sampleCustomers.length; i++) {
       const customer = sampleCustomers[i]
@@ -278,13 +278,13 @@ export const seedCustomersData = async () => {
         updatedAt: new Date(),
         status: 'active'
       })
-      console.log(`✅ Đã thêm khách hàng: ${customer.displayName}`)
+      // console.log(`✅ Đã thêm khách hàng: ${customer.displayName}`)
     }
     
-    console.log(`🎉 Hoàn thành! Đã thêm ${sampleCustomers.length} khách hàng`)
+    // console.log(`🎉 Hoàn thành! Đã thêm ${sampleCustomers.length} khách hàng`)
     return { success: true, count: sampleCustomers.length }
   } catch (error) {
-    console.error('❌ Lỗi khi thêm khách hàng:', error)
+    // console.error('❌ Lỗi khi thêm khách hàng:', error)
     return { success: false, error }
   }
 }
@@ -292,7 +292,7 @@ export const seedCustomersData = async () => {
 // Function to seed staff data
 export const seedStaffData = async () => {
   try {
-    console.log('🌱 Bắt đầu thêm dữ liệu nhân viên...')
+    // console.log('🌱 Bắt đầu thêm dữ liệu nhân viên...')
     
     for (let i = 0; i < sampleStaff.length; i++) {
       const staff = sampleStaff[i]
@@ -301,13 +301,13 @@ export const seedStaffData = async () => {
         createdAt: new Date(),
         updatedAt: new Date()
       })
-      console.log(`✅ Đã thêm nhân viên: ${staff.displayName}`)
+      // console.log(`✅ Đã thêm nhân viên: ${staff.displayName}`)
     }
     
-    console.log(`🎉 Hoàn thành! Đã thêm ${sampleStaff.length} nhân viên`)
+  //  console.log(`🎉 Hoàn thành! Đã thêm ${sampleStaff.length} nhân viên`)
     return { success: true, count: sampleStaff.length }
   } catch (error) {
-    console.error('❌ Lỗi khi thêm nhân viên:', error)
+    // console.error('❌ Lỗi khi thêm nhân viên:', error)
     return { success: false, error }
   }
 }
@@ -315,7 +315,7 @@ export const seedStaffData = async () => {
 // Function to seed affiliates data
 export const seedAffiliatesData = async () => {
   try {
-    console.log('🌱 Bắt đầu thêm dữ liệu affiliate...')
+    // console.log('🌱 Bắt đầu thêm dữ liệu affiliate...')
     
     for (let i = 0; i < sampleAffiliates.length; i++) {
       const affiliate = sampleAffiliates[i]
@@ -324,13 +324,13 @@ export const seedAffiliatesData = async () => {
         createdAt: new Date(),
         updatedAt: new Date()
       })
-      console.log(`✅ Đã thêm affiliate: ${affiliate.name}`)
+      // console.log(`✅ Đã thêm affiliate: ${affiliate.name}`)
     }
     
-    console.log(`🎉 Hoàn thành! Đã thêm ${sampleAffiliates.length} affiliate`)
+    // console.log(`🎉 Hoàn thành! Đã thêm ${sampleAffiliates.length} affiliate`)
     return { success: true, count: sampleAffiliates.length }
   } catch (error) {
-    console.error('❌ Lỗi khi thêm affiliate:', error)
+    // console.error('❌ Lỗi khi thêm affiliate:', error)
     return { success: false, error }
   }
 }
@@ -338,7 +338,7 @@ export const seedAffiliatesData = async () => {
 // Function to seed bookings data
 export const seedBookingsData = async () => {
   try {
-    console.log('🌱 Bắt đầu thêm dữ liệu đặt tour...')
+    // console.log('🌱 Bắt đầu thêm dữ liệu đặt tour...')
     
     for (let i = 0; i < sampleBookings.length; i++) {
       const booking = sampleBookings[i]
@@ -347,13 +347,13 @@ export const seedBookingsData = async () => {
         createdAt: new Date(),
         updatedAt: new Date()
       })
-      console.log(`✅ Đã thêm đặt tour: ${booking.tourName}`)
+      // console.log(`✅ Đã thêm đặt tour: ${booking.tourName}`)
     }
     
-    console.log(`🎉 Hoàn thành! Đã thêm ${sampleBookings.length} đặt tour`)
+    // console.log(`🎉 Hoàn thành! Đã thêm ${sampleBookings.length} đặt tour`)
     return { success: true, count: sampleBookings.length }
   } catch (error) {
-    console.error('❌ Lỗi khi thêm đặt tour:', error)
+    // console.error('❌ Lỗi khi thêm đặt tour:', error)
     return { success: false, error }
   }
 }
@@ -361,7 +361,7 @@ export const seedBookingsData = async () => {
 // Function to seed all data
 export const seedAllData = async () => {
   try {
-    console.log('🚀 Bắt đầu thêm tất cả dữ liệu...')
+    // console.log('🚀 Bắt đầu thêm tất cả dữ liệu...')
     
     const toursResult = await seedToursData()
     const postsResult = await seedPostsData()
@@ -372,7 +372,7 @@ export const seedAllData = async () => {
     
     if (toursResult.success && postsResult.success && customersResult.success && 
         staffResult.success && affiliatesResult.success && bookingsResult.success) {
-      console.log(`🎉 Hoàn thành tất cả! Đã thêm ${toursResult.count} tours, ${postsResult.count} posts, ${customersResult.count} khách hàng, ${staffResult.count} nhân viên, ${affiliatesResult.count} affiliate, ${bookingsResult.count} đặt tour`)
+      // console.log(`🎉 Hoàn thành tất cả! Đã thêm ${toursResult.count} tours, ${postsResult.count} posts, ${customersResult.count} khách hàng, ${staffResult.count} nhân viên, ${affiliatesResult.count} affiliate, ${bookingsResult.count} đặt tour`)
       return { 
         success: true, 
         tours: toursResult.count, 
@@ -386,7 +386,7 @@ export const seedAllData = async () => {
       throw new Error('Có lỗi xảy ra khi thêm dữ liệu')
     }
   } catch (error) {
-    console.error('❌ Lỗi khi thêm dữ liệu:', error)
+    // console.error('❌ Lỗi khi thêm dữ liệu:', error)
     return { success: false, error }
   }
 }

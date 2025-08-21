@@ -30,12 +30,12 @@ export function HomePage() {
           limit(20)
         )
       )
-      console.log('Firestore tours found:', toursSnapshot.docs.length)
+      // console.log('Firestore tours found:', toursSnapshot.docs.length)
       const toursData = toursSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }))
-      console.log('Tours data:', toursData)
+      // console.log('Tours data:', toursData)
       
       // Load posts from Firestore - Load all posts first to debug
       const postsSnapshot = await getDocs(
@@ -44,13 +44,13 @@ export function HomePage() {
           limit(10)
         )
       )
-      console.log('Posts snapshot size:', postsSnapshot.size)
-      console.log('Firestore posts found:', postsSnapshot.docs.length)
+      // console.log('Posts snapshot size:', postsSnapshot.size)
+      // console.log('Firestore posts found:', postsSnapshot.docs.length)
       const postsData = postsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }))
-      console.log('Posts data:', postsData)
+      // console.log('Posts data:', postsData)
       
       setFirestoreTours(toursData)
       setFirestorePosts(postsData)
@@ -89,12 +89,12 @@ export function HomePage() {
   const hotTours = useMemo(() => filteredTours.filter(t => t.hot || t.featured), [filteredTours])
   const topTours = useMemo(() => [...filteredTours].sort((a,b) => (b.rating || 0) - (a.rating || 0)).slice(0,10), [filteredTours])
   
-  console.log('Debug HomePage:')
-  console.log('- context tours:', tours.length)
-  console.log('- firestore tours:', firestoreTours.length)
-  console.log('- all tours:', allTours.length)
-  console.log('- hot tours:', hotTours.length)
-  console.log('- top tours:', topTours.length)
+  // console.log('Debug HomePage:')
+  // console.log('- context tours:', tours.length)
+  // console.log('- firestore tours:', firestoreTours.length)
+  // console.log('- all tours:', allTours.length)
+  // console.log('- hot tours:', hotTours.length)
+  // console.log('- top tours:', topTours.length)
 
   if (loading) {
     return (
