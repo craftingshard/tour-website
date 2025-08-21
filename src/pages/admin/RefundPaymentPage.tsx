@@ -8,6 +8,7 @@ export function RefundPaymentPage() {
   const [tours, setTours] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedBooking, setSelectedBooking] = useState<string>('all')
+  const [selectedReason, setSelectedReason] = useState<string>('all')
   const [showRefundForm, setShowRefundForm] = useState(false)
   const [refundForm, setRefundForm] = useState({
     bookingId: '',
@@ -112,10 +113,15 @@ export function RefundPaymentPage() {
   }
 
   const getFilteredRefunds = () => {
-    if (selectedBooking === 'all') {
-      return refunds
+    let filteredRefunds = refunds;
+    if (selectedBooking !== 'all') {
+      filteredRefunds = filteredRefunds.filter(r => r.bookingId === selectedBooking);
     }
-    return refunds.filter(r => r.bookingId === selectedBooking)
+    if (selectedReason !== 'all') {
+      filteredRefunds = filteredRefunds.filter(r => r.reason === selectedReason);
+    }
+
+    return filteredRefunds;
   }
 
   const getBookingById = (id: string) => {
@@ -392,7 +398,8 @@ export function RefundPaymentPage() {
 
       {/* Filters */}
       <div className="filters-section">
-        <div className="filter-group">
+        <div className="filter-container">
+          <div className="filter-group">
           <label>Lọc theo đơn hàng:</label>
           <select 
             value={selectedBooking} 
@@ -409,6 +416,22 @@ export function RefundPaymentPage() {
               )
             })}
           </select>
+        </div>
+        <div className="filter-group">
+          <label>Lọc theo lý do hoàn tiền:</label>
+          <select 
+            value={selectedReason} 
+            onChange={(e) => setSelectedReason(e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">Tất cả lý do</option>
+            <option value="customer_request">Khách hàng yêu cầu hủy</option>
+            <option value="service_issue">Vấn đề dịch vụ</option>
+            <option value="overpayment">Thanh toán thừa</option>
+            <option value="cancellation">Tour bị hủy</option>
+            <option value="other">Lý do khác</option>
+          </select>
+        </div>
         </div>
       </div>
 
@@ -659,7 +682,12 @@ export function RefundPaymentPage() {
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
           margin-bottom: 32px;
         }
-        
+        .filter-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 24px;
+          align-items: flex-end;
+        }
         .filter-group {
           display: flex;
           flex-direction: column;

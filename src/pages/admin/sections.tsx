@@ -3,11 +3,11 @@ import type { CrudColumn } from './components/CrudTable'
 
 export function CustomersPage(){
   const cols: CrudColumn[] = [
-    { key:'displayName', label:'Tên', type:'string', required:true },
-    { key:'email', label:'Email', type:'string', required:true },
-    { key:'phoneNumber', label:'Điện thoại', type:'string' },
-    { key:'role', label:'Vai trò', type:'string' },
-    { key:'createdAt', label:'Ngày tạo', type:'date' },
+    { key:'displayName', label:'Tên', type:'string', required:true, tooltip:'Tên đầy đủ của khách hàng' },
+    { key:'email', label:'Email', type:'string', required:true, tooltip:'Email liên hệ chính của khách hàng' },
+    { key:'phoneNumber', label:'Điện thoại', type:'string', tooltip:'Số điện thoại liên hệ (chỉ nhập số và ký tự +, -, (, ), khoảng trắng)' },
+    { key:'role', label:'Vai trò', type:'string', tooltip:'Vai trò của khách hàng trong hệ thống (ví dụ: Khách hàng, Đối tác, Nhân viên)' },
+    { key:'createdAt', label:'Ngày tạo', type:'date' , hideInForm: true },
   ]
   return <CrudTable title="Quản lý khách hàng" collectionName="users" columns={cols} />
 }
@@ -51,7 +51,8 @@ export function StaffAdminPage(){
       key:'uid', 
       label:'User ID', 
       type:'string',
-      tooltip: 'ID người dùng từ Firebase Authentication (tự động tạo)'
+      tooltip: 'ID người dùng từ Firebase Authentication (tự động tạo)',
+      hideInTable: true
     },
     { 
       key:'department', 
@@ -65,7 +66,8 @@ export function StaffAdminPage(){
         { value: 'finance', label: 'Tài chính' },
         { value: 'hr', label: 'Nhân sự' }
       ],
-      tooltip: 'Phòng ban nơi nhân viên làm việc'
+      tooltip: 'Phòng ban nơi nhân viên làm việc',
+      hideInTable: true
     },
     { 
       key:'position', 
@@ -95,13 +97,15 @@ export function StaffAdminPage(){
       key:'address', 
       label:'Địa chỉ', 
       type:'text',
-      tooltip: 'Địa chỉ nhà của nhân viên'
+      tooltip: 'Địa chỉ nhà của nhân viên',
+      hideInTable: true
     },
     { 
       key:'emergencyContact', 
       label:'Liên hệ khẩn cấp', 
       type:'string',
-      tooltip: 'Tên và số điện thoại người liên hệ khẩn cấp'
+      tooltip: 'Tên và số điện thoại người liên hệ khẩn cấp',
+      hideInTable: true
     },
     { 
       key:'skills', 
@@ -113,7 +117,8 @@ export function StaffAdminPage(){
       key:'notes', 
       label:'Ghi chú', 
       type:'text',
-      tooltip: 'Ghi chú nội bộ về nhân viên'
+      tooltip: 'Ghi chú nội bộ về nhân viên',
+      hideInTable: true
     }
   ]
   return <CrudTable title="Quản lý nhân viên" collectionName="admins" columns={cols} />
@@ -309,9 +314,8 @@ export function PostsPage(){
       label:'Thời gian đọc', 
       type:'string',
       tooltip: 'Thời gian ước tính để đọc hết bài viết (ví dụ: 5 phút)',
-      hideInTable: true
+      hideInTable: true, hideInForm: true
     },
-    // Hidden/managed fields: views, likes, status handled by system
     { 
       key:'featured', 
       label:'Nổi bật', 
@@ -344,7 +348,7 @@ export function PostsPage(){
       key:'imageUrl', 
       label:'Ảnh đại diện', 
       type:'string',
-      tooltip: 'URL ảnh đại diện cho bài viết (hỗ trợ jpg, png, gif)'
+      tooltip: 'URL ảnh đại diện cho bài viết (hỗ trợ jpg, png)'
     },
     { 
       key:'seoTitle', 
@@ -367,24 +371,24 @@ export function PostsPage(){
 export function ThemePage(){
   const cols: CrudColumn[] = [
     { key:'name', label:'Tên theme', type:'string', required:true },
-    { key:'primaryColor', label:'Màu chính', type:'color' },
-    { key:'secondaryColor', label:'Màu phụ', type:'color' },
-    { key:'darkMode', label:'Dark mode', type:'boolean' },
-    { key:'active', label:'Kích hoạt', type:'boolean' },
+    { key:'primaryColor', label:'Màu chính', type:'color', tooltip:'Màu chính của theme (VD: #ff5733)' },
+    { key:'secondaryColor', label:'Màu phụ', type:'color', tooltip:'Màu phụ của theme (VD: #33c1ff)' },
+    { key:'darkMode', label:'Dark mode', type:'boolean', tooltip:'Cho phép chế độ tối cho theme' },
+    { key:'active', label:'Kích hoạt', type:'boolean', tooltip:'Đánh dấu nếu theme đang được sử dụng' },
   ]
   return <CrudTable title="Quản lý theme" collectionName="themes" columns={cols} />
 }
 
 export function SettingsPage(){
   const cols: CrudColumn[] = [
-    { key:'siteName', label:'Tên website', type:'string', required:true },
-    { key:'logoUrl', label:'Logo URL', type:'string' },
-    { key:'primaryPhone', label:'Điện thoại', type:'string' },
-    { key:'supportEmail', label:'Email hỗ trợ', type:'string' },
-    { key:'address', label:'Địa chỉ', type:'text' },
-    { key:'facebook', label:'Facebook', type:'string' },
-    { key:'zalo', label:'Zalo', type:'string' },
-    { key:'hotline', label:'Hotline', type:'string' },
+    { key:'siteName', label:'Tên website', type:'string', required:true, tooltip:'Tên hiển thị của website (VD: Tour Việt Nam)' },
+    { key:'logoUrl', label:'Logo URL', type:'string', tooltip:'URL ảnh logo hiển thị trên website (hỗ trợ jpg, png)' },
+    { key:'primaryPhone', label:'Điện thoại', type:'string', tooltip:'Số điện thoại chính để liên hệ (chỉ nhập số và ký tự +, -, (, ), khoảng trắng)' },
+    { key:'supportEmail', label:'Email hỗ trợ', type:'string', tooltip:'Email hỗ trợ khách hàng (VD:)' },
+    { key:'address', label:'Địa chỉ', type:'text', tooltip:'Địa chỉ văn phòng công ty' },
+    { key:'facebook', label:'Facebook', type:'string', tooltip:'URL trang Facebook chính thức của công ty' },
+    { key:'zalo', label:'Zalo', type:'string', tooltip:'Số điện thoại Zalo để liên hệ' },
+    { key:'hotline', label:'Hotline', type:'string', tooltip:'Số điện thoại hotline hỗ trợ khách hàng (chỉ nhập số và ký tự +, -, (, ), khoảng trắng)' },
   ]
   return <CrudTable title="Cấu hình hệ thống" collectionName="settings" columns={cols} createDefaults={{ id:'global' }} />
 }
@@ -392,8 +396,8 @@ export function SettingsPage(){
 export function BanksAdminPage(){
   const cols: CrudColumn[] = [
     { key:'name', label:'Ngân hàng', type:'string', required:true, tooltip:'Tên ngân hàng (VD: Vietcombank, MB Bank, Techcombank, ...)' },
-    { key:'accountNumber', label:'Số tài khoản', type:'string', required:true },
-    { key:'accountName', label:'Chủ tài khoản', type:'string', required:true },
+    { key:'accountNumber', label:'Số tài khoản', type:'string', required:true, tooltip:'Số tài khoản ngân hàng để chuyển tiền' },
+    { key:'accountName', label:'Chủ tài khoản', type:'string', required:true, tooltip:'Tên chủ tài khoản ngân hàng (có thể là tên công ty)' },
     { key:'qrImageUrl', label:'QR Code', type:'string', tooltip:'URL ảnh QR chuyển khoản' },
   ]
   return <CrudTable title="Tài khoản ngân hàng" collectionName="banks" columns={cols} />
@@ -401,11 +405,11 @@ export function BanksAdminPage(){
 
 export function AboutAdminPage(){
   const cols: CrudColumn[] = [
-    { key:'title', label:'Tiêu đề', type:'string', required:true },
-    { key:'content', label:'Nội dung', type:'text', required:true },
-    { key:'section', label:'Phần', type:'string' },
-    { key:'order', label:'Thứ tự', type:'number' },
-    { key:'active', label:'Kích hoạt', type:'boolean' },
+    { key:'title', label:'Tiêu đề', type:'string', required:true, tooltip:'Tiêu đề phần giới thiệu (VD: Giới thiệu, Chính sách, Điều khoản)' },
+    { key:'content', label:'Nội dung', type:'text', required:true, tooltip:'Nội dung chi tiết phần giới thiệu (có thể sử dụng HTML)' },
+    { key:'section', label:'Phần', type:'string',hideInForm:true, tooltip:'Phần nội dung (VD: Giới thiệu, Chính sách, Điều khoản)', hideInTable:true },
+    { key:'order', label:'Thứ tự', type:'number',hideInTable:true, tooltip:'Thứ tự hiển thị trong phần này (số nhỏ hiển thị trước)' },
+    { key:'active', label:'Kích hoạt', type:'boolean',hideInTable:true  },
   ]
   return <CrudTable title="Quản lý giới thiệu" collectionName="about" columns={cols} />
 }
@@ -593,19 +597,22 @@ export function AffiliatePage(){
       key:'totalEarnings', 
       label:'Tổng thu nhập', 
       type:'number',
-      tooltip: 'Tổng số tiền đối tác đã kiếm được (tự động tính)'
+      tooltip: 'Tổng số tiền đối tác đã kiếm được (tự động tính)',
+      hideInForm: true
     },
     { 
       key:'paidAmount', 
       label:'Đã thanh toán', 
       type:'number',
-      tooltip: 'Số tiền đã thanh toán cho đối tác (tự động tính)'
+      tooltip: 'Số tiền đã thanh toán cho đối tác (tự động tính)',
+      hideInForm: true
     },
     { 
       key:'pendingAmount', 
       label:'Chờ thanh toán', 
       type:'number',
-      tooltip: 'Số tiền còn nợ đối tác (tự động tính)'
+      tooltip: 'Số tiền còn nợ đối tác (tự động tính)',
+      hideInForm: true
     },
     { 
       key:'status', 

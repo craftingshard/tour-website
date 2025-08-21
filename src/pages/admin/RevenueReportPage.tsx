@@ -385,7 +385,7 @@ export function RevenueReportPage() {
 
       {/* Revenue by Bank */}
       <div className="revenue-section">
-        <h2>🏦 Doanh Thu Theo Ngân Hàng (Chuyển khoản)</h2>
+        <h2>🏦 Doanh Thu Theo Ngân Hàng</h2>
         {bankSummary.length === 0 ? (
           <div className="muted">Chưa có dữ liệu chuyển khoản trong giai đoạn đã chọn.</div>
         ) : (

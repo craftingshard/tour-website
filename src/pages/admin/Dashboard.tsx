@@ -255,24 +255,7 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Recent Activity */}
-      <div className="recent-activity">
-        <h2>Hoạt Động Gần Đây</h2>
-        <div className="activity-list">
-          <div className="activity-item">
-            <span className="activity-time">Hôm nay</span>
-            <span className="activity-text">Khởi tạo hệ thống quản trị</span>
-          </div>
-          <div className="activity-item">
-            <span className="activity-time">Hôm nay</span>
-            <span className="activity-text">Cập nhật Firestore Rules</span>
-          </div>
-          <div className="activity-item">
-            <span className="activity-time">Hôm nay</span>
-            <span className="activity-text">Thêm báo cáo doanh thu và affiliate</span>
-          </div>
-        </div>
-      </div>
+
 
       <style>{`
         .dashboard {
