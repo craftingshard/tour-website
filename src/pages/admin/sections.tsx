@@ -406,7 +406,20 @@ export function BanksAdminPage(){
 export function AboutAdminPage(){
   const cols: CrudColumn[] = [
     { key:'title', label:'Tiêu đề', type:'string', required:true, tooltip:'Tiêu đề phần giới thiệu (VD: Giới thiệu, Chính sách, Điều khoản)' },
-    { key:'content', label:'Nội dung', type:'text', required:true, tooltip:'Nội dung chi tiết phần giới thiệu (có thể sử dụng HTML)' },
+    { key:'content', label:'Nội dung', type:'text', required:true, tooltip:'Nội dung chi tiết phần giới thiệu (có thể sử dụng HTML)', 
+      render: (value: any) => {
+        if (typeof value !== 'string') {
+          return value;
+        }
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = value;
+        const plainText = tempDiv.textContent || tempDiv.innerText || "";
+        if (plainText.length > 100) {
+          return plainText.substring(0, 100) + '...';
+        }
+        return plainText;
+      } 
+    },
     { key:'section', label:'Phần', type:'string',hideInForm:true, tooltip:'Phần nội dung (VD: Giới thiệu, Chính sách, Điều khoản)', hideInTable:true },
     { key:'order', label:'Thứ tự', type:'number',hideInTable:true, tooltip:'Thứ tự hiển thị trong phần này (số nhỏ hiển thị trước)' },
     { key:'active', label:'Kích hoạt', type:'boolean',hideInTable:true  },

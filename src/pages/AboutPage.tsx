@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
-import React from 'react';
 
 type AboutItem = {
   id: string;

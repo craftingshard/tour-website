@@ -96,7 +96,12 @@ export function Header() {
               {isPartner && (
                 <NavLink to="/partner-dashboard" style={{background:'rgba(255,255,255,.1)', padding:'4px 8px', borderRadius:6}}>🤝 Bảng điều khiển</NavLink>
               )}
-              <span className="muted" style={{padding:'4px 8px', border:'1px solid rgba(255,255,255,.2)', borderRadius:6}}>{user.displayName || user.email}</span>
+              <span className="muted" style={{padding:'4px 8px', border:'1px solid rgba(255,255,255,.2)', borderRadius:6, display: 'inline-block', 
+    maxWidth: '150px',       
+    whiteSpace: 'nowrap',   
+    overflow: 'hidden',     
+    textOverflow: 'ellipsis',
+    verticalAlign: 'middle'}}>{user.displayName || user.email}</span>
               <button className="btn ghost" onClick={handleLogout}>Đăng xuất</button>
             </>
                       ) : (

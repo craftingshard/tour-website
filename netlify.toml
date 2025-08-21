@@ -1,0 +1,18 @@
+# Cấu hình header cho Netlify
+[[headers]]
+  # Áp dụng cho tất cả các trang ("/*")
+  for = "/*"
+  [headers.values]
+    # 1. Thiết lập X-Frame-Options
+    X-Frame-Options = "SAMEORIGIN"
+
+    # 2. Thiết lập Content-Security-Policy (CSP)
+    # Sao chép các quy tắc từ thẻ meta của bạn và thêm 'frame-ancestors'
+    Content-Security-Policy = """
+      default-src 'self'; 
+      script-src 'self' 'unsafe-inline'; 
+      style-src 'self' 'unsafe-inline'; 
+      img-src 'self' data: https://firebasestorage.googleapis.com https://i.ibb.co https://api.imgbb.com; 
+      connect-src 'self' https://api.imgbb.com https://i.ibb.co https://firestore.googleapis.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com; 
+      frame-ancestors 'self';
+    """

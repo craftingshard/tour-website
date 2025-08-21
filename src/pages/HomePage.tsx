@@ -23,34 +23,26 @@ export function HomePage() {
     try {
       setLoading(true)
       
-      // Load tours from Firestore - Load all tours first to debug
       const toursSnapshot = await getDocs(
         query(
           collection(db, 'TOURS'),
           limit(20)
         )
       )
-      // console.log('Firestore tours found:', toursSnapshot.docs.length)
       const toursData = toursSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }))
-      // console.log('Tours data:', toursData)
-      
-      // Load posts from Firestore - Load all posts first to debug
       const postsSnapshot = await getDocs(
         query(
           collection(db, 'POSTS'),
           limit(10)
         )
       )
-      // console.log('Posts snapshot size:', postsSnapshot.size)
-      // console.log('Firestore posts found:', postsSnapshot.docs.length)
       const postsData = postsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }))
-      // console.log('Posts data:', postsData)
       
       setFirestoreTours(toursData)
       setFirestorePosts(postsData)
@@ -61,7 +53,6 @@ export function HomePage() {
     }
   }
 
-  // Combine tours with deduplication by id to avoid duplicate keys
   const allTours = useMemo(() => {
     const seen = new Set<string>()
     const out: any[] = []
@@ -88,13 +79,6 @@ export function HomePage() {
 
   const hotTours = useMemo(() => filteredTours.filter(t => t.hot || t.featured), [filteredTours])
   const topTours = useMemo(() => [...filteredTours].sort((a,b) => (b.rating || 0) - (a.rating || 0)).slice(0,10), [filteredTours])
-  
-  // console.log('Debug HomePage:')
-  // console.log('- context tours:', tours.length)
-  // console.log('- firestore tours:', firestoreTours.length)
-  // console.log('- all tours:', allTours.length)
-  // console.log('- hot tours:', hotTours.length)
-  // console.log('- top tours:', topTours.length)
 
   if (loading) {
     return (

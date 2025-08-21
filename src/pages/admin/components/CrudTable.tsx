@@ -20,6 +20,7 @@ export type CrudColumn = {
   createDefaults?: Record<string, unknown>
   hideInForm?: boolean
   hideInTable?: boolean
+  render?: (value: any) => React.ReactNode
 }
 
 type CrudTableProps = {
@@ -847,11 +848,17 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
               <tbody>
                 {currentItems.map(row => (
                   <tr key={row.id} className="data-row">
-                     {columns.filter(c => !c.hideInTable).map(c => (
-                      <td key={c.key} className="data-cell">
-                        {formatValue(row[c.key], c.type, c)}
-                      </td>
-                    ))}
+                    {columns.filter(c => !c.hideInTable).map(c => {
+                      const cellValue = row[c.key];
+                      const cellContent = c.render 
+                        ? c.render(cellValue) 
+                        : formatValue(cellValue, c.type, c);
+                      return (
+                        <td key={c.key} className="data-cell">
+                          {cellContent}
+                        </td>
+                      );
+                    })}
                     <td className="actions-cell">
                       {collectionName === 'TOURS' && !row.approved && hasPermission('update', collectionName) && (
                         <button className="btn small success" onClick={() => approveTour(row.id)}>
