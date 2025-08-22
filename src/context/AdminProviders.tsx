@@ -95,62 +95,39 @@ export function AdminProviders({ children }: PropsWithChildren) {
 
   const login = async (email: string, password: string) => {
     const cred = await signInWithEmailAndPassword(auth, email, password)
-    
-    // Check if user exists in admins collection first
-    const adminDocRef = doc(db, 'admins', cred.user.uid)
-    const adminSnapshot = await getDoc(adminDocRef)
-    
-    if (adminSnapshot.exists()) {
-      const userData = adminSnapshot.data()
-      
-      // Check if user is active
-      if (userData.active === false) {
-        await signOut(auth)
-        throw new Error('Tài khoản đã bị vô hiệu hóa')
-      }
-      
-      const adminUser: AdminUser = {
-        uid: cred.user.uid,
-        name: userData.name || userData.displayName || cred.user.displayName || 'Admin User',
-        email: cred.user.email || '',
-        role: userData.role || 'staff',
-        active: userData.active !== false,
-        department: userData.department,
-        position: userData.position
-      }
-      
-      // Update state immediately for better UX
-      setUid(cred.user.uid)
-      setCurrentUser(adminUser)
-    } else {
-      // Check if user is an approved partner
-      const partnerQuery = query(
-        collection(db, 'partners'),
-        where('userId', '==', cred.user.uid),
-        where('status', '==', 'approved')
-      )
-      const partnerSnapshot = await getDocs(partnerQuery)
-      
-      if (!partnerSnapshot.empty) {
-        const partnerData = partnerSnapshot.docs[0].data()
-        const partnerUser: AdminUser = {
-          uid: cred.user.uid,
-          name: partnerData.fullName || partnerData.name || cred.user.displayName || 'Partner',
-          email: cred.user.email || '',
-          role: 'partner',
-          active: true,
-          department: 'Partner',
-          position: 'Tour Partner'
-        }
-        
-        // Update state immediately for better UX
-        setUid(cred.user.uid)
-        setCurrentUser(partnerUser)
-      } else {
-        await signOut(auth)
-        throw new Error('Tài khoản không có quyền truy cập hệ thống hoặc chưa được duyệt')
-      }
-    }
+    
+    let isAuthorized = false
+
+    const adminDocRef = doc(db, 'admins', cred.user.uid)
+    const adminSnapshot = await getDoc(adminDocRef)
+    if (adminSnapshot.exists() && adminSnapshot.data().active !== false) {
+      isAuthorized = true
+    }
+
+    if (!isAuthorized) {
+      const partnerQuery = query(
+        collection(db, 'partners'),
+        where('userId', '==', cred.user.uid),
+        where('status', '==', 'approved')
+      )
+      const partnerSnapshot = await getDocs(partnerQuery)
+      if (!partnerSnapshot.empty) {
+        isAuthorized = true
+      }
+    }
+
+    if (!isAuthorized) {
+      const customerDoc = await getDoc(doc(db, 'customers', cred.user.uid))
+      if (customerDoc.exists() && customerDoc.data().role === 'customer' && customerDoc.data().status === 'active') {
+        isAuthorized = true
+      }
+    }
+
+    if (!isAuthorized) {
+      await signOut(auth)
+      throw new Error('Tài khoản không có quyền truy cập hệ thống hoặc chưa được duyệt')
+    }
+    console.log("Đăng nhập thành công")
   }
 
   const logout = async () => {
@@ -178,7 +155,7 @@ export function AdminProviders({ children }: PropsWithChildren) {
         if (action === 'read' && resource === 'dashboard') return false
         
         // Staff can only work with POSTS, TOURS, and bookings
-        if (resource && !['POSTS', 'TOURS', 'bookings', 'posts', 'tours'].includes(resource)) {
+        if (resource && !['POSTS', 'TOURS', 'bookings'].includes(resource)) {
           return false
         }
         
@@ -189,7 +166,7 @@ export function AdminProviders({ children }: PropsWithChildren) {
         if (action === 'delete') return false
         
         // Partners can only work with TOURS and bookings
-        if (resource && !['TOURS', 'tours', 'bookings'].includes(resource)) {
+        if (resource && !['TOURS', 'tours'].includes(resource)) {
           return false
         }
         

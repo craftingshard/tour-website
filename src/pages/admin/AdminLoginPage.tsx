@@ -10,7 +10,6 @@ export function AdminLoginPage() {
   const navigate = useNavigate()
   const { login, isAuthenticated, currentUser, loading: authLoading } = useAdmin()
   
-  // Auto-redirect to appropriate dashboard based on role
   useEffect(() => {
     if (isAuthenticated && currentUser && !authLoading) {
       if (currentUser.role === 'staff') {
@@ -22,21 +21,45 @@ export function AdminLoginPage() {
   }, [isAuthenticated, currentUser, authLoading, navigate])
   
   const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
-    
-    try {
-      await login(email, password)
-      // Login successful, navigation will be handled by useEffect
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
+  e.preventDefault();
+  setError(null);
+  setLoading(true);
 
-  // Show loading while checking auth state
+  try {
+    await login(email, password);
+  } catch (err: any) {
+    let errorMessage = 'Đăng nhập thất bại. Vui lòng thử lại sau.';
+    if (err.code) {
+      switch (err.code) {
+        case 'auth/invalid-credential':
+          errorMessage = 'Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại.';
+          break;
+        case 'auth/user-disabled':
+          errorMessage = 'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Email không hợp lệ.';
+          break;
+        case 'auth/user-not-found':
+          errorMessage = 'Không tìm thấy tài khoản. Vui lòng kiểm tra lại email.';
+          break;
+        case 'permission-denied': 
+        case 'unauthorized':
+          errorMessage = 'Bạn không có quyền truy cập vào trang quản trị.';
+          break;
+        default:
+          errorMessage = err.message || 'Có lỗi xảy ra. Vui lòng thử lại.';
+          break;
+      }
+    } else if (err.message && err.message.includes('auth/invalid-credential')) {
+      errorMessage = 'Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại.';
+    }
+
+    setError(errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
   if (authLoading) {
     return (
       <div className="container">
@@ -46,8 +69,6 @@ export function AdminLoginPage() {
       </div>
     )
   }
-
-  // Don't show login form if already authenticated
   if (isAuthenticated) {
     return null
   }

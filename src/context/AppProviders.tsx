@@ -4,9 +4,8 @@ import type { PropsWithChildren } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import type { User } from 'firebase/auth'
 import { auth, db } from '../firebase'
-import { addDoc, collection, doc, onSnapshot, setDoc, updateDoc, query, where, getDocs, getDoc } from 'firebase/firestore'
+import { addDoc, collection, doc, onSnapshot, setDoc, updateDoc, query, where, getDocs, getDoc, writeBatch } from 'firebase/firestore'
 
-// ... (các type và dữ liệu MOCK không đổi)
 export type Tour = {
   id: string
   title: string
@@ -38,6 +37,8 @@ export type Customer = {
   vip?: boolean
   address?: string
   role?: 'customer'
+  status: 'active' | 'inactive',
+  createdAt?: number
 }
 
 type AppContextType = {
@@ -52,34 +53,13 @@ type AppContextType = {
   markViewed: (id: string) => void
   bookTour: (id: string) => void
   addReview: (tourId: string, rating: number, comment: string) => void
-  saveCustomerProfile: (data: Partial<Customer>) => Promise<void>
+  saveCustomerProfile: (data: Partial<Customer>, uid?: string) => Promise<void>
   createBooking: (payload: { tourId: string; customerPhone:string; amount: number; method: 'cash' | 'bank_transfer'; people: number; startDate: number; endDate?: number; notes?: string; paid: boolean; bankId?: string; bankName?: string; payLater?: boolean }) => Promise<string>
   cancelBooking: (tourId: string) => Promise<void>
 }
 
-const AppContext = createContext<AppContextType | undefined>(undefined)
 
-const MOCK_TOURS: Tour[] = [
-  { id: 't1', title: 'Hà Giang Hùng Vĩ', location: 'Hà Giang', price: 3290000, rating: 4.8, hot: true, imageUrl: 'https://images.unsplash.com/photo-1545243424-0ce743321e11?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't2', title: 'Phú Quốc Biển Xanh', location: 'Phú Quốc', price: 4590000, rating: 4.7, hot: true, imageUrl: 'https://images.unsplash.com/photo-1540541338287-41700207dee6?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't3', title: 'Đà Lạt Ngàn Hoa', location: 'Đà Lạt', price: 2890000, rating: 4.6, hot: true, imageUrl: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't4', title: 'Sa Pa Mây Trời', location: 'Sa Pa', price: 3790000, rating: 4.9, hot: true, imageUrl: 'https://images.unsplash.com/photo-1526779259212-939e64788e3c?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't5', title: 'Hội An Cổ Kính', location: 'Hội An', price: 2590000, rating: 4.7, hot: true, imageUrl: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't6', title: 'Nha Trang Nắng Vàng', location: 'Nha Trang', price: 3090000, rating: 4.5, hot: true, imageUrl: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't7', title: 'Côn Đảo Hoang Sơ', location: 'Côn Đảo', price: 5290000, rating: 4.6, hot: true, imageUrl: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't8', title: 'Huế Trầm Mặc', location: 'Huế', price: 2790000, rating: 4.4, hot: true, imageUrl: 'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't9', title: 'Hạ Long Kỳ Vĩ', location: 'Quảng Ninh', price: 4090000, rating: 4.8, hot: true, imageUrl: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't10', title: 'Đà Nẵng Năng Động', location: 'Đà Nẵng', price: 2990000, rating: 4.5, hot: true, imageUrl: 'https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't11', title: 'Mộc Châu Mùa Hoa', location: 'Sơn La', price: 2690000, rating: 4.6, imageUrl: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't12', title: 'Cần Thơ Gạo Trắng', location: 'Cần Thơ', price: 2590000, rating: 4.3, hot: true, imageUrl: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't13', title: 'Bình Thuận Cát Trắng', location: 'Bình Thuận', price: 2890000, rating: 4.5, imageUrl: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't14', title: 'Quy Nhơn Biển Xanh', location: 'Quy Nhơn', price: 3190000, rating: 4.4, imageUrl: 'https://images.unsplash.com/photo-1482192505345-5655af888cc4?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't15', title: 'Cà Mau Đất Mũi', location: 'Cà Mau', price: 2790000, rating: 4.2, imageUrl: 'https://images.unsplash.com/photo-1500534623283-312aade485b7?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't16', title: 'Buôn Ma Thuột Cà Phê', location: 'Đắk Lắk', price: 2990000, rating: 4.3, imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't17', title: 'Tây Ninh Núi Bà', location: 'Tây Ninh', price: 2190000, rating: 4.1, hot: true, imageUrl: 'https://images.unsplash.com/photo-1542038382126-77ae2819338e?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't18', title: 'Vũng Tàu Biển Động', location: 'Vũng Tàu', price: 1990000, rating: 4.0, hot: true, imageUrl: 'https://images.unsplash.com/photo-1491555103944-7c647fd857e6?q=80&w=1600&auto=format&fit=crop' },
-  { id: 't19', title: 'Pleiku Hồ T’Nưng', location: 'Gia Lai', price: 2490000, rating: 4.2, hot: true, imageUrl: 'https://images.unsplash.com/photo-1496568816309-51d7c20e0b09?q=80&w=1600&auto=format&fit=crop' },
-]
+const AppContext = createContext<AppContextType | undefined>(undefined)
 
 export function AppProviders({ children }: PropsWithChildren) {
   const [user, setUser] = useState<User | null>(null)
@@ -94,7 +74,6 @@ export function AppProviders({ children }: PropsWithChildren) {
     const unsub = onAuthStateChanged(auth, (newUser) => {
       setUser(newUser);
       if (!newUser) {
-        // Dọn dẹp state khi người dùng đăng xuất
         setCurrentCustomer(null);
         setBookedTourIds([]);
       }
@@ -102,7 +81,6 @@ export function AppProviders({ children }: PropsWithChildren) {
     return () => unsub()
   }, [])
 
-  // Load tours from both admin_tours and TOURS collections with robust fallbacks
   useEffect(() => {
     let unsubscribePrimary: (() => void) | null = null
     let unsubscribeFallback: (() => void) | null = null
@@ -120,7 +98,7 @@ export function AppProviders({ children }: PropsWithChildren) {
               price: Number(data.price) || 0,
               rating: Number(data.rating) || 0,
               hot: Boolean(data.hot),
-              imageUrl: data.imageUrl || data.image || data.photo || data.thumbnail || data.picture || 'https://images.unsplash.com/photo-1545243424-0ce743321e11?q=80&w=1600&auto=format&fit=crop',
+              imageUrl: data.imageUrl || data.image,
               approved: Boolean(data.approved),
               createdBy: data.createdBy,
               createdByName: data.createdByName,
@@ -130,16 +108,12 @@ export function AppProviders({ children }: PropsWithChildren) {
             console.log('Loaded tours from admin_tours collection:', adminToursList.length)
             setTours(adminToursList)
           } else {
-            console.log('Using mock tours')
-            setTours(MOCK_TOURS)
+                console.warn('No tours found in admin_tours, falling back to TOURS collection')
           }
         }, (err) => {
-          console.warn('admin_tours snapshot error:', err)
-          setTours(MOCK_TOURS)
+            console.warn('admin_tours snapshot error:', err)
         })
-      } catch (e) {
-        setTours(MOCK_TOURS)
-      }
+      } catch (e) {   }
     }
 
     try {
@@ -154,7 +128,7 @@ export function AppProviders({ children }: PropsWithChildren) {
             price: Number(data.price) || 0,
             rating: Number(data.rating) || 0,
             hot: Boolean(data.hot || data.featured),
-            imageUrl: data.imageUrl || data.image || data.photo || data.thumbnail || data.picture || 'https://images.unsplash.com/photo-1545243424-0ce743321e11?q=80&w=1600&auto=format&fit=crop',
+            imageUrl: data.imageUrl || data.image,
             approved: Boolean(data.approved),
             createdBy: data.createdBy,
             createdByName: data.createdByName,
@@ -181,7 +155,6 @@ export function AppProviders({ children }: PropsWithChildren) {
     }
   }, [])
 
-  // Load current customer profile
   useEffect(() => {
     if (!user) { setCurrentCustomer(null); return }
     const ref = doc(db, 'customers', user.uid)
@@ -195,22 +168,27 @@ export function AppProviders({ children }: PropsWithChildren) {
     return () => unsub()
   }, [user])
 
-  const saveCustomerProfile = async (data: Partial<Customer>) => {
-    if (!user) throw new Error('Bạn cần đăng nhập')
-    const ref = doc(db, 'customers', user.uid)
+  const saveCustomerProfile = async (data: Partial<Customer>, uid?: string) => {
+    const targetUid = uid || user?.uid;
+    if (!targetUid) throw new Error('Bạn cần đăng nhập hoặc cung cấp UID.');
+    const ref = doc(db, 'customers', targetUid);
+    const existingDoc = await getDoc(ref);
+    const existingData = existingDoc.data() as Partial<Customer> || {};
     const payload = {
-      uid: user.uid,
-      email: user.email || '',
-      name: data.name || currentCustomer?.name || '',
-      phone: data.phone ?? currentCustomer?.phone ?? '',
-      vip: data.vip ?? currentCustomer?.vip ?? false,
-      ađdress: data.address || currentCustomer?.address || '',
-      role: data.role || currentCustomer?.role || 'customer'
-    }
+    uid: targetUid,
+    email: data.email || user?.email || '',
+    name: data.name || existingData.name || user?.displayName || '',
+    phone: data.phone ?? existingData.phone ?? '',
+    vip: data.vip ?? existingData.vip ?? false,
+    address: data.address || existingData.address || '',
+    role: data.role || existingData.role || 'customer',
+    status: data.status || existingData.status || 'active',
+    updatedAt: Date.now(),
+    createdAt: existingData.createdAt || Date.now()
+  };
     await setDoc(ref, payload, { merge: true })
   }
 
-  // Reviews realtime
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'reviews'), (snap) => {
       const byId: Record<string, Review[]> = {}
@@ -219,29 +197,36 @@ export function AppProviders({ children }: PropsWithChildren) {
         if (!byId[r.tourId]) byId[r.tourId] = []
         byId[r.tourId].push(r)
       })
-      // sort latest first
       Object.keys(byId).forEach(k => byId[k].sort((a,b)=> b.createdAt - a.createdAt))
       setReviewsByTourId(byId)
     })
     return () => unsub()
   }, [])
 
-  // Sync average rating back to tours (admin_tours.rating) based on reviews
   useEffect(() => {
     const sync = async () => {
-      const entries = Object.entries(reviewsByTourId)
-      for (const [tourId, list] of entries) {
-        if (!list.length) continue
-        const avg = list.reduce((s, r) => s + r.rating, 0) / list.length
+        if (!Object.keys(reviewsByTourId).length) return;
+
+        const batch = writeBatch(db);
+        
+        const entries = Object.entries(reviewsByTourId);
+        for (const [tourId, list] of entries) {
+            if (!list.length) continue;
+            const avg = list.reduce((s, r) => s + r.rating, 0) / list.length;
+            const tourRef = doc(db, 'admin_tours', tourId);
+            
+            batch.update(tourRef, { rating: Number(avg.toFixed(1)) });
+        }
         try {
-          await updateDoc(doc(db, 'admin_tours', tourId), { rating: Number(avg.toFixed(1)) })
-        } catch {}
-      }
-    }
-    if (Object.keys(reviewsByTourId).length) {
-      sync()
-    }
-  }, [reviewsByTourId])
+            await batch.commit();
+            console.log('Successfully synced tour ratings using a single batch write.');
+        } catch (e) {
+            console.error('Failed to sync tour ratings:', e);
+        }
+    };
+    sync();
+  
+}, [reviewsByTourId]);
 
   const toggleSelect = (id: string) => {
     setSelectedTourIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
@@ -266,10 +251,8 @@ export function AppProviders({ children }: PropsWithChildren) {
     await addDoc(collection(db, 'reviews'), newReview)
   }
 
-  // --- BẮT ĐẦU SỬA LỖI ---
   const createBooking = async (payload: { tourId: string; customerPhone: string; amount: number; method: 'cash' | 'bank_transfer'; people: number; startDate: number; endDate?: number; notes?: string; paid: boolean; bankId?: string; bankName?: string; payLater?: boolean }) => {
     if (!user) throw new Error('Bạn cần đăng nhập')
-    // Validate dates
     const start = Number(payload.startDate)
     if (!start || isNaN(start)) throw new Error('Ngày khởi hành không hợp lệ')
     const today = new Date(); today.setHours(0,0,0,0)
@@ -279,7 +262,6 @@ export function AppProviders({ children }: PropsWithChildren) {
       if (isNaN(end) || end <= start) throw new Error('Ngày kết thúc phải sau ngày khởi hành')
     }
 
-    // Duplicate booking check (same user, tour, date and active status)
     const dupQ = query(collection(db, 'bookings'), where('userId','==', user.uid), where('tourId','==', payload.tourId))
     const dupSnap = await getDocs(dupQ)
     const hasDup = dupSnap.docs.some(d => {
@@ -291,14 +273,11 @@ export function AppProviders({ children }: PropsWithChildren) {
     })
     if (hasDup) throw new Error('Bạn đã đặt tour này cho ngày này rồi')
     
-    // Tạo một đối tượng bookingData hoàn chỉnh
     const bookingData = {
-      // Dữ liệu từ user đang đăng nhập
       userId: user.uid,
       customerName: user.displayName || user.email || 'Khách hàng',
       customerEmail: user.email || '',
       
-      // Dữ liệu từ payload (form)
       tourId: payload.tourId,
       amount: Number(payload.amount) || 0,
       method: payload.method,

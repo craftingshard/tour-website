@@ -12,17 +12,33 @@ export function LoginPage() {
   const location = useLocation() as Location & { state?: { redirectTo?: string; tourId?: string } }
 
   const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    try {
-      await signInWithEmailAndPassword(auth, email, password)
-      const redirectTo = location?.state?.redirectTo || '/'
-      navigate(redirectTo, { state: location?.state })
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Login failed'
-      setError(message)
+  e.preventDefault();
+  setError(null);
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    const redirectTo = location?.state?.redirectTo || '/';
+    navigate(redirectTo, { state: location?.state });
+  } catch (err: unknown) {
+    if (err instanceof Error && 'code' in err) {
+      switch (err.code) {
+        case 'auth/invalid-credential':
+          setError('Email hoặc mật khẩu không đúng. Vui lòng thử lại.');
+          break;
+        case 'auth/user-disabled':
+          setError('Tài khoản của bạn đã bị vô hiệu hóa.');
+          break;
+        case 'auth/invalid-email':
+          setError('Email không hợp lệ.');
+          break;
+        default:
+          setError('Đăng nhập thất bại. Vui lòng thử lại sau.');
+          break;
+      }
+    } else {
+      setError('Đăng nhập thất bại. Vui lòng thử lại sau.');
     }
   }
+};
 
   return (
     <div className="container">

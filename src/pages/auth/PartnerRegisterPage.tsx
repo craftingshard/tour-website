@@ -84,12 +84,31 @@ export function PartnerRegisterPage() {
       alert('Đăng ký thành công! Tài khoản của bạn đang chờ admin duyệt.')
       navigate('/login')
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Đăng ký thất bại'
-      setError(message)
-    } finally {
-      setLoading(false)
-    }
-  }
+      let errorMessage = 'Đăng ký thất bại. Vui lòng thử lại.';
+      
+      if (err instanceof Error && 'code' in err) {
+        switch (err.code) {
+          case 'auth/email-already-in-use':
+            errorMessage = 'Email này đã được sử dụng. Vui lòng sử dụng email khác.';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'Email không hợp lệ. Vui lòng kiểm tra lại định dạng email.';
+            break;
+          case 'auth/weak-password':
+            errorMessage = 'Mật khẩu quá yếu. Vui lòng sử dụng mật khẩu mạnh hơn.';
+            break;
+          default:
+            errorMessage = err.message;
+            break;
+        }
+      } else {
+        errorMessage = 'Đã có lỗi xảy ra. Vui lòng thử lại sau.';
+      }
+      setError(errorMessage)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="container">
