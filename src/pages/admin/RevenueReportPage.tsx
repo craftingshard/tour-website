@@ -427,7 +427,7 @@ export function RevenueReportPage() {
                 <th>Ngày</th>
                 <th>Mô tả</th>
                 <th>Khách hàng</th>
-                <th>Đối tác</th>
+                <th>Thành viên</th>
                 <th>Danh mục</th>
                 <th>Số tiền</th>
               </tr>

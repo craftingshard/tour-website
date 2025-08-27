@@ -202,27 +202,14 @@ body {
 .mobile-nav a.active, .mobile-nav a:hover {
   background: rgba(255,255,255,0.08);
 }
-
+.actions-cell .btn {
+  margin: 3px 4px;
+}
 @keyframes slideUp {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
-@media (max-width: 768px) {
-  .header-inner { gap: 8px; }
-  .nav { display: none; }
-  .mobile-menu-btn { display: inline-block; }
-}
-
-.carousel {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 80%;
-  gap: 16px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  scroll-snap-type: x mandatory;
-}
 @media (min-width: 768px) {
   .carousel { grid-auto-columns: 33%; }
 }
@@ -470,3 +457,97 @@ body {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+/* ======================================= */
+/* RESPONSIVE STYLES FOR MOBILE (< 600px) */
+/* ======================================= */
+@media (max-width: 599px) {
+  /* Điều chỉnh font-size cho body và các tiêu đề chính để dễ đọc hơn */
+  body {
+    font-size: 14px;
+  }
+  h1 {font-size: 1.5rem;}
+  h2 {font-size:1rem}
+  h3 {font-size: 0.8rem;}
+  .section-title {
+    font-size: 18px;
+    margin-top: 12px;
+  }
+  .actions-cell .btn {
+    margin: 4px 4px;
+  }
+  .brand {
+    font-size: 16px;
+  }
+  
+  .post-title {
+    font-size: 16px;
+  }
+
+  /* Đảm bảo carousel chỉ hiển thị 1 mục trên mobile */
+  .carousel {
+    grid-auto-columns: 100%;
+    gap: 12px;
+  }
+
+  /* Chỉnh sửa layout cho header để gọn gàng hơn */
+  .header-inner {
+    padding: 8px 12px;
+  }
+
+  /* Giảm khoảng cách giữa các phần tử */
+  .app-main, .container {
+    padding: 12px;
+  }
+
+  .grid, .posts-grid {
+    gap: 16px;
+  }
+  .actions-cell .btn {
+    margin: 3px 4px;
+  }
+}
+/* ========================================= */
+/* RESPONSIVE STYLES FOR TABLET (> 600px) */
+/* ========================================= */
+@media (min-width: 600px) and (max-width: 1024px)
+{
+  /* Điều chỉnh kích thước font lớn hơn một chút so với mobile */
+    body {
+      font-size: 15px;
+    }
+    .actions-cell .btn {
+      margin: 4px 4px;
+    }
+    .section-title {
+      font-size: 20px;
+    }
+
+    .post-title { 
+      font-size: 17px;
+    }
+
+    /* Carousel hiển thị 2 mục trên tablet để tận dụng không gian */
+    .carousel {
+      grid-auto-columns: 50%;
+      gap: 16px;
+    }
+
+    /* Đảm bảo `.grid-3` hiển thị 2 cột trên tablet */
+    .grid-3 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .header-inner { gap: 8px; }
+    .nav { display: none; }
+    .mobile-menu-btn { display: inline-block; }
+  }
+
+  .carousel {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 80%;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scroll-snap-type: x mandatory;
+  }
+

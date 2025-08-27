@@ -122,7 +122,7 @@ export function AffiliateReportPage() {
     <div className="affiliate-report">
       <div className="report-header">
         <h1>📊 Báo Cáo Affiliate</h1>
-        <p>Quản lý và theo dõi hiệu suất của các đối tác affiliate</p>
+        <p>Quản lý và theo dõi hiệu suất của các Thành viên affiliate</p>
       </div>
 
       {/* Summary Stats */}
@@ -131,7 +131,7 @@ export function AffiliateReportPage() {
           <div className="stat-icon">🤝</div>
           <div className="stat-content">
             <h3>{loading ? '...' : stats.totalAffiliates}</h3>
-            <p>Tổng đối tác</p>
+            <p>Tổng Thành viên</p>
           </div>
         </div>
         
@@ -195,13 +195,13 @@ export function AffiliateReportPage() {
       {/* Filters */}
       <div className="filters-section">
         <div className="filter-group">
-          <label>Lọc theo đối tác:</label>
+          <label>Lọc theo Thành viên:</label>
           <select 
             value={selectedAffiliate} 
             onChange={(e) => setSelectedAffiliate(e.target.value)}
             className="filter-select"
           >
-            <option value="all">Tất cả đối tác</option>
+            <option value="all">Tất cả Thành viên</option>
             {affiliates.map(affiliate => (
               <option key={affiliate.id} value={affiliate.id}>
                 {affiliate.name}
@@ -228,7 +228,7 @@ export function AffiliateReportPage() {
 
       {/* Affiliates Performance */}
       <div className="performance-section">
-        <h2>🏆 Hiệu Suất Đối Tác</h2>
+        <h2>🏆 Hiệu Suất Thành viên</h2>
         <div className="affiliates-table">
           {loading ? (
             <div className="loading">🔄 Đang tải dữ liệu...</div>
@@ -236,7 +236,7 @@ export function AffiliateReportPage() {
             <table className="performance-table">
               <thead>
                 <tr>
-                  <th>Đối tác</th>
+                  <th>Thành viên</th>
                   <th>Hoa hồng</th>
                   <th>Thu nhập</th>
                   <th>Đã thanh toán</th>
@@ -287,7 +287,7 @@ export function AffiliateReportPage() {
                 <tr>
                   <th>Tour</th>
                   <th>Khách hàng</th>
-                  <th>Đối tác</th>
+                  <th>Thành viên</th>
                   <th>Số tiền</th>
                   <th>Hoa hồng</th>
                   <th>Ngày đặt</th>
@@ -511,6 +511,7 @@ export function AffiliateReportPage() {
 
         .performance-section,
         .bookings-section {
+          overflow-x: auto;
           background: white;
           border-radius: 12px;
           padding: 24px;
@@ -535,7 +536,7 @@ export function AffiliateReportPage() {
 
         .performance-table,
         .bookings-table-content {
-          width: 100%;
+          width: 300%;
           border-collapse: collapse;
           font-size: 0.875rem;
         }
@@ -624,32 +625,110 @@ export function AffiliateReportPage() {
           background: #ef4444;
         }
 
-        @media (max-width: 768px) {
-          .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-          
-          .filters-section {
-            flex-direction: column;
-            align-items: stretch;
-          }
-          
-          .filter-select {
-            min-width: auto;
-          }
-          
-          .performance-table,
-          .bookings-table-content {
-            font-size: 0.75rem;
-          }
-          
-          .performance-table th,
-          .performance-table td,
-          .bookings-table-content th,
-          .bookings-table-content td {
-            padding: 8px 6px;
-          }
+        @media (min-width: 601px) and (max-width: 992px) {
+            /* Adjust padding to be slightly smaller than desktop */
+            .affiliate-report {
+                padding: 20px;
+            }
+
+            .report-header h1 {
+                font-size: 2.2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+            }
+            
+            .stat-content h3 {
+                font-size: 1.8rem;
+            }
+
+            .filters-section {
+                gap: 16px;
+                padding: 20px;
+            }
+
+            /* Adjust table font size for better readability on tablets */
+            .performance-table, .bookings-table-content {
+                font-size: 0.8rem;
+            }
+            
+            .performance-table th, .performance-table td,
+            .bookings-table-content th, .bookings-table-content td {
+                padding: 12px 8px;
+            }
         }
+          @media (max-width: 600px) {
+              /* Adjust padding and font sizes for a tighter layout */
+              .affiliate-report {
+                  padding: 12px;
+              }
+
+              .report-header {
+                  margin-bottom: 24px;
+              }
+              
+              .report-header h1 {
+                  font-size: 1.8rem;
+              }
+              
+              .report-header p {
+                  font-size: 1rem;
+              }
+              
+              /* Make the stats grid stack vertically on small screens */
+              .stats-grid {
+                  grid-template-columns: 1fr;
+                  gap: 16px;
+              }
+              
+              .stat-card {
+                  flex-direction: column;
+                  align-items: flex-start;
+                  padding: 20px;
+              }
+
+              .stat-icon {
+                  font-size: 2rem;
+              }
+              
+              .stat-content h3 {
+                  font-size: 1.5rem;
+              }
+              
+              /* Make the filter section stack vertically and buttons full-width */
+              .filters-section {
+                  flex-direction: column;
+                  gap: 12px;
+                  padding: 16px;
+              }
+              
+              .filter-group, .filter-select {
+                  width: 100%;
+                  min-width: unset;
+              }
+              
+              /* Adjust table fonts and padding */
+              .performance-table, .bookings-table-content {
+                  font-size: 0.7rem;
+              }
+              
+              .performance-table th, .performance-table td,
+              .bookings-table-content th, .bookings-table-content td {
+                  padding: 8px 4px;
+              }
+              
+              .affiliate-info, .tour-info, .customer-info {
+                  gap: 2px;
+              }
+              
+              .affiliate-contact, .tour-details, .customer-email {
+                  font-size: 0.65rem;
+              }
+              
+              
+          }
       `}</style>
     </div>
   )

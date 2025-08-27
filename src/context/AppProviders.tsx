@@ -5,6 +5,7 @@ import { onAuthStateChanged } from 'firebase/auth'
 import type { User } from 'firebase/auth'
 import { auth, db } from '../firebase'
 import { addDoc, collection, doc, onSnapshot, setDoc, updateDoc, query, where, getDocs, getDoc, writeBatch } from 'firebase/firestore'
+import { filterBadWords } from '../utils/filter';
 
 export type Tour = {
   id: string
@@ -240,12 +241,13 @@ export function AppProviders({ children }: PropsWithChildren) {
 
   const addReview = async (tourId: string, rating: number, comment: string) => {
     if (!user) return
+    const filteredComment = filterBadWords(comment.trim())
     const newReview = {
       tourId,
       userId: user.uid,
       userName: user.displayName || user.email || 'User',
       rating: Math.max(1, Math.min(10, Math.round(rating * 2) / 2)),
-      comment: comment.trim(),
+      comment: filteredComment,
       createdAt: Date.now(),
     }
     await addDoc(collection(db, 'reviews'), newReview)

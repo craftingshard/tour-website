@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAdmin } from '../../context/AdminProviders'
 
@@ -6,7 +6,6 @@ export function AdminLayout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const navigate = useNavigate()
   const { currentUser, logout, hasPermission, canAccessDashboard } = useAdmin()
-
   const handleSignOut = async () => {
     try {
       await logout()
@@ -15,6 +14,36 @@ export function AdminLayout() {
       console.error('Error signing out:', error)
     }
   }
+  
+  useEffect(() => {
+    const closeMenu = (event: MouseEvent) => {
+      // Đóng menu nếu click vào một NavLink
+      const navLink = (event.target as HTMLElement).closest('.nav-item');
+    if (navLink) {
+      setIsMenuOpen(false);
+    }
+      
+      // Đóng menu nếu click ra ngoài sidebar
+      const sidebar = document.querySelector('.admin-sidebar');
+    const toggleButton = document.querySelector('.mobile-menu-toggle');
+    if (
+      isMenuOpen &&
+      sidebar &&
+      !sidebar.contains(event.target as Node) &&
+      toggleButton &&
+      !toggleButton.contains(event.target as Node)
+    ) {
+      setIsMenuOpen(false);
+    }
+  };
+
+    document.addEventListener('click', closeMenu);
+
+    // Hàm dọn dẹp (cleanup function) để tránh rò rỉ bộ nhớ
+    return () => {
+      document.removeEventListener('click', closeMenu);
+    };
+  }, [isMenuOpen]);
 
   if (!currentUser) {
     return (
@@ -137,7 +166,7 @@ export function AdminLayout() {
             
             {hasPermission('read', 'partners') && (
               <NavLink to="/admin/partners" className="nav-item">
-                🤝 Đối tác
+                🤝 Thành viên
               </NavLink>
             )}
             
@@ -195,13 +224,20 @@ export function AdminLayout() {
       >
         {isMenuOpen ? '✕' : '☰'}
       </button>
-
+      {isMenuOpen && (
+        <div 
+          className="menu-overlay" 
+          onClick={() => setIsMenuOpen(false)}
+        />
+      )}
       <style>{`
         .admin-layout {
           min-height: 100vh;
           background: #f8fafc;
         }
-        
+        .menu-overlay {
+  display: none; 
+}
         .admin-header {
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           color: white;
@@ -378,7 +414,16 @@ export function AdminLayout() {
           .mobile-menu-toggle {
             display: block;
           }
-          
+          .menu-overlay {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5); 
+            z-index: 140;
+          }
           .admin-sidebar {
             position: fixed;
             left: -280px;
@@ -405,6 +450,44 @@ export function AdminLayout() {
           .user-section {
             align-self: flex-end;
           }
+            .content-overlay {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 140; 
+          }
+        }
+          /* Mobile for iPhone SE & iPhone 8*/
+          @media (max-width: 415px) {
+            .admin-header {
+                padding: 0.5rem; 
+            }
+            .stat-content h3, h3 {font-size:1rem}
+            .stat-content p {font-size:0.8rem}
+            .header-content {
+                align-items: center; 
+            }
+
+            .user-details {
+                align-items: center; 
+            }
+
+            .user-email {
+                display: none; 
+            }
+            
+            .logo-section h1, h1 {
+                font-size: 1.25rem; 
+            }
+
+            .admin-content {
+                padding: 0.5rem; 
+            }
+            .stat-card {padding:0.1rem}
         }
       `}</style>
     </div>

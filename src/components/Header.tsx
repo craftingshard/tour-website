@@ -127,7 +127,7 @@ export function Header() {
               <>
                 <NavLink to="/login">Đăng nhập</NavLink>
                 <NavLink to="/register">Đăng ký</NavLink>
-                <NavLink to="/partner-register" style={{background:'rgba(255,255,255,.1)', padding:'4px 8px', borderRadius:6}}>🤝 Đối tác</NavLink>
+                <NavLink to="/partner-register" style={{background:'rgba(255,255,255,.1)', padding:'4px 8px', borderRadius:6}}>🤝 Thành viên</NavLink>
               </>
             )}
         </nav>
@@ -168,7 +168,7 @@ export function Header() {
                 <>
                   <NavLink to="/login" onClick={() => setIsMobileMenuOpen(false)}>Đăng nhập</NavLink>
                   <NavLink to="/register" onClick={() => setIsMobileMenuOpen(false)}>Đăng ký</NavLink>
-                  <NavLink to="/partner-register" onClick={() => setIsMobileMenuOpen(false)} style={{background:'rgba(255,255,255,.1)', padding:'4px 8px', borderRadius:6}}>🤝 Đối tác</NavLink>
+                  <NavLink to="/partner-register" onClick={() => setIsMobileMenuOpen(false)} style={{background:'rgba(255,255,255,.1)', padding:'4px 8px', borderRadius:6}}>🤝 Thành viên</NavLink>
                 </>
               )}
             </div>

@@ -6,7 +6,7 @@ export function CustomersPage(){
     { key:'displayName', label:'Tên', type:'string', required:true, tooltip:'Tên đầy đủ của khách hàng' },
     { key:'email', label:'Email', type:'string', required:true, tooltip:'Email liên hệ chính của khách hàng' },
     { key:'phoneNumber', label:'Điện thoại', type:'string', tooltip:'Số điện thoại liên hệ (chỉ nhập số và ký tự +, -, (, ), khoảng trắng)' },
-    { key:'role', label:'Vai trò', type:'string', tooltip:'Vai trò của khách hàng trong hệ thống (ví dụ: Khách hàng, Đối tác, Nhân viên)' },
+    { key:'role', label:'Vai trò', type:'string', tooltip:'Vai trò của khách hàng trong hệ thống (ví dụ: Khách hàng, Thành viên, Nhân viên)' },
     { key:'createdAt', label:'Ngày tạo', type:'date' , hideInForm: true },
   ]
   return <CrudTable title="Quản lý khách hàng" collectionName="users" columns={cols} />
@@ -503,12 +503,12 @@ export function BookingsAdminPage(){
     },
     { 
       key:'affiliateId', 
-      label:'Đối tác affiliate', 
+      label:'Thành viên affiliate', 
       type:'select',
       collection: 'affiliates',
       displayField: 'name',
       valueField: 'id',
-      tooltip: 'Chọn đối tác affiliate nếu có'
+      tooltip: 'Chọn Thành viên affiliate nếu có'
     },
     { 
       key:'bookingDate', 
@@ -568,17 +568,17 @@ export function AffiliatePage(){
   const cols: CrudColumn[] = [
     { 
       key:'name', 
-      label:'Tên đối tác', 
+      label:'Tên Thành viên', 
       type:'string', 
       required:true,
-      tooltip: 'Tên đầy đủ của công ty/đối tác affiliate'
+      tooltip: 'Tên đầy đủ của công ty/Thành viên affiliate'
     },
     { 
       key:'email', 
       label:'Email', 
       type:'string', 
       required:true,
-      tooltip: 'Email liên hệ chính của đối tác'
+      tooltip: 'Email liên hệ chính của Thành viên'
     },
     { 
       key:'phone', 
@@ -590,7 +590,7 @@ export function AffiliatePage(){
       key:'website', 
       label:'Website', 
       type:'string',
-      tooltip: 'Website chính thức của đối tác affiliate'
+      tooltip: 'Website chính thức của Thành viên affiliate'
     },
     { 
       key:'commission', 
@@ -602,21 +602,21 @@ export function AffiliatePage(){
       key:'totalEarnings', 
       label:'Tổng thu nhập', 
       type:'number',
-      tooltip: 'Tổng số tiền đối tác đã kiếm được (tự động tính)',
+      tooltip: 'Tổng số tiền Thành viên đã kiếm được (tự động tính)',
       hideInForm: true
     },
     { 
       key:'paidAmount', 
       label:'Đã thanh toán', 
       type:'number',
-      tooltip: 'Số tiền đã thanh toán cho đối tác (tự động tính)',
+      tooltip: 'Số tiền đã thanh toán cho Thành viên (tự động tính)',
       hideInForm: true
     },
     { 
       key:'pendingAmount', 
       label:'Chờ thanh toán', 
       type:'number',
-      tooltip: 'Số tiền còn nợ đối tác (tự động tính)',
+      tooltip: 'Số tiền còn nợ Thành viên (tự động tính)',
       hideInForm: true
     },
     { 
@@ -628,19 +628,19 @@ export function AffiliatePage(){
         { value: 'inactive', label: 'Tạm dừng' },
         { value: 'suspended', label: 'Tạm khóa' }
       ],
-      tooltip: 'Trạng thái hoạt động của đối tác affiliate'
+      tooltip: 'Trạng thái hoạt động của Thành viên affiliate'
     },
     { 
       key:'active', 
       label:'Kích hoạt', 
       type:'boolean',
-      tooltip: 'Đánh dấu nếu đối tác đang hoạt động và có thể nhận hoa hồng'
+      tooltip: 'Đánh dấu nếu Thành viên đang hoạt động và có thể nhận hoa hồng'
     },
     { 
       key:'address', 
       label:'Địa chỉ', 
       type:'text',
-      tooltip: 'Địa chỉ văn phòng của đối tác affiliate'
+      tooltip: 'Địa chỉ văn phòng của Thành viên affiliate'
     },
     { 
       key:'contactPerson', 
@@ -667,7 +667,7 @@ export function AffiliatePage(){
       tooltip: 'Ngày kết thúc hợp tác affiliate (nếu có)'
     }
   ]
-  return <CrudTable title="Quản lý đối tác affiliate" collectionName="affiliates" columns={cols} />
+  return <CrudTable title="Quản lý Thành viên affiliate" collectionName="affiliates" columns={cols} />
 }
 
 export { AffiliateReportPage } from './AffiliateReportPage'

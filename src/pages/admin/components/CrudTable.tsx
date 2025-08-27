@@ -815,7 +815,7 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
                 }}
                 style={{whiteSpace: 'nowrap'}}
               >
-                🗑️ Xóa tất cả
+                🗑️ Xóa tất cả dữ liệu
               </button>
             )}
           </div>
@@ -1104,6 +1104,7 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
           vertical-align: top;
           min-width: 120px;
           color: #111827;
+          
         }
         
         .data-table tr:hover {
@@ -1261,7 +1262,68 @@ export function CrudTable({ collectionName, columns, title, createDefaults }: Cr
           width: 120px;
           min-width: 120px;
         }
-      `}</style>
+          @media (max-width: 600px) 
+          {
+            .table-header {
+                /* Chuyển sang flexbox để căn chỉnh các phần tử bên trong */
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .btn.small.success {    margin: 4px 4px;}
+            .table-header .header-actions {
+                /* Sắp xếp các actions theo chiều dọc */
+                flex-direction: column;
+                align-items: flex-start;
+                width: 100%; /* Đảm bảo các phần tử chiếm toàn bộ chiều ngang */
+            }
+            
+            .table-header .header-actions > * {
+                /* Đảm bảo mỗi phần tử con chiếm toàn bộ chiều ngang */
+                width: 100%;
+            }
+            
+            .table-header .header-actions .search-field {
+                /* Nếu có một ô tìm kiếm cụ thể, đảm bảo nó cũng full width */
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .data-table td, .data-table th, .search-input, .status-filter, .table-header h3 {
+                  font-size: 12px;
+              }
+              .crud-header h2 {
+                  font-size: 18px;
+              }
+              .crud-header, .form-section, .table-section {
+                  padding: 16px;
+              }
+              .data-table th, .data-table td {
+                  padding: 10px 8px;
+                  margin:5px
+              }
+          }
+              /* ========================================= */
+              /* Responsive styles for Tablet (601px - 900px) */
+              /* ========================================= */
+              @media (min-width: 601px) and (max-width: 900px) {
+                  /* Điều chỉnh font-size trung bình cho nội dung bảng */
+                  .data-table td, .data-table th, .search-input, .status-filter {
+                      font-size: 13px;
+                  }
+                  .btn.small.success {    margin: 4px 4px;}
+                  /* Giảm kích thước tiêu đề */
+                  .crud-header h2 {
+                      font-size: 20px;
+                  }
+                  
+                  /* Giảm padding một chút so với desktop */
+                  .crud-header, .form-section, .table-section {
+                      padding: 20px;
+                  }
+              }
+      `}
+      </style>
     </div>
   )
 }

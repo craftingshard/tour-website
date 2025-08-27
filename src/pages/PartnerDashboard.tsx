@@ -134,7 +134,7 @@ export function PartnerDashboard() {
   return (
     <div className="container">
       <div className="dashboard-header">
-        <h2>🤝 Bảng điều khiển đối tác</h2>
+        <h2>🤝 Bảng điều khiển Thành viên</h2>
         <button 
           className="btn primary"
           onClick={() => navigate('/admin')}

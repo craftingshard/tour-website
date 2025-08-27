@@ -112,7 +112,7 @@ export function PartnerRegisterPage() {
 
   return (
     <div className="container">
-      <h2>Đăng ký đối tác</h2>
+      <h2>Đăng ký Thành viên</h2>
       <form className="card" style={{display:'grid', gap:16, maxWidth:600}} onSubmit={onSubmit}>
         
         {/* Thông tin cá nhân */}
@@ -233,7 +233,7 @@ export function PartnerRegisterPage() {
           disabled={loading}
           style={{opacity: loading ? 0.7 : 1}}
         >
-          {loading ? 'Đang đăng ký...' : 'Đăng ký đối tác'}
+          {loading ? 'Đang đăng ký...' : 'Đăng ký Thành viên'}
         </button>
         
         <div className="muted" style={{textAlign:'center'}}>
@@ -243,7 +243,7 @@ export function PartnerRegisterPage() {
         <div className="card" style={{background:'rgba(255,255,255,.04)', padding:12, fontSize:14}}>
           <div style={{fontWeight:600, marginBottom:8}}>ℹ️ Lưu ý:</div>
           <ul style={{margin:0, paddingLeft:20, lineHeight:1.5}}>
-            <li>Tài khoản đối tác cần được admin duyệt trước khi có thể đăng tour</li>
+            <li>Tài khoản Thành viên cần được admin duyệt trước khi có thể đăng tour</li>
             <li>Sau khi được duyệt, bạn có thể đăng tour và quản lý chúng</li>
             <li>Tour của bạn sẽ được admin kiểm duyệt trước khi hiển thị công khai</li>
             <li>Bạn sẽ nhận được thông báo khi có người đặt tour</li>

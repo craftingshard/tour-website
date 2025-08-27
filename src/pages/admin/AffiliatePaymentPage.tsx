@@ -123,7 +123,7 @@ export function AffiliatePaymentPage() {
     <div className="affiliate-payment">
       <div className="page-header">
         <h1>💰 Quản Lý Thanh Toán Affiliate</h1>
-        <p>Ghi nhận và theo dõi các khoản thanh toán cho đối tác affiliate</p>
+        <p>Ghi nhận và theo dõi các khoản thanh toán cho Thành viên affiliate</p>
       </div>
 
       {/* Summary Stats */}
@@ -148,7 +148,7 @@ export function AffiliatePaymentPage() {
           <div className="stat-icon">🤝</div>
           <div className="stat-content">
             <h3>{affiliates.length}</h3>
-            <p>Tổng đối tác</p>
+            <p>Tổng Thành viên</p>
           </div>
         </div>
         
@@ -177,13 +177,13 @@ export function AffiliatePaymentPage() {
           <form onSubmit={handlePaymentSubmit} className="payment-form">
             <div className="form-grid">
               <div className="form-field">
-                <label>Đối tác affiliate *</label>
+                <label>Thành viên affiliate *</label>
                 <select 
                   value={paymentForm.affiliateId} 
                   onChange={(e) => setPaymentForm({...paymentForm, affiliateId: e.target.value})}
                   required
                 >
-                  <option value="">Chọn đối tác</option>
+                  <option value="">Chọn Thành viên</option>
                   {affiliates.map(affiliate => (
                     <option key={affiliate.id} value={affiliate.id}>
                       {affiliate.name} - Chờ thanh toán: {formatCurrency(affiliate.pendingAmount || 0)}
@@ -265,13 +265,13 @@ export function AffiliatePaymentPage() {
       {/* Filters */}
       <div className="filters-section">
         <div className="filter-group">
-          <label>Lọc theo đối tác:</label>
+          <label>Lọc theo Thành viên:</label>
           <select 
             value={selectedAffiliate} 
             onChange={(e) => setSelectedAffiliate(e.target.value)}
             className="filter-select"
           >
-            <option value="all">Tất cả đối tác</option>
+            <option value="all">Tất cả Thành viên</option>
             {affiliates.map(affiliate => (
               <option key={affiliate.id} value={affiliate.id}>
                 {affiliate.name}
@@ -293,7 +293,7 @@ export function AffiliatePaymentPage() {
                 <thead>
                   <tr>
                     <th>Ngày thanh toán</th>
-                    <th>Đối tác</th>
+                    <th>Thành viên</th>
                     <th>Số tiền</th>
                     <th>Phương thức</th>
                     <th>Mã tham chiếu</th>
@@ -411,6 +411,7 @@ export function AffiliatePaymentPage() {
         }
         
         .section-header h2 {
+          font-size: 1.2rem;
           margin: 0;
           color: #1f2937;
         }
@@ -573,19 +574,113 @@ export function AffiliatePaymentPage() {
           background: #4b5563;
         }
         
-        @media (max-width: 768px) {
-          .form-grid {
-            grid-template-columns: 1fr;
-          }
-          
-          .form-actions {
-            flex-direction: column;
-          }
-          
-          .btn {
-            width: 100%;
-          }
+        @media (max-width: 600px) {
+            /* Điều chỉnh padding và font-size tổng thể */
+            .affiliate-payment {
+                padding: 16px;
+            }
+
+            .page-header {
+                margin-bottom: 24px;
+            }
+
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .page-header p {
+                font-size: 1rem;
+            }
+
+            /* Đảm bảo các thẻ thống kê xếp chồng lên nhau */
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .stat-card {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 20px;
+            }
+            
+            .stat-content h3 {
+                font-size: 1.5rem;
+            }
+            
+            .stat-content p {
+                font-size: 0.9rem;
+            }
+
+            /* Đảm bảo form cũng xếp chồng lên nhau */
+            .payment-form-section,
+            .payments-section,
+            .filters-section {
+                padding: 16px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .form-field input,
+            .form-field select,
+            .form-field textarea {
+                font-size: 0.9rem;
+                padding: 10px;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+            }
+
+            /* Tùy chỉnh bảng để phù hợp với màn hình nhỏ */
+            .table-container {
+                /* Giữ nguyên overflow-x: auto để cuộn ngang */
+            }
+
+            .payments-table-content {
+                /* Đặt min-width thấp hơn một chút để đỡ tràn ngang */
+                min-width: 600px;
+                font-size: 0.75rem;
+            }
+
+            .payments-table-content th,
+            .payments-table-content td {
+                padding: 10px 6px;
+            }
         }
+            @media (min-width: 601px) and (max-width: 992px) {
+    /* Giảm padding một chút */
+    .affiliate-payment {
+        padding: 20px;
+    }
+
+    .page-header h1 {
+        font-size: 2rem;
+    }
+
+    /* Điều chỉnh grid cho 2 cột trên tablet */
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    
+    .stat-content h3 {
+        font-size: 1.6rem;
+    }
+
+    /* Điều chỉnh font và padding của bảng */
+    .payments-table-content {
+        min-width: 700px;
+        font-size: 0.8rem;
+    }
+    
+    .payments-table-content th,
+    .payments-table-content td {
+        padding: 12px 8px;
+    }
+}
       `}</style>
     </div>
   )

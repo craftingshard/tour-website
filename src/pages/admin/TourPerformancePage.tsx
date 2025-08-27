@@ -737,6 +737,96 @@ export function TourPerformancePage() {
             grid-template-columns: 1fr;
           }
         }
+          @media (max-width: 600px) {
+            /* Adjust padding and font sizes for a tighter layout */
+            .tour-performance, .filters-section, .top-tours-section, .performance-table-section {
+                padding: 16px;
+            }
+
+            /* Smaller header and sub-header text */
+            .page-header h1 {
+                font-size: 2rem;
+            }
+            
+            .page-header p {
+                font-size: 1rem;
+            }
+
+            /* Make filter groups take up full width */
+            .filters-section {
+                padding: 16px;
+                gap: 16px;
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+
+            /* Adjust stat cards to a smaller grid */
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 16px;
+            }
+            
+            .stat-content h3 {
+                font-size: 1.5rem;
+            }
+
+            .stat-content p {
+                font-size: 0.9rem;
+            }
+            
+            /* Ensure tour card content and images are resized */
+            .tour-info {
+                padding: 16px;
+            }
+
+            .tour-image {
+                height: 150px;
+            }
+
+            .tour-name {
+                font-size: 1rem;
+            }
+
+            .tour-location {
+                font-size: 0.875rem;
+            }
+            
+            /* Make the table scrollable and readable */
+            .performance-table {
+                min-width: 800px; /* Keep minimum width to prevent column squishing */
+            }
+
+            /* Further reduce padding inside table cells */
+            .performance-table th, .performance-table td {
+                padding: 12px 8px;
+                font-size: 0.75rem;
+            }
+        }
+            @media (min-width: 601px) and (max-width: 992px) {
+              /* Reduce padding slightly */
+                  .tour-performance, .filters-section, .top-tours-section, .performance-table-section {
+                      padding: 20px;
+                  }
+                  
+                  /* Adjust grid for two columns on tablet */
+                  .stats-grid {
+                      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                      gap: 20px;
+                  }
+
+                  /* Make tour grid show two cards per row */
+                  .top-tours-grid {
+                      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                      gap: 20px;
+                  }
+
+                  /* Adjust font size for table */
+                  .performance-table th, .performance-table td {
+                      font-size: 0.8rem;
+                  }
+              }
       `}</style>
     </div>
   )

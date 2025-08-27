@@ -41,103 +41,6 @@ export function PartnersPage() {
     }
   }
 
-  const createTemplateData = async () => {
-    if (creatingTemplate) return
-    
-    if (!confirm('Bạn có chắc chắn muốn tạo dữ liệu mẫu cho đối tác? Điều này sẽ thêm 5 đối tác mẫu vào hệ thống.')) {
-      return
-    }
-
-    setCreatingTemplate(true)
-    
-    const templatePartners = [
-      {
-        name: 'Nguyễn Văn An',
-        email: 'nguyen.van.an@email.com',
-        phone: '0901234567',
-        address: '123 Đường Lê Lợi, Quận 1, TP. Hồ Chí Minh',
-        companyName: 'Công ty Du lịch Việt Nam',
-        companyAddress: '456 Đường Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh',
-        taxCode: '0123456789',
-        website: 'https://dutlichvietnam.com',
-        description: 'Chuyên tổ chức tour du lịch trong nước và quốc tế',
-        status: 'pending',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        name: 'Trần Thị Bình',
-        email: 'tran.thi.binh@email.com', 
-        phone: '0987654321',
-        address: '789 Đường Hai Bà Trưng, Quận 3, TP. Hồ Chí Minh',
-        companyName: 'Saigon Travel Co.',
-        companyAddress: '321 Đường Lý Tự Trọng, Quận 1, TP. Hồ Chí Minh',
-        taxCode: '9876543210',
-        website: 'https://saigontravel.vn',
-        description: 'Tour du lịch cao cấp và dịch vụ khách sạn',
-        status: 'approved',
-        createdAt: new Date(Date.now() - 86400000), // 1 day ago
-        updatedAt: new Date()
-      },
-      {
-        name: 'Lê Minh Tuấn',
-        email: 'le.minh.tuan@email.com',
-        phone: '0912345678',
-        address: '456 Đường Nguyễn Trãi, Quận 5, TP. Hồ Chí Minh',
-        companyName: '',
-        companyAddress: '',
-        taxCode: '',
-        website: '',
-        description: 'Hướng dẫn viên du lịch freelance',
-        status: 'pending',
-        createdAt: new Date(Date.now() - 172800000), // 2 days ago
-        updatedAt: new Date()
-      },
-      {
-        name: 'Phạm Thị Lan',
-        email: 'pham.thi.lan@email.com',
-        phone: '0945678901',
-        address: '789 Đường Võ Văn Kiệt, Quận 6, TP. Hồ Chí Minh',
-        companyName: 'Green Travel Agency',
-        companyAddress: '654 Đường Pasteur, Quận 3, TP. Hồ Chí Minh',
-        taxCode: '5555666677',
-        website: 'https://greentravel.vn',
-        description: 'Chuyên tour sinh thái và du lịch xanh',
-        status: 'approved',
-        createdAt: new Date(Date.now() - 259200000), // 3 days ago
-        updatedAt: new Date()
-      },
-      {
-        name: 'Hoàng Văn Đức',
-        email: 'hoang.van.duc@email.com',
-        phone: '0978123456',
-        address: '321 Đường Cách Mạng Tháng 8, Quận 10, TP. Hồ Chí Minh',
-        companyName: 'Adventure Tours Vietnam',
-        companyAddress: '987 Đường Điện Biên Phủ, Quận Bình Thạnh, TP. Hồ Chí Minh',
-        taxCode: '1111222233',
-        website: 'https://adventurevn.com',
-        description: 'Tour mạo hiểm và thể thao ngoài trời',
-        status: 'rejected',
-        createdAt: new Date(Date.now() - 345600000), // 4 days ago
-        updatedAt: new Date()
-      }
-    ]
-
-    try {
-      for (const partner of templatePartners) {
-        await addDoc(collection(db, 'partners'), partner)
-      }
-      
-      alert('✅ Đã tạo thành công 5 đối tác mẫu!')
-      loadPartners() // Reload data to show new partners
-    } catch (error) {
-      console.error('Error creating template data:', error)
-      alert('❌ Có lỗi xảy ra khi tạo dữ liệu mẫu: ' + error)
-    } finally {
-      setCreatingTemplate(false)
-    }
-  }
-
   const getFilteredPartners = () => {
     if (selectedStatus === 'all') {
       return partners
@@ -174,8 +77,8 @@ export function PartnersPage() {
   return (
     <div className="partners-page">
       <div className="page-header">
-        <h1>🤝 Quản Lý Đối Tác</h1>
-        <p>Duyệt và quản lý tài khoản đối tác đăng ký</p>
+        <h1>🤝 Quản Lý Thành viên</h1>
+        <p>Duyệt và quản lý tài khoản Thành viên đăng ký</p>
       </div>
 
       {/* Summary Stats */}
@@ -184,7 +87,7 @@ export function PartnersPage() {
           <div className="stat-icon">📋</div>
           <div className="stat-content">
             <h3>{totalCount}</h3>
-            <p>Tổng đối tác</p>
+            <p>Tổng Thành viên</p>
           </div>
         </div>
         
@@ -226,25 +129,8 @@ export function PartnersPage() {
       {/* Partners Table */}
       <div className="partners-section">
         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24}}>
-          <h2>📋 Danh Sách Đối Tác</h2>
-          <button 
-            className="btn btn-template"
-            onClick={createTemplateData}
-            disabled={creatingTemplate}
-            style={{
-              background: creatingTemplate ? '#9ca3af' : '#8b5cf6',
-              color: 'white',
-              padding: '12px 20px',
-              borderRadius: '8px',
-              border: 'none',
-              fontWeight: '600',
-              cursor: creatingTemplate ? 'not-allowed' : 'pointer',
-              transition: 'all 0.2s'
-            }}
-          >
-            {creatingTemplate ? '🔄 Đang tạo...' : '📋 Tạo dữ liệu mẫu'}
-          </button>
-        </div>
+          <h2>📋 Danh Sách Thành viên</h2>
+                  </div>
         <div className="partners-table">
           {loading ? (
             <div className="loading">🔄 Đang tải dữ liệu...</div>

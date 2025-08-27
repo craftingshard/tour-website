@@ -228,10 +228,10 @@ export function Dashboard() {
 
           {/* Top Affiliates */}
           <div className="report-card">
-            <h3>🏆 Đối Tác Affiliate Hàng Đầu</h3>
+            <h3>🏆 Thành viên Affiliate Hàng Đầu</h3>
             <div className="report-content">
               {topAffiliates.length === 0 ? (
-                <p className="no-data">Chưa có đối tác affiliate nào</p>
+                <p className="no-data">Chưa có Thành viên affiliate nào</p>
               ) : (
                 <div className="affiliates-list">
                   {topAffiliates.map(affiliate => (
