@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { doc, getDoc } from 'firebase/firestore' // Import getDoc và doc
 import { db } from '../firebase' // Import db
 import { useApp } from '../context/AppProviders'
+import { filterBadWords, hasBadWords } from '../utils/filter'
 import { QuickBookingForm } from '../components/QuickBookingForm'
 /**
  * Chuyển đổi chuỗi HTML thành văn bản thuần túy và cắt ngắn.
@@ -29,7 +30,6 @@ const getPlainTextPreview = (htmlString: string, maxLength = 200) => {
   return plainText;
 };
 
-// Giả sử bạn có một kiểu dữ liệu Tour được định nghĩa ở đâu đó
 interface Tour {
   id: string;
   title: string;
@@ -38,7 +38,7 @@ interface Tour {
   imageUrl: string;
   approved: boolean;
   rating: number;
-  description?: string; // Thêm trường description
+  description?: string; 
   shortDescription?: string;
   images?: string[];
   hot?: boolean;
@@ -60,9 +60,7 @@ export function TourDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [showQuickBooking, setShowQuickBooking] = useState(false)
 
-  // 2. DÙNG useEffect ĐỂ TẢI DỮ LIỆU CHI TIẾT KHI VÀO TRANG
   useEffect(() => {
-    // Reset state khi id thay đổi
     setTour(undefined); 
     
     if (id) {
@@ -72,10 +70,8 @@ export function TourDetailPage() {
           const docSnap = await getDoc(tourRef);
 
           if (docSnap.exists()) {
-            // Gán dữ liệu đầy đủ vào state
             setTour({ id: docSnap.id, ...docSnap.data() } as Tour);
           } else {
-            // Không tìm thấy tour
             setTour(null);
           }
         } catch (error) {
@@ -86,9 +82,8 @@ export function TourDetailPage() {
 
       fetchTourDetails();
     }
-  }, [id]); // Hook này sẽ chạy lại mỗi khi `id` của tour thay đổi
+  }, [id]);
 
-  // 3. THÊM TRẠNG THÁI "ĐANG TẢI"
   if (tour === undefined) {
     return <div className="container"><div className="card">🔄 Đang tải dữ liệu tour...</div></div>
   }
@@ -112,7 +107,12 @@ export function TourDetailPage() {
       setError('Vui lòng nhập nhận xét')
       return
     }
-    addReview(tour.id, rating, comment)
+    if (hasBadWords(comment)) {
+      setError('Nội dung có từ ngữ không phù hợp. Vui lòng chỉnh sửa.');
+      return;
+    }
+    const masked = filterBadWords(comment)
+    addReview(tour.id, rating, masked)
     setComment('')
     setRating(5)
   }
@@ -182,7 +182,6 @@ export function TourDetailPage() {
           </div>
         </div>
 
-        {/* ... PHẦN CÒN LẠI CỦA COMPONENT KHÔNG ĐỔI ... */}
         <div className="card">
           <h3 style={{marginTop:0}}>Đánh giá</h3>
           {tour.approved ? (

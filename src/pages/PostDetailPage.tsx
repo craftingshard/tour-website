@@ -1,13 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { doc, getDoc } from 'firebase/firestore'
+import { addDoc, collection, doc, getDoc, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from '../firebase'
+import { useApp } from '../context/AppProviders'
+import { filterBadWords, hasBadWords } from '../utils/filter'
 
 export function PostDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useApp()
   const [post, setPost] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
+  const [comments, setComments] = useState<Array<{ id: string; userName?: string; userId?: string; comment: string; createdAt: number }>>([])
+  const [comment, setComment] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const load = async () => {
@@ -26,6 +32,44 @@ export function PostDetailPage() {
     }
     load()
   }, [id])
+
+  useEffect(() => {
+    if (!id) return
+    const q = query(collection(db, 'post_comments'), where('postId', '==', id))
+    const unsub = onSnapshot(q, (snap) => {
+      const list: Array<{ id: string; userName?: string; userId?: string; comment: string; createdAt: number }> = []
+      snap.forEach(d => list.push({ id: d.id, ...(d.data() as any) }))
+      list.sort((a, b) => b.createdAt - a.createdAt)
+      setComments(list)
+    })
+    return () => unsub()
+  }, [id])
+
+  const submitComment = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    if (!user) {
+      navigate('/login', { state: { redirectTo: `/posts/${id}` } })
+      return
+    }
+    if (!comment.trim()) {
+      setError('Vui lòng nhập bình luận')
+      return
+    }
+    if (hasBadWords(comment)) {
+      setError('Nội dung có từ ngữ không phù hợp. Vui lòng chỉnh sửa.')
+      return
+    }
+    const masked = filterBadWords(comment.trim())
+    await addDoc(collection(db, 'post_comments'), {
+      postId: id,
+      userId: user.uid,
+      userName: user.displayName || user.email || 'User',
+      comment: masked,
+      createdAt: Date.now(),
+    })
+    setComment('')
+  }
 
   const formatDate = (d: any) => {
     if (!d) return '-'
@@ -82,6 +126,28 @@ export function PostDetailPage() {
             ) : (
               <p>Không có nội dung chi tiết.</p>
             )}
+          </div>
+          <div style={{marginTop:24}}>
+            <h3 style={{marginTop:0}}>Bình luận</h3>
+            <form onSubmit={submitComment} style={{display:'grid', gap:12}}>
+              <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Chia sẻ suy nghĩ của bạn..." rows={4} />
+              {error && <div className="muted" style={{color:'#fca5a5'}}>{error}</div>}
+              <div style={{display:'flex', justifyContent:'center'}}>
+                <button className="btn" type="submit">Gửi bình luận</button>
+              </div>
+            </form>
+            <div style={{marginTop:16, display:'grid', gap:8}}>
+              {comments.length === 0 && <div className="muted">Chưa có bình luận nào.</div>}
+              {comments.map(c => (
+                <div key={c.id} className="card" style={{padding:12}}>
+                  <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', gap:8}}>
+                    <div style={{fontWeight:700}}>{c.userName || 'Người dùng'}</div>
+                    <div className="muted" style={{fontSize:12}}>{new Date(c.createdAt).toLocaleString()}</div>
+                  </div>
+                  <div style={{marginTop:6}}>{c.comment}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

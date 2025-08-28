@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react'
-import { collection, getDocs, updateDoc, doc, query, orderBy, addDoc } from 'firebase/firestore'
+import { collection, getDocs, updateDoc, doc, query, orderBy } from 'firebase/firestore'
 import { db } from '../../firebase'
 
 export function PartnersPage() {
   const [partners, setPartners] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
-  const [creatingTemplate, setCreatingTemplate] = useState(false)
 
   useEffect(() => {
     loadPartners()
