@@ -4,7 +4,7 @@ import type { PropsWithChildren } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import type { User } from 'firebase/auth'
 import { auth, db } from '../firebase'
-import { addDoc, collection, doc, onSnapshot, setDoc, updateDoc, query, where, getDocs, getDoc, writeBatch } from 'firebase/firestore'
+import { addDoc, collection, doc, onSnapshot, setDoc, updateDoc, query, where, getDocs, getDoc, writeBatch, orderBy, limit } from 'firebase/firestore'
 import { filterBadWords } from '../utils/filter';
 
 export type Tour = {
@@ -239,19 +239,31 @@ export function AppProviders({ children }: PropsWithChildren) {
     setBookedTourIds(prev => prev.includes(id) ? prev : [...prev, id])
   }
 
-  const addReview = async (tourId: string, rating: number, comment: string) => {
-    if (!user) return
+  const addReview = async (tourId: string, rating: number, comment: string) => {
+    if (!user) return
+    const now = Date.now()
+    // Anti-spam: ensure last review by user is >= 5 minutes ago
+    const lastQ = query(collection(db, 'reviews'), where('userId','==', user.uid), orderBy('createdAt','desc'), limit(1))
+    const lastSnap = await getDocs(lastQ)
+    const last = lastSnap.docs[0]?.data() as any | undefined
+    if (last && Number(last.createdAt) && now - Number(last.createdAt) < 5 * 60 * 1000) {
+      throw new Error('Bạn chỉ có thể bình luận sau mỗi 5 phút để tránh spam.')
+    }
+
     const filteredComment = filterBadWords(comment.trim())
-    const newReview = {
-      tourId,
-      userId: user.uid,
-      userName: user.displayName || user.email || 'User',
-      rating: Math.max(1, Math.min(10, Math.round(rating * 2) / 2)),
-      comment: filteredComment,
-      createdAt: Date.now(),
-    }
-    await addDoc(collection(db, 'reviews'), newReview)
-  }
+    const tourTitle = tours.find(t => t.id === tourId)?.title || ''
+    const newReview = {
+      tourId,
+      tourTitle,
+      targetType: 'TOUR',
+      userId: user.uid,
+      userName: user.displayName || user.email || 'User',
+      rating: Math.max(1, Math.min(10, Math.round(rating * 2) / 2)),
+      comment: filteredComment,
+      createdAt: now,
+    }
+    await addDoc(collection(db, 'reviews'), newReview)
+  }
 
   const createBooking = async (payload: { tourId: string; customerPhone: string; amount: number; method: 'cash' | 'bank_transfer'; people: number; startDate: number; endDate?: number; notes?: string; paid: boolean; bankId?: string; bankName?: string; payLater?: boolean }) => {
     if (!user) throw new Error('Bạn cần đăng nhập')

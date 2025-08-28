@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { addDoc, collection, doc, getDoc, onSnapshot, query, where } from 'firebase/firestore'
+import { addDoc, collection, doc, getDoc, onSnapshot, query, where, orderBy, limit, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useApp } from '../context/AppProviders'
 import { filterBadWords, hasBadWords } from '../utils/filter'
@@ -61,12 +61,23 @@ export function PostDetailPage() {
       return
     }
     const masked = filterBadWords(comment.trim())
+    const now = Date.now()
+    // Anti-spam: ensure last comment by user is >= 5 minutes ago
+    const lastQ = query(collection(db, 'post_comments'), where('userId','==', user.uid), orderBy('createdAt','desc'), limit(1))
+    const lastSnap = await getDocs(lastQ)
+    const last = lastSnap.docs[0]?.data() as any | undefined
+    if (last && Number(last.createdAt) && now - Number(last.createdAt) < 5 * 60 * 1000) {
+      setError('Bạn chỉ có thể bình luận sau mỗi 5 phút để tránh spam.')
+      return
+    }
     await addDoc(collection(db, 'post_comments'), {
       postId: id,
+      postTitle: post?.title || '',
+      targetType: 'POST',
       userId: user.uid,
       userName: user.displayName || user.email || 'User',
       comment: masked,
-      createdAt: Date.now(),
+      createdAt: now,
     })
     setComment('')
   }

@@ -146,7 +146,9 @@ export function AdminProviders({ children }: PropsWithChildren) {
         return true // Admin has all permissions
 
       case 'manager':
-        // Manager can create, read, update but not delete
+        // Manager can delete comments
+        if (action === 'delete' && (resource === 'comments' || resource === 'reviews' || resource === 'post_comments')) return true
+        // Manager can create, read, update otherwise
         return action !== 'delete'
 
       case 'staff':

@@ -1,6 +1,15 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdminOrManager() {
+      return isSignedIn() &&
+        (get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role in ['admin', 'manager']);
+    }
     // Admins
     match /admins/{document} {
       allow read, write: if request.auth != null;
@@ -21,7 +30,19 @@ service cloud.firestore {
     }
     match /reviews/{document} {
       allow read: if true;
-      allow create, update, delete: if request.auth != null;
+      // Anyone signed in can create/update; delete restricted to admin/manager
+      allow create, update: if isSignedIn();
+      allow delete: if isAdminOrManager();
+    }
+    
+    // Post comments collection
+    match /post_comments/{document} {
+      allow read: if true;
+      // Signed-in users can create
+      allow create: if isSignedIn();
+      // Only admin/manager can delete
+      allow delete: if isAdminOrManager();
+      // Updates generally not needed; deny by default
     }
     match /settings/{document} {
       allow read: if true;
@@ -35,13 +56,16 @@ service cloud.firestore {
       allow read: if true;
       allow write: if request.auth != null;
     }
-
+		match /banks/{document} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
     // Users/customers
     match /users/{userId} {
       allow read, write: if request.auth != null;
     }
     match /customers/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth != null;
     }
 
     // Bookings and affiliates (authenticated)
@@ -54,10 +78,12 @@ service cloud.firestore {
     match /partners/{document} {
       allow read, write: if request.auth != null;
     }
-    match /refundPayments/{document} {
+    match /refund-payment/{document} {
       allow read, write: if request.auth != null;
     }
-
+    match /affiliate-payment/{document} {
+      allow read, write: if request.auth != null;
+    }
     // Default - deny all
     match /{document=**} {
       allow read, write: if false;

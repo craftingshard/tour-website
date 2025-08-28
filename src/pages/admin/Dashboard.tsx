@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore'
+import { collection, getDocs, query, orderBy, limit, doc, deleteDoc } from 'firebase/firestore'
 import { db } from '../../firebase'
+import { useAdmin } from '../../context/AdminProviders'
 
 export function Dashboard() {
+  const { hasPermission } = useAdmin()
   const [stats, setStats] = useState({
     tours: 0,
     posts: 0,
@@ -17,11 +19,13 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [recentBookings, setRecentBookings] = useState<any[]>([])
   const [topAffiliates, setTopAffiliates] = useState<any[]>([])
+  const [latestComments, setLatestComments] = useState<Array<{ id: string; source: 'review' | 'post'; content: string; title: string; targetId: string }>>([])
 
   useEffect(() => {
     loadStats()
     loadRecentBookings()
     loadTopAffiliates()
+    loadLatestComments()
   }, [])
 
   const loadStats = async () => {
@@ -89,6 +93,44 @@ export function Dashboard() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const loadLatestComments = async () => {
+    try {
+      // Fetch reviews (tour comments)
+      const rSnap = await getDocs(query(collection(db, 'reviews'), orderBy('createdAt','desc'), limit(10)))
+      const reviews = rSnap.docs.map(d => ({
+        id: d.id,
+        source: 'review' as const,
+        content: (d.data() as any).comment || '',
+        title: (d.data() as any).tourTitle || 'Tour',
+        targetId: (d.data() as any).tourId || ''
+      }))
+
+      // Fetch post comments
+      const pSnap = await getDocs(query(collection(db, 'post_comments'), orderBy('createdAt','desc'), limit(10)))
+      const posts = pSnap.docs.map(d => ({
+        id: d.id,
+        source: 'post' as const,
+        content: (d.data() as any).comment || '',
+        title: (d.data() as any).postTitle || 'Bài viết',
+        targetId: (d.data() as any).postId || ''
+      }))
+
+      const merged = [...reviews, ...posts]
+        .sort((a,b)=> (a as any).createdAt > (b as any).createdAt ? -1 : 1)
+        .slice(0,10)
+      setLatestComments(merged)
+    } catch (e) {
+      console.warn('Failed to load latest comments', e)
+    }
+  }
+
+  const handleDeleteComment = async (row: { id: string; source: 'review' | 'post' }) => {
+    if (!hasPermission('delete', row.source === 'review' ? 'reviews' : 'post_comments')) return
+    const coll = row.source === 'review' ? 'reviews' : 'post_comments'
+    await deleteDoc(doc(db, coll, row.id))
+    await loadLatestComments()
   }
 
   const loadRecentBookings = async () => {
@@ -248,6 +290,48 @@ export function Dashboard() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          </div>
+          {/* Latest Comments */}
+          <div className="report-card">
+            <h3>💬 10 bình luận gần nhất</h3>
+            <div className="report-content">
+              {latestComments.length === 0 ? (
+                <p className="no-data">Chưa có bình luận nào</p>
+              ) : (
+                <div style={{overflowX:'auto'}}>
+                  <table style={{width:'100%', borderCollapse:'collapse'}}>
+                    <thead>
+                      <tr>
+                        <th style={{textAlign:'left', padding:'8px'}}>STT</th>
+                        <th style={{textAlign:'left', padding:'8px'}}>Nội dung comment</th>
+                        <th style={{textAlign:'left', padding:'8px'}}>Tên POST or TOUR</th>
+                        <th style={{textAlign:'left', padding:'8px'}}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {latestComments.map((c, idx) => (
+                        <tr key={`${c.source}-${c.id}`}>
+                          <td style={{padding:'8px'}}>{idx + 1}</td>
+                          <td style={{padding:'8px', maxWidth:400, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{c.content}</td>
+                          <td style={{padding:'8px'}}>
+                            {c.source === 'review' ? (
+                              <a href={`#/tours/${c.targetId}`} style={{color:'#3b82f6'}}>Tour: {c.title || c.targetId}</a>
+                            ) : (
+                              <a href={`#/posts/${c.targetId}`} style={{color:'#3b82f6'}}>Post: {c.title || c.targetId}</a>
+                            )}
+                          </td>
+                          <td style={{padding:'8px'}}>
+                            {hasPermission('delete', c.source === 'review' ? 'reviews' : 'post_comments') && (
+                              <button className="btn" onClick={() => handleDeleteComment(c)}>Xóa</button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>

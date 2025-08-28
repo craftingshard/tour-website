@@ -57,9 +57,9 @@ export function RegisterPage() {
     <div className="container">
       <h2>Đăng ký</h2>
       <form className="card" style={{display:'grid', gap:12, maxWidth:420}} onSubmit={onSubmit}>
-        <input placeholder="Họ tên" value={address} onChange={e=>setName(e.target.value)}
+        <input placeholder="Họ tên" value={name} onChange={e=>setName(e.target.value)}
                required style={{padding:10, borderRadius:8, border:'1px solid rgba(255,255,255,.16)', background:'transparent', color:'white'}} />
-        <input placeholder="Địa chỉ" value={name} onChange={e=>setAddress(e.target.value)}
+        <input placeholder="Địa chỉ" value={address} onChange={e=>setAddress(e.target.value)}
                required style={{padding:10, borderRadius:8, border:'1px solid rgba(255,255,255,.16)', background:'transparent', color:'white'}} />
         <input placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}
                type="email" required style={{padding:10, borderRadius:8, border:'1px solid rgba(255,255,255,.16)', background:'transparent', color:'white'}} />
