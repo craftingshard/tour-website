@@ -33,6 +33,18 @@ export function PostDetailPage() {
     load()
   }, [id])
 
+  // Track view
+  useEffect(() => {
+    if (!post?.id) return
+    try {
+      addDoc(collection(db, 'post_views'), {
+        postId: post.id,
+        postTitle: post.title,
+        createdAt: Date.now(),
+      })
+    } catch {}
+  }, [post?.id])
+
   useEffect(() => {
     if (!id) return
     const q = query(collection(db, 'post_comments'), where('postId', '==', id))

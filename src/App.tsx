@@ -23,6 +23,7 @@ import { Dashboard } from './pages/admin/Dashboard'
 import { StaffDashboard } from './pages/admin/StaffDashboard'
 import { ToursAdminPage, PostsPage as PostsAdminPage, ThemePage, AboutAdminPage, BookingsAdminPage, AffiliatePage, AffiliateReportPage, AffiliatePaymentPage, RevenueReportPage, TourPerformancePage, CustomersAdminPage, StaffAdminPage, SettingsPage, BanksAdminPage } from './pages/admin/sections'
 import { PartnersPage } from './pages/admin/PartnersPage'
+import { CommentsPage } from './pages/admin/CommentsPage'
 import { RefundPaymentPage } from './pages/admin/RefundPaymentPage'
 import { PartnerRegisterPage } from './pages/auth/PartnerRegisterPage'
 import { PartnerDashboard } from './pages/PartnerDashboard'
@@ -78,6 +79,7 @@ function App() {
                 <Route path="partners" element={<PartnersPage />} />
                 <Route path="revenue-report" element={<RevenueReportPage />} />
                 <Route path="tour-performance" element={<TourPerformancePage />} />
+                <Route path="comments" element={<CommentsPage />} />
                 <Route path="themes" element={<ThemePage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="banks" element={<BanksAdminPage />} />

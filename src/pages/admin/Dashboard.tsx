@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, getDocs, query, orderBy, limit, doc, deleteDoc } from 'firebase/firestore'
+import { collection, getDocs, query, orderBy, limit, doc, deleteDoc, where } from 'firebase/firestore'
 import { db } from '../../firebase'
 import { useAdmin } from '../../context/AdminProviders'
 
@@ -19,13 +19,15 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [recentBookings, setRecentBookings] = useState<any[]>([])
   const [topAffiliates, setTopAffiliates] = useState<any[]>([])
-  const [latestComments, setLatestComments] = useState<Array<{ id: string; source: 'review' | 'post'; content: string; title: string; targetId: string }>>([])
+  const [latestComments, setLatestComments] = useState<Array<{ id: string; source: 'review' | 'post'; content: string; title: string; targetId: string; createdAt?: number }>>([])
+  const [todayViews, setTodayViews] = useState<{ posts: Array<{ id: string; title: string; views: number }>; tours: Array<{ id: string; title: string; views: number }> }>({ posts: [], tours: [] })
 
   useEffect(() => {
     loadStats()
     loadRecentBookings()
     loadTopAffiliates()
     loadLatestComments()
+    loadTodayViews()
   }, [])
 
   const loadStats = async () => {
@@ -104,7 +106,8 @@ export function Dashboard() {
         source: 'review' as const,
         content: (d.data() as any).comment || '',
         title: (d.data() as any).tourTitle || 'Tour',
-        targetId: (d.data() as any).tourId || ''
+        targetId: (d.data() as any).tourId || '',
+        createdAt: Number((d.data() as any).createdAt) || 0,
       }))
 
       // Fetch post comments
@@ -114,15 +117,52 @@ export function Dashboard() {
         source: 'post' as const,
         content: (d.data() as any).comment || '',
         title: (d.data() as any).postTitle || 'Bài viết',
-        targetId: (d.data() as any).postId || ''
+        targetId: (d.data() as any).postId || '',
+        createdAt: Number((d.data() as any).createdAt) || 0,
       }))
 
       const merged = [...reviews, ...posts]
-        .sort((a,b)=> (a as any).createdAt > (b as any).createdAt ? -1 : 1)
+        .sort((a,b)=> (a.createdAt || 0) > (b.createdAt || 0) ? -1 : 1)
         .slice(0,10)
       setLatestComments(merged)
     } catch (e) {
       console.warn('Failed to load latest comments', e)
+    }
+  }
+
+  const loadTodayViews = async () => {
+    try {
+      const start = new Date(); start.setHours(0,0,0,0)
+      const end = new Date(); end.setHours(23,59,59,999)
+      const startMs = start.getTime(); const endMs = end.getTime()
+
+      const tvSnap = await getDocs(query(collection(db, 'tour_views'), where('createdAt', '>=', startMs), where('createdAt', '<=', endMs)))
+      const pvSnap = await getDocs(query(collection(db, 'post_views'), where('createdAt', '>=', startMs), where('createdAt', '<=', endMs)))
+
+      const tourCount: Record<string, { id: string; title: string; views: number }> = {}
+      tvSnap.forEach(d => {
+        const v: any = d.data()
+        const id = v.tourId
+        if (!id) return
+        if (!tourCount[id]) tourCount[id] = { id, title: v.tourTitle || 'Tour', views: 0 }
+        tourCount[id].views += 1
+      })
+
+      const postCount: Record<string, { id: string; title: string; views: number }> = {}
+      pvSnap.forEach(d => {
+        const v: any = d.data()
+        const id = v.postId
+        if (!id) return
+        if (!postCount[id]) postCount[id] = { id, title: v.postTitle || 'Bài viết', views: 0 }
+        postCount[id].views += 1
+      })
+
+      setTodayViews({
+        tours: Object.values(tourCount).sort((a,b)=> b.views - a.views).slice(0,10),
+        posts: Object.values(postCount).sort((a,b)=> b.views - a.views).slice(0,10),
+      })
+    } catch (e) {
+      console.warn('Failed to load today views', e)
     }
   }
 
@@ -247,7 +287,7 @@ export function Dashboard() {
               {recentBookings.length === 0 ? (
                 <p className="no-data">Chưa có đặt tour nào</p>
               ) : (
-                <div className="recent-list">
+                <div className="recent-list" style={{overflowX:'auto'}}>
                   {recentBookings.map(booking => (
                     <div key={booking.id} className="recent-item">
                       <div className="item-main">
@@ -265,6 +305,67 @@ export function Dashboard() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Today Views (Marketing) */}
+          <div className="report-card">
+            <h3>📈 Lượt xem hôm nay</h3>
+            <div className="report-content">
+              <div style={{display:'grid', gap:16, color:'#364069'}}>
+                <div>
+                  <h4 style={{margin:'0 0 8px 0'}}>Bài viết</h4>
+                  <div style={{overflowX:'auto'}}>
+                    <table style={{width:'100%', borderCollapse:'collapse',overflowX:'auto', }}>
+                      <thead>
+                        <tr>
+                          <th style={{textAlign:'left', padding:'6px'}}>#</th>
+                          <th style={{textAlign:'left', padding:'6px'}}>Tiêu đề</th>
+                          <th style={{textAlign:'left', padding:'6px'}}>Lượt xem</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {todayViews.posts.length === 0 && (
+                          <tr><td colSpan={3} style={{padding:8}} className="muted">Chưa có</td></tr>
+                        )}
+                        {todayViews.posts.map((p, i) => (
+                          <tr key={p.id}>
+                            <td style={{padding:'6px'}}>{i+1}</td>
+                            <td style={{padding:'6px'}}><a href={`/guide/${p.id}`} target="_blank" rel="noopener" style={{color:'#3b82f6'}}>{p.title}</a></td>
+                            <td style={{padding:'6px'}}>{p.views}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div>
+                  <h4 style={{margin:'0 0 8px 0'}}>Tours</h4>
+                  <div style={{overflowX:'auto'}}>
+                    <table style={{width:'100%', borderCollapse:'collapse'}}>
+                      <thead>
+                        <tr>
+                          <th style={{textAlign:'left', padding:'6px'}}>#</th>
+                          <th style={{textAlign:'left', padding:'6px'}}>Tiêu đề</th>
+                          <th style={{textAlign:'left', padding:'6px'}}>Lượt xem</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {todayViews.tours.length === 0 && (
+                          <tr><td colSpan={3} style={{padding:8}} className="muted">Chưa có</td></tr>
+                        )}
+                        {todayViews.tours.map((t, i) => (
+                          <tr key={t.id}>
+                            <td style={{padding:'6px'}}>{i+1}</td>
+                            <td style={{padding:'6px'}}><a href={`/tours/${t.id}`} target="_blank" rel="noopener" style={{color:'#3b82f6'}}>{t.title}</a></td>
+                            <td style={{padding:'6px'}}>{t.views}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -301,13 +402,13 @@ export function Dashboard() {
               {latestComments.length === 0 ? (
                 <p className="no-data">Chưa có bình luận nào</p>
               ) : (
-                <div style={{overflowX:'auto'}}>
+                <div style={{overflowX:'auto', color:'#364069'}}>
                   <table style={{width:'100%', borderCollapse:'collapse'}}>
                     <thead>
                       <tr>
                         <th style={{textAlign:'left', padding:'8px'}}>STT</th>
                         <th style={{textAlign:'left', padding:'8px'}}>Nội dung comment</th>
-                        <th style={{textAlign:'left', padding:'8px'}}>Tên POST or TOUR</th>
+                        <th style={{textAlign:'left', padding:'8px'}}>Tên POST-TOUR</th>
                         <th style={{textAlign:'left', padding:'8px'}}>Action</th>
                       </tr>
                     </thead>
@@ -315,12 +416,12 @@ export function Dashboard() {
                       {latestComments.map((c, idx) => (
                         <tr key={`${c.source}-${c.id}`}>
                           <td style={{padding:'8px'}}>{idx + 1}</td>
-                          <td style={{padding:'8px', maxWidth:400, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{c.content}</td>
-                          <td style={{padding:'8px'}}>
+                          <td style={{padding:'8px', maxWidth:600, minWidth:300, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{c.content}</td>
+                          <td style={{padding:'8px', maxWidth:400, minWidth:200}}>
                             {c.source === 'review' ? (
-                              <a href={`#/tours/${c.targetId}`} style={{color:'#3b82f6'}}>Tour: {c.title || c.targetId}</a>
+                              <a href={`/tours/${c.targetId}`} target="_blank" rel="noopener">Tour: {c.title || c.targetId}</a>
                             ) : (
-                              <a href={`#/posts/${c.targetId}`} style={{color:'#3b82f6'}}>Post: {c.title || c.targetId}</a>
+                              <a href={`/guide/${c.targetId}`} target="_blank" rel="noopener">Post: {c.title || c.targetId}</a>
                             )}
                           </td>
                           <td style={{padding:'8px'}}>
@@ -606,6 +707,20 @@ export function Dashboard() {
 
         .report-content {
           min-height: 200px;
+        }
+        /* Responsive tables inside report cards */
+        .report-content table { width: 100%; border-collapse: collapse; }
+        .report-content th, .report-content td { padding: 8px; text-align: left; }
+        .report-content thead { background: #f9fafb; }
+        .report-content .table-wrap { width: 100%; overflow-x: auto; }
+
+        @media (max-width: 720px) {
+          .reports-grid { grid-template-columns: 1fr; }
+          .report-content th, .report-content td { padding: 6px; font-size: 13px; }
+        }
+        @media (max-width: 360px) {
+          .report-content th, .report-content td { padding: 4px; font-size: 12px; }
+          .report-card { padding: 16px; }
         }
 
         .no-data {

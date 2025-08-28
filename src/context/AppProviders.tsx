@@ -204,30 +204,30 @@ export function AppProviders({ children }: PropsWithChildren) {
     return () => unsub()
   }, [])
 
-  useEffect(() => {
-    const sync = async () => {
-        if (!Object.keys(reviewsByTourId).length) return;
+  useEffect(() => {
+    const sync = async () => {
+      if (!Object.keys(reviewsByTourId).length) return;
 
-        const batch = writeBatch(db);
-        
-        const entries = Object.entries(reviewsByTourId);
-        for (const [tourId, list] of entries) {
-            if (!list.length) continue;
-            const avg = list.reduce((s, r) => s + r.rating, 0) / list.length;
-            const tourRef = doc(db, 'admin_tours', tourId);
-            
-            batch.update(tourRef, { rating: Number(avg.toFixed(1)) });
-        }
-        try {
-            await batch.commit();
-            console.log('Successfully synced tour ratings using a single batch write.');
-        } catch (e) {
-            console.error('Failed to sync tour ratings:', e);
-        }
-    };
-    sync();
-  
-}, [reviewsByTourId]);
+      const batch = writeBatch(db);
+      const entries = Object.entries(reviewsByTourId);
+      for (const [tourId, list] of entries) {
+        if (!list.length) continue;
+        const avg = list.reduce((s, r) => s + r.rating, 0) / list.length;
+        const ratingPayload = { rating: Number(avg.toFixed(1)) } as any;
+        const adminRef = doc(db, 'admin_tours', tourId);
+        const toursRef = doc(db, 'TOURS', tourId);
+        batch.set(adminRef, ratingPayload, { merge: true });
+        batch.set(toursRef, ratingPayload, { merge: true });
+      }
+      try {
+        await batch.commit();
+        console.log('Successfully synced tour ratings to TOURS and admin_tours.');
+      } catch (e) {
+        console.error('Failed to sync tour ratings:', e);
+      }
+    };
+    sync();
+  }, [reviewsByTourId]);
 
   const toggleSelect = (id: string) => {
     setSelectedTourIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])

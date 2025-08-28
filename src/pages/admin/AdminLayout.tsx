@@ -2,6 +2,101 @@ import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAdmin } from '../../context/AdminProviders'
 
+function Accordion() {
+  const { hasPermission, currentUser } = useAdmin()
+  const [open, setOpen] = useState<'accounts' | 'content' | 'reports' | 'settings' | null>('content')
+  const toggle = (key: 'accounts' | 'content' | 'reports' | 'settings') => setOpen(prev => prev === key ? null : key)
+  return (
+    <div>
+      <div className="accordion-group">
+        <button className={`accordion-header ${open === 'accounts' ? 'open' : ''}`} onClick={() => toggle('accounts')}>👥 Tài khoản</button>
+        {open === 'accounts' && (
+          <div className="accordion-body">
+            {hasPermission('read', 'customers') && (
+              <NavLink to="/admin/customers" className="nav-item">👤 Khách hàng</NavLink>
+            )}
+            {hasPermission('read', 'admins') && (
+              <NavLink to="/admin/staff" className="nav-item">👨‍💼 Nhân viên</NavLink>
+            )}
+            {hasPermission('read', 'affiliates') && (
+              <NavLink to="/admin/affiliates" className="nav-item">🤝 Affiliates</NavLink>
+            )}
+            {hasPermission('read', 'partners') && (
+              <NavLink to="/admin/partners" className="nav-item">🧑‍🤝‍🧑 Thành viên</NavLink>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="accordion-group">
+        <button className={`accordion-header ${open === 'content' ? 'open' : ''}`} onClick={() => toggle('content')}>📦 Nội dung</button>
+        {open === 'content' && (
+          <div className="accordion-body">
+            {hasPermission('read', 'TOURS') && (
+              <NavLink to="/admin/tours" className="nav-item">🏔️ Tours</NavLink>
+            )}
+            {hasPermission('read', 'bookings') && (
+              <NavLink to="/admin/bookings" className="nav-item">📅 Đặt tour</NavLink>
+            )}
+            {hasPermission('read', 'POSTS') && (
+              <NavLink to="/admin/posts" className="nav-item">📝 Bài viết</NavLink>
+            )}
+            {(hasPermission('read', 'reviews') || hasPermission('read', 'post_comments')) && (
+              <NavLink to="/admin/comments" className="nav-item">💬 Bình luận</NavLink>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="accordion-group">
+        <button className={`accordion-header ${open === 'reports' ? 'open' : ''}`} onClick={() => toggle('reports')}>📊 Báo cáo</button>
+        {open === 'reports' && (
+          <div className="accordion-body">
+            {hasPermission('read', 'reports') && (
+              <>
+                <NavLink to="/admin/affiliate-report" className="nav-item">📈 Báo cáo Affiliate</NavLink>
+                <NavLink to="/admin/revenue-report" className="nav-item">💵 Báo cáo Doanh thu</NavLink>
+                <NavLink to="/admin/tour-performance" className="nav-item">🎯 Hiệu suất Tour</NavLink>
+                <NavLink to="/admin/refund-payment" className="nav-item">💸 Hoàn tiền</NavLink>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {currentUser && currentUser.role === 'admin' && (
+        <div className="accordion-group">
+          <button className={`accordion-header ${open === 'settings' ? 'open' : ''}`} onClick={() => toggle('settings')}>⚙️ Cài đặt</button>
+          {open === 'settings' && (
+            <div className="accordion-body">
+              <NavLink to="/admin/settings" className="nav-item">⚙️ Cấu hình</NavLink>
+              <NavLink to="/admin/about" className="nav-item">ℹ️ Giới thiệu</NavLink>
+              <NavLink to="/admin/banks" className="nav-item">🏦 Ngân hàng</NavLink>
+              <NavLink to="/admin/themes" className="nav-item">🎨 Themes</NavLink>
+            </div>
+          )}
+        </div>
+      )}
+      <style>{`
+        .accordion-group { margin-bottom: 8px; }
+        .accordion-header {
+          width: 100%;
+          text-align: left;
+          padding: 10px 12px;
+          border: 1px solid #e2e8f0;
+          background: #f8fafc;
+          color: #374151;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 700;
+        }
+        .accordion-header.open { background: #eef2ff; border-color: #c7d2fe; }
+        .accordion-body { display: grid; gap: 4px; padding: 8px; }
+      `}</style>
+    </div>
+  )
+}
+
 export function AdminLayout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const navigate = useNavigate()
@@ -17,13 +112,10 @@ export function AdminLayout() {
   
   useEffect(() => {
     const closeMenu = (event: MouseEvent) => {
-      // Đóng menu nếu click vào một NavLink
       const navLink = (event.target as HTMLElement).closest('.nav-item');
     if (navLink) {
       setIsMenuOpen(false);
     }
-      
-      // Đóng menu nếu click ra ngoài sidebar
       const sidebar = document.querySelector('.admin-sidebar');
     const toggleButton = document.querySelector('.mobile-menu-toggle');
     if (
@@ -39,7 +131,6 @@ export function AdminLayout() {
 
     document.addEventListener('click', closeMenu);
 
-    // Hàm dọn dẹp (cleanup function) để tránh rò rỉ bộ nhớ
     return () => {
       document.removeEventListener('click', closeMenu);
     };
@@ -112,102 +203,13 @@ export function AdminLayout() {
         {/* Sidebar */}
         <aside className={`admin-sidebar ${isMenuOpen ? 'open' : ''}`}>
           <nav className="sidebar-nav">
-            {/* Dashboard - Admin and Manager only */}
             {canAccessDashboard() && (
-              <NavLink to="/admin" end className="nav-item">
-                📊 Dashboard
-              </NavLink>
+              <NavLink to="/admin" end className="nav-item">📊 Dashboard</NavLink>
             )}
-            
-            {/* Staff Dashboard - Staff only */}
             {currentUser.role === 'staff' && (
-              <NavLink to="/admin/staff-dashboard" className="nav-item">
-                📋 Bảng điều khiển
-              </NavLink>
+              <NavLink to="/admin/staff-dashboard" className="nav-item">📋 Bảng điều khiển</NavLink>
             )}
-            
-            {/* Content Management - All roles */}
-            {hasPermission('read', 'TOURS') && (
-              <NavLink to="/admin/tours" className="nav-item">
-                🏔️ Tours
-              </NavLink>
-            )}
-            
-            {hasPermission('read', 'POSTS') && (
-              <NavLink to="/admin/posts" className="nav-item">
-                📝 Bài viết
-              </NavLink>
-            )}
-            
-            {hasPermission('read', 'bookings') && (
-              <NavLink to="/admin/bookings" className="nav-item">
-                📅 Đặt tour
-              </NavLink>
-            )}
-            
-            {/* Management - Admin and Manager only */}
-            {hasPermission('read', 'customers') && (
-              <NavLink to="/admin/customers" className="nav-item">
-                👥 Khách hàng
-              </NavLink>
-            )}
-            
-            {hasPermission('read', 'admins') && (
-              <NavLink to="/admin/staff" className="nav-item">
-                👨‍💼 Nhân viên
-              </NavLink>
-            )}
-            
-            {hasPermission('read', 'affiliates') && (
-              <NavLink to="/admin/affiliates" className="nav-item">
-                🤝 Affiliates
-              </NavLink>
-            )}
-            
-            {hasPermission('read', 'partners') && (
-              <NavLink to="/admin/partners" className="nav-item">
-                🤝 Thành viên
-              </NavLink>
-            )}
-            
-            {/* Reports - Admin and Manager only */}
-            {hasPermission('read', 'reports') && (
-              <>
-                <NavLink to="/admin/affiliate-report" className="nav-item">
-                  📈 Báo cáo Affiliate
-                </NavLink>
-                <NavLink to="/admin/affiliate-payment" className="nav-item">
-                  💰 Thanh toán Affiliate
-                </NavLink>
-                <NavLink to="/admin/refund-payment" className="nav-item">
-                  💸 Hoàn tiền
-                </NavLink>
-                <NavLink to="/admin/revenue-report" className="nav-item">
-                  💵 Báo cáo Doanh thu
-                </NavLink>
-                <NavLink to="/admin/tour-performance" className="nav-item">
-                  🎯 Hiệu suất Tour
-                </NavLink>
-              </>
-            )}
-            
-            {/* Settings - Admin only */}
-            {currentUser.role === 'admin' && (
-              <>
-                <NavLink to="/admin/themes" className="nav-item">
-                  🎨 Themes
-                </NavLink>
-                <NavLink to="/admin/banks" className="nav-item">
-                  🏦 Ngân hàng
-                </NavLink>
-                <NavLink to="/admin/settings" className="nav-item">
-                  ⚙️ Cấu hình
-                </NavLink>
-                <NavLink to="/admin/about" className="nav-item">
-                  ℹ️ Giới thiệu
-                </NavLink>
-              </>
-            )}
+            <Accordion />
           </nav>
         </aside>
 
@@ -221,8 +223,9 @@ export function AdminLayout() {
       <button 
         className="mobile-menu-toggle"
         onClick={() => setIsMenuOpen(!isMenuOpen)}
+        aria-label={isMenuOpen ? 'Đóng menu' : 'Mở menu'}
       >
-        {isMenuOpen ? '✕' : '☰'}
+        {isMenuOpen ? '🞪' : '☰'}
       </button>
       {isMenuOpen && (
         <div 
@@ -378,6 +381,7 @@ export function AdminLayout() {
           transition: all 0.2s;
           font-weight: 500;
         }
+        .nav-item + .nav-item { margin-top: 2px; }
         
         .nav-item:hover {
           background: #f1f5f9;
@@ -489,6 +493,8 @@ export function AdminLayout() {
             }
             .stat-card {padding:0.1rem}
         }
+            .accordion-header { transition: background .2s ease; display:flex; align-items:center; gap:8px; }
+        .accordion-body .nav-item { padding-left: 16px; }
       `}</style>
     </div>
   )

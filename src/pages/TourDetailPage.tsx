@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { doc, getDoc } from 'firebase/firestore' // Import getDoc và doc
+import { addDoc, collection, doc, getDoc } from 'firebase/firestore' // Import getDoc và doc
 import { db } from '../firebase' // Import db
 import { useApp } from '../context/AppProviders'
 import { filterBadWords, hasBadWords } from '../utils/filter'
@@ -59,6 +59,18 @@ export function TourDetailPage() {
   const [comment, setComment] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [showQuickBooking, setShowQuickBooking] = useState(false)
+
+  // Track view (declare before early returns to keep hooks order stable)
+  useEffect(() => {
+    try {
+      if (!tour?.id) return
+      addDoc(collection(db, 'tour_views'), {
+        tourId: tour.id,
+        tourTitle: tour.title,
+        createdAt: Date.now(),
+      })
+    } catch {}
+  }, [tour?.id])
 
   useEffect(() => {
     setTour(undefined); 
